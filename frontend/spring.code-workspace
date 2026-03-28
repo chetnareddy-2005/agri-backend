@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../spring"
+		},
+		{
+			"path": "../backend"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../.vscode"
+		}
+	],
+	"settings": {}
+}

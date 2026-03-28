@@ -1,0 +1,342 @@
+:root {
+  /* Brand Colors */
+  --primary-color: #4CAF50;
+  --primary-dark: #388E3C;
+  --primary-light: #C8E6C9;
+  --accent-color: #8BC34A;
+
+  /* Semantic Colors (Light Mode Default) */
+  --bg-primary: #F1F8E9;
+  /* Main Page Background */
+  --bg-secondary: #FFFFFF;
+  /* Cards / Sections */
+  --bg-tertiary: #F3F4F6;
+  /* Inputs / Light contrasts */
+
+  --text-primary: #1B5E20;
+  /* Main Headings */
+  --text-secondary: #000000;
+  /* Body text */
+  --text-tertiary: #000000;
+  /* Meta text */
+  --text-light: #FFFFFF;
+  /* Text on dark/primary backgrounds */
+
+  --border-color: #E5E7EB;
+  --card-bg: #FFFFFF;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  --font-family: 'Inter', system-ui, sans-serif;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #050d17;
+  /* Deepest Night */
+  --bg-secondary: #091527;
+  /* Dark Navy */
+  --bg-tertiary: #12243d;
+  /* Navy */
+
+  --text-primary: #f0e2f0;
+  /* Lavender White */
+  --text-secondary: #aaafc7;
+  /* Muted Lavender */
+  --text-tertiary: #657f99;
+  /* Muted Blue */
+
+  --border-color: #2d4b67;
+  --card-bg: #091527;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background-color: var(--bg-secondary);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.3s;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--primary-color);
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.btn-secondary {
+  background-color: #FF9800;
+  /* Warm accent for variety */
+  color: white;
+}
+
+.btn-lg {
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+/* Hero Section */
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rem 5%;
+  min-height: 80vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+  z-index: 2;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  color: var(--primary-dark);
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  color: #555;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.hero-image-placeholder {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.circle-bg {
+  width: 400px;
+  height: 400px;
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: blur(40px);
+  position: absolute;
+  z-index: 1;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 5%;
+  text-align: center;
+  background-color: white;
+}
+
+.features-section h2 {
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  color: var(--primary-dark);
+}
+
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--background-light);
+  padding: 2rem;
+  border-radius: 20px;
+  width: 300px;
+  transition: transform 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-md);
+}
+
+.card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 6rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .nav-links {
+    display: none;
+    /* simple mobile hide for now */
+  }
+}
+
+/* Remove default password reveal button in Edge/IE */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+/* Custom DatePicker Styles */
+.custom-datepicker {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #D1D5DB;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.datePicker {
+  width: 100%;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+/* Farmer Dashboard Dark Theme Overrides (Core Background Colors) */
+[data-theme='dark'] .farmer-dashboard-root {
+  --bg-primary: #2C2C2C;
+  /* Deep Soil Brown */
+  --bg-secondary: #1F1F1F;
+  /* Charcoal Gray */
+  --bg-tertiary: #17221F;
+  /* Forest Night */
+  --text-primary: #F5F5DC;
+  /* Creamy White */
+  --text-secondary: #B4C98B;
+  /* Soft Moss */
+  --text-tertiary: #A3A3A3;
+  /* Sky Grey */
+  --border-color: #3e403d;
+  /* Derived darker grey for subtle borders, fell back from A3A3A3 to avoid severe contrast */
+  --card-bg: #1F1F1F;
+  /* Charcoal Gray */
+
+  /* Accent Colors as variables for potential usage */
+  --accent-orange: #FF8C42;
+  /* Sunset Orange */
+  --accent-gold: #FFD166;
+  /* Harvest Gold */
+  --accent-green: #6AA84F;
+  /* Leaf Green */
+}
