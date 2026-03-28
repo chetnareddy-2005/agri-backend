@@ -1,0 +1,30 @@
+# Java / Spring Boot
+target/
+*.class
+*.log
+
+# Maven
+.mvn/
+!mvnw
+!mvnw.cmd
+
+# IDE files
+.idea/
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (frontend)
+node_modules/
+frontend/node_modules/
+dist/
+
+# Env files
+.env
+
+*.properties
