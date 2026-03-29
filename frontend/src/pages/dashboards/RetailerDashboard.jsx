@@ -210,7 +210,7 @@ const RetailerDashboard = () => {
                 const data = await res.json();
                 cashfree.checkout({
                     paymentSessionId: data.payment_session_id,
-                    returnUrl: `http://localhost:5173/payment-success?order_id=${data.order_id}`
+                    returnUrl: `${window.location.origin}${window.location.pathname}#/payment-success?order_id=${data.order_id}`
                 });
             } else {
                 const msg = await res.text();
