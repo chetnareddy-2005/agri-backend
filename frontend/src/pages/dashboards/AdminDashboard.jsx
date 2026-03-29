@@ -54,7 +54,7 @@ const AdminDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/admin/stats', { credentials: 'include' });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setStats(data);
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
 
     const fetchTransactions = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/admin/transactions', { credentials: 'include' });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/transactions`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setTransactions(data);
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
 
     const fetchComplaints = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/complaints/all', { credentials: 'include' });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/all`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setComplaints(data);
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
 
     const fetchPendingUsers = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/admin/pending-users', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/pending-users`, {
                 credentials: 'include'
             });
             if (response.ok) {
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
     const fetchApprovedUsers = async (role) => {
         const endpoint = role === 'farmer' ? 'approved-farmers' : 'approved-retailers';
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/${endpoint}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, {
                 credentials: 'include'
             });
             if (response.ok) {
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
     };
 
     const handleViewDocument = (userId, fileName) => {
-        const url = `http://localhost:8080/api/users/${userId}/document`;
+        const url = `${import.meta.env.VITE_API_URL}/api/users/${userId}/document`;
         setDocUrl(url);
         setDocName(fileName);
         setShowDocModal(true);
@@ -151,7 +151,7 @@ const AdminDashboard = () => {
     const handleApprove = async () => {
         if (!selectedUser) return;
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/approve/${selectedUser.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/approve/${selectedUser.id}`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -174,7 +174,7 @@ const AdminDashboard = () => {
         if (!window.confirm("Are you sure you want to reject (and delete) this user?")) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/reject/${selectedUser.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/reject/${selectedUser.id}`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
         if (!window.confirm(`Are you sure you want to delete user ${user.fullName}?`)) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/delete/${user.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/delete/${user.id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
         // Mark as read if unread
         if (complaint.hasUnreadMessagesForAdmin) {
             try {
-                await fetch(`http://localhost:8080/api/complaints/${complaint.id}/mark-read-admin`, {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${complaint.id}/mark-read-admin`, {
                     method: 'PUT',
                     credentials: 'include'
                 });
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
     const handleSendReply = async () => {
         if (!chatReply.trim() || !selectedComplaint) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/complaints/${selectedComplaint.id}/reply`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: chatReply }),
@@ -279,7 +279,7 @@ const AdminDashboard = () => {
         setMsgSelectedUser('');
         const endpoint = role === 'farmer' ? 'approved-farmers' : 'approved-retailers';
         try {
-            const res = await fetch(`http://localhost:8080/api/admin/${endpoint}`, { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setMsgTargetList(data);
@@ -296,7 +296,7 @@ const AdminDashboard = () => {
         }
 
         try {
-            const res = await fetch('http://localhost:8080/api/complaints/send-message', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/send-message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: msgSelectedUser, message: msgBody }),

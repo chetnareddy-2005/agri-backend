@@ -24,7 +24,7 @@ const ResetPassword = () => {
 
         try {
             // Mock API call (In real app, use fetch/axios)
-            // await axios.post('http://localhost:8080/api/auth/reset-password', formData);
+            // await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/reset-password`, formData);
 
             console.log("Sending reset password request:", formData);
 

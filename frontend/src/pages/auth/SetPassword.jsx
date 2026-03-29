@@ -39,7 +39,7 @@ const SetPassword = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/change-initial-password', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/change-initial-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

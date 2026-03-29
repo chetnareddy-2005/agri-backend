@@ -53,7 +53,7 @@ const RetailerDashboard = () => {
 
     const fetchMyComplaints = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/complaints/my-complaints', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/my-complaints`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setMyComplaints(data);
@@ -66,7 +66,7 @@ const RetailerDashboard = () => {
     const handleCreateComplaint = async () => {
         if (!newComplaintMsg.trim()) return;
         try {
-            const res = await fetch('http://localhost:8080/api/complaints/create', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: newComplaintMsg }),
@@ -94,7 +94,7 @@ const RetailerDashboard = () => {
     const handleSendReply = async () => {
         if (!chatReply.trim() || !selectedComplaint) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/complaints/${selectedComplaint.id}/reply`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: chatReply }),
@@ -160,7 +160,7 @@ const RetailerDashboard = () => {
 
     const verifyPayment = async (orderId, isAuto = false) => {
         try {
-            const res = await fetch('http://localhost:8080/api/payment/verify', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId }),
@@ -193,7 +193,7 @@ const RetailerDashboard = () => {
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : {};
 
-            const res = await fetch('http://localhost:8080/api/payment/create-order', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -226,7 +226,7 @@ const RetailerDashboard = () => {
 
     const fetchMyBids = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/bids/my-bids', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bids/my-bids`, { credentials: 'include' });
             if (res.ok) {
                 const bids = await res.json();
                 const bidMap = {};
@@ -255,7 +255,7 @@ const RetailerDashboard = () => {
         try {
             const storedUser = JSON.parse(localStorage.getItem('user'));
             if (!storedUser) return;
-            const res = await fetch('http://localhost:8080/api/notifications/my-notifications', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/my-notifications`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setNotifications(data);
@@ -268,7 +268,7 @@ const RetailerDashboard = () => {
 
     const markAllAsRead = async () => {
         try {
-            await fetch('http://localhost:8080/api/notifications/mark-all-read', {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/mark-all-read`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -287,7 +287,7 @@ const RetailerDashboard = () => {
 
     const fetchPendingFeedback = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/feedback/pending', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/feedback/pending`, { credentials: 'include' });
             if (res.ok) {
                 const orders = await res.json();
                 setPendingFeedbackOrders(orders);
@@ -312,7 +312,7 @@ const RetailerDashboard = () => {
 
     const handleFeedbackSubmit = async (orderId, rating, comment) => {
         try {
-            const res = await fetch('http://localhost:8080/api/feedback/submit', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/feedback/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId, rating, comment }),
@@ -372,7 +372,7 @@ const RetailerDashboard = () => {
 
         try {
             // Direct Order Placement (Pay later within 7 days)
-            const res = await fetch('http://localhost:8080/api/orders/place', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/place`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId: product.id, quantity: quantity }),
@@ -408,7 +408,7 @@ const RetailerDashboard = () => {
         }
 
         try {
-            const res = await fetch('http://localhost:8080/api/bids/place', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bids/place`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId, amount: bidAmount }),
@@ -430,7 +430,7 @@ const RetailerDashboard = () => {
 
     const fetchProducts = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/products/all', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/all`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 console.log("Products loaded:", data);
@@ -451,7 +451,7 @@ const RetailerDashboard = () => {
 
     const fetchHighestBid = async (productId) => {
         try {
-            const res = await fetch(`http://localhost:8080/api/bids/highest/${productId}`, { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bids/highest/${productId}`, { credentials: 'include' });
             if (res.ok) {
                 const amount = await res.json();
                 setHighestBids(prev => ({ ...prev, [productId]: amount }));
@@ -463,7 +463,7 @@ const RetailerDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/stats/dashboard', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stats/dashboard`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setStats(data);
@@ -475,7 +475,7 @@ const RetailerDashboard = () => {
 
     const fetchMyOrders = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/orders/my-orders', { credentials: 'include' });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setMyOrders(data);
@@ -500,7 +500,7 @@ const RetailerDashboard = () => {
         if (!newQty || newQty === currentQty) return;
 
         try {
-            const res = await fetch(`http://localhost:8080/api/orders/modify/${orderId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/modify/${orderId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -1117,7 +1117,7 @@ const RetailerDashboard = () => {
                                             </div>
                                             {user?.documentName && (
                                                 <a
-                                                    href={`http://localhost:8080/api/users/${user.id}/document`}
+                                                    href={`${import.meta.env.VITE_API_URL}/api/users/${user.id}/document`}
                                                     style={{ color: '#047857', fontWeight: '600', textDecoration: 'none', fontSize: '0.875rem' }}
                                                 >
                                                     View
@@ -1198,7 +1198,7 @@ const RetailerDashboard = () => {
                                     if (!message) return;
 
                                     try {
-                                        const res = await fetch('http://localhost:8080/api/complaints/create', {
+                                        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/create`, {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ message }),

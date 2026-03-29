@@ -7,7 +7,7 @@ const ProductImage = ({ productId }) => {
     useEffect(() => {
         const fetchImage = async () => {
             try {
-                const res = await fetch(`http://localhost:8080/api/products/${productId}/image`, { credentials: 'include' });
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}/image`, { credentials: 'include' });
                 if (res.ok) {
                     const text = await res.text();
                     if (text && text.length > 50) { // Basic check for valid Base64 length

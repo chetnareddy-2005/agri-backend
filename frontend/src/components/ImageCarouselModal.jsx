@@ -10,14 +10,14 @@ const ImageCarouselModal = ({ productId, onClose }) => {
         const fetchImages = async () => {
             if (!productId) return;
             try {
-                const res = await fetch(`http://localhost:8080/api/products/${productId}/images`, { credentials: 'include' });
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}/images`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.length > 0) {
                         setImages(data);
                     } else {
                         // Fallback: try fetching single image if list is empty (unlikely given backend logic but good for safety)
-                        const singleRes = await fetch(`http://localhost:8080/api/products/${productId}/image`, { credentials: 'include' });
+                        const singleRes = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}/image`, { credentials: 'include' });
                         if (singleRes.ok) {
                             const txt = await singleRes.text();
                             if (txt.length > 50) setImages([txt]);
