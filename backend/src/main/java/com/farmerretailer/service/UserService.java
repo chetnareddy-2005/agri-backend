@@ -138,13 +138,30 @@ public class UserService {
         }
     }
 
+    @Autowired
+    private com.farmerretailer.repository.DriverRepository driverRepository;
+
     // Helper to create initial user (normally done by RegisterController)
     public User registerUser(User user) {
         // user.setPassword(passwordEncoder.encode(user.getPassword())); // Removed
         // strict check
         // Set placeholder password to satisfy DB constraints
         user.setPassword(passwordEncoder.encode("PENDING_SETUP"));
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if (savedUser.getRole() == com.farmerretailer.model.Role.ROLE_TRANSPORTER) {
+            com.farmerretailer.entity.Driver driver = new com.farmerretailer.entity.Driver();
+            driver.setUser(savedUser);
+            // Default mappings from User fields
+            driver.setVehicleType(savedUser.getBusinessName()); 
+            driver.setCapacity(savedUser.getDescription());
+            driver.setCurrentLat(0.0);
+            driver.setCurrentLng(0.0);
+            driver.setAvailable(true);
+            driverRepository.save(driver);
+        }
+
+        return savedUser;
     }
 
     public void updatePassword(User user, String newPassword) {

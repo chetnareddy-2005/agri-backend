@@ -42,7 +42,10 @@ const Register = () => {
     useEffect(() => {
         const roleParam = searchParams.get('role');
         if (roleParam) {
-            setRole(roleParam.toLowerCase() === 'retailer' ? 'ROLE_RETAILER' : 'ROLE_FARMER');
+            const lowerRole = roleParam.toLowerCase();
+            if (lowerRole === 'retailer') setRole('ROLE_RETAILER');
+            else if (lowerRole === 'transporter') setRole('ROLE_TRANSPORTER');
+            else setRole('ROLE_FARMER');
         }
     }, [searchParams]);
 
@@ -124,6 +127,7 @@ const Register = () => {
     };
 
     const isFarmer = role === 'ROLE_FARMER';
+    const isTransporter = role === 'ROLE_TRANSPORTER';
 
     return (
         <div style={{
@@ -142,7 +146,7 @@ const Register = () => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${isFarmer ? farmerBg : retailerBg})`,
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${isTransporter ? retailerBg : isFarmer ? farmerBg : retailerBg})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'blur(5px)',
@@ -206,28 +210,39 @@ const Register = () => {
 
                 {/* Tabs - Only visible in Step 1 */}
                 {step === 1 && (
-                    <div style={{ display: 'flex', backgroundColor: '#F1F8E9', borderRadius: '8px', padding: '4px', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', backgroundColor: '#F1F8E9', borderRadius: '8px', padding: '4px', marginBottom: '2rem', gap: '4px' }}>
                         <button
                             type="button"
                             onClick={() => handleTabChange('ROLE_FARMER')}
                             style={{
-                                flex: 1, padding: '0.8rem', borderRadius: '6px', border: 'none',
+                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
                                 backgroundColor: isFarmer ? '#4CAF50' : 'transparent',
-                                color: isFarmer ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer'
+                                color: isFarmer ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
                             }}
                         >
-                            Register as Farmer
+                            Farmer
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTabChange('ROLE_RETAILER')}
                             style={{
-                                flex: 1, padding: '0.8rem', borderRadius: '6px', border: 'none',
-                                backgroundColor: !isFarmer ? '#4CAF50' : 'transparent',
-                                color: !isFarmer ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer'
+                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
+                                backgroundColor: role === 'ROLE_RETAILER' ? '#4CAF50' : 'transparent',
+                                color: role === 'ROLE_RETAILER' ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
                             }}
                         >
-                            Register as Retailer
+                            Retailer
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleTabChange('ROLE_TRANSPORTER')}
+                            style={{
+                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
+                                backgroundColor: isTransporter ? '#4CAF50' : 'transparent',
+                                color: isTransporter ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
+                            }}
+                        >
+                            Transporter
                         </button>
                     </div>
                 )}
@@ -277,10 +292,10 @@ const Register = () => {
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                        {isFarmer ? '📄 Farm Name' : '🏪 Business Name'} *
+                                        {isFarmer ? '📄 Farm Name' : isTransporter ? '🚚 Vehicle Type (e.g., Truck, Auto)' : '🏪 Business Name'} *
                                     </label>
                                     <input
-                                        type="text" name="businessName" placeholder={isFarmer ? "Your farm name" : "Your store name"}
+                                        type="text" name="businessName" placeholder={isFarmer ? "Your farm name" : isTransporter ? "Enter vehicle type" : "Your store name"}
                                         value={formData.businessName} onChange={handleChange} required
                                         style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
                                     />
@@ -290,7 +305,7 @@ const Register = () => {
                             {/* Address */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                    📍 {isFarmer ? 'Farm Address' : 'Business Address'} *
+                                    📍 {isFarmer ? 'Farm Address' : isTransporter ? 'Base Location Address' : 'Business Address'} *
                                 </label>
                                 <input
                                     type="text" name="address" placeholder="Enter your complete address"
@@ -302,10 +317,10 @@ const Register = () => {
                             {/* Description */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                    {isFarmer ? 'Farm Description (Optional)' : 'Business Description (Optional)'}
+                                    {isFarmer ? 'Farm Description (Optional)' : isTransporter ? 'Vehicle Capacity & Details' : 'Business Description (Optional)'}
                                 </label>
                                 <textarea
-                                    name="description" placeholder={isFarmer ? "Tell us about your farm" : "Tell us about your business"}
+                                    name="description" placeholder={isFarmer ? "Tell us about your farm" : isTransporter ? "e.g. 5 Ton Capacity, License Plate" : "Tell us about your business"}
                                     value={formData.description} onChange={handleChange} rows="3"
                                     style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0', resize: 'vertical' }}
                                 />
@@ -329,7 +344,7 @@ const Register = () => {
                             {/* Upload Document */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '1.5rem', color: '#4A5568', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center' }}>
-                                    Upload Document ({isFarmer ? 'ID Proof/Farm Certificate' : 'ID Proof/Business License'}) *
+                                    Upload Document ({isFarmer ? 'ID Proof/Farm Cert.' : isTransporter ? 'Driving License/ID' : 'ID Proof/Biz License'}) *
                                 </label>
                                 <div
                                     style={{

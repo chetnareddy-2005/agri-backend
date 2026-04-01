@@ -5,20 +5,22 @@
   "homepage": "https://chetnareddy-2005.github.io/agri-supply-chain-dashboard",
   "type": "module",
   "scripts": {
-  "dev": "vite",
-  "build": "vite build && node -e \"require('fs').copyFileSync('landing-page.html', 'dist/index.html')\"",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d dist -r https://github.com/chetnareddy-2005/agri-supply-chain-dashboard.git"
+    "dev": "vite",
+    "build": "vite build && node -e \"require('fs').copyFileSync('landing-page.html', 'dist/index.html')\"",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist -r https://github.com/chetnareddy-2005/agri-supply-chain-dashboard.git"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.561.0",
     "react": "^19.2.0",
     "react-datepicker": "^9.0.0",
     "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.10.1",
     "recharts": "^3.5.1"
   },

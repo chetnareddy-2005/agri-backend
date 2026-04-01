@@ -47,6 +47,8 @@ const Login = () => {
                     navigate('/farmer/dashboard');
                 } else if (data.role === 'ROLE_RETAILER') {
                     navigate('/retailer/dashboard');
+                } else if (data.role === 'ROLE_TRANSPORTER') {
+                    navigate('/transporter/dashboard');
                 } else if (data.role === 'ROLE_ADMIN') {
                     navigate('/admin/dashboard');
                 } else {

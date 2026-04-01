@@ -12,6 +12,28 @@ import ThemeToggle from '../../components/ThemeToggle';
 import LogoutModal from '../../components/LogoutModal';
 import FeedbackModal from '../../components/FeedbackModal';
 import Pagination from '../../components/Pagination';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix for default Leaflet marker icons in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Haversine formula for distance
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
 
 const RetailerDashboard = () => {
     const navigate = useNavigate();
@@ -42,6 +64,10 @@ const RetailerDashboard = () => {
     const [productsPage, setProductsPage] = useState(1);
     const [ordersPage, setOrdersPage] = useState(1);
     const ITEMS_PER_PAGE = 8;
+    
+    // Tracking State
+    const [showTracking, setShowTracking] = useState(false);
+    const [trackingData, setTrackingData] = useState(null);
 
     // Help / Chat State
     const [myComplaints, setMyComplaints] = useState([]);
@@ -148,15 +174,14 @@ const RetailerDashboard = () => {
     // Payment Verification Effect
     const hasVerifiedPayment = React.useRef(false);
     useEffect(() => {
-        // Run only once on mount
-        const params = new URLSearchParams(window.location.search);
-        const orderId = params.get('order_id');
+        // Run only once on mount or when order_id appears
+        const orderId = searchParams.get('order_id');
         if (orderId && !hasVerifiedPayment.current) {
             hasVerifiedPayment.current = true;
             console.log("Verifying payment for:", orderId);
             verifyPayment(orderId, true);
         }
-    }, []); // Empty dependency array ensures single execution
+    }, [searchParams]);
 
     const verifyPayment = async (orderId, isAuto = false) => {
         try {
@@ -380,11 +405,46 @@ const RetailerDashboard = () => {
             });
 
             if (res.ok) {
-                alert("Order placed successfully! Please complete payment within 7 days.");
-                fetchProducts();
+                const orderData = await res.json();
+
+                // Transport Selection
+                const transportType = confirm("Order placed successfully! Do you want Platform Transport? (Cancel for Own Transport)");
+
+                if (transportType) {
+                    // Mock coordinates representing Chennai region for Farmer and Retailer
+                    const farmerLat = 13.05 + (Math.random() * 0.02 - 0.01);
+                    const farmerLng = 80.25 + (Math.random() * 0.02 - 0.01);
+                    const retailerLat = 13.10 + (Math.random() * 0.02 - 0.01);
+                    const retailerLng = 80.30 + (Math.random() * 0.02 - 0.01);
+                    
+                    const distance = parseFloat(getDistance(farmerLat, farmerLng, retailerLat, retailerLng).toFixed(2));
+                    
+                    const transRes = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/platform`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: orderData.id, distanceKm: distance }),
+                        credentials: 'include'
+                    });
+                    
+                    if (transRes.ok) {
+                        const tData = await transRes.json();
+                        alert(`Platform Transport Selected:\nDistance: ${tData.distanceKm}km\nSuggested Vehicle: ${tData.suggestedVehicle}\nEstimated Price: Rs.${tData.price}\n\nA transporter will be assigned shortly.`);
+                    } else {
+                        alert("Failed to assign platform transport.");
+                    }
+                } else {
+                    const transRes = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/own`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: orderData.id }),
+                        credentials: 'include'
+                    });
+                    if (transRes.ok) alert("Selected Own Transport. Please coordinate pickup with the farmer.");
+                }
+
                 fetchProducts();
                 fetchMyOrders();
-                fetchStats(); // Update stats if needed
+                fetchStats();
                 fetchNotifications();
             } else {
                 const msg = await res.text();
@@ -571,6 +631,22 @@ const RetailerDashboard = () => {
         });
     };
 
+    const handleTrackOrder = async (orderId) => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/order/${orderId}`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setTrackingData(data);
+                setShowTracking(true);
+            } else {
+                alert("No platform transport found for this order.");
+            }
+        } catch (error) {
+            console.error("Tracking Error:", error);
+            alert("Error fetching tracking details.");
+        }
+    };
+
     // Mock Data
     const ordersOverTime = [
         { name: 'Jul', value: 10 },
@@ -663,6 +739,53 @@ const RetailerDashboard = () => {
                                 onClose={handleFeedbackClose}
                                 onSubmit={handleFeedbackSubmit}
                             />
+                        )}
+
+                        {showTracking && trackingData && (
+                            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
+                                <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '500px', position: 'relative' }}>
+                                    <button onClick={() => setShowTracking(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#166534' }}>🚚 Order Tracking</h3>
+                                    
+                                    <p><strong>Status:</strong> <span style={{ backgroundColor: '#FEF08A', padding: '2px 8px', borderRadius: '4px' }}>{trackingData.status}</span></p>
+                                    <p><strong>Transport Method:</strong> {trackingData.transportMethod}</p>
+                                    <p><strong>Distance:</strong> {trackingData.distanceKm} km</p>
+                                    
+                                    {trackingData.driver ? (
+                                        <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+                                            <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Driver Details</h4>
+                                            <p><strong>Vehicle:</strong> {trackingData.driver.vehicleType}</p>
+                                            <p><strong>Capacity:</strong> {trackingData.driver.vehicleCapacity} kg</p>
+                                            
+                                            <div style={{ marginTop: '1rem', height: '300px', backgroundColor: '#E5E7EB', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
+                                                {/* Leaflet Map integration */}
+                                                <MapContainer center={[trackingData.driver.currentLat || 13.06, trackingData.driver.currentLng || 80.26]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+                                                    <TileLayer
+                                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                    />
+                                                    {/* Driver Marker */}
+                                                    <Marker position={[trackingData.driver.currentLat || 13.06, trackingData.driver.currentLng || 80.26]}>
+                                                        <Popup>🚚 Driver Tracking Position</Popup>
+                                                    </Marker>
+                                                    {/* Mock Farmer & Retailer Destination markers for visual context */}
+                                                    <Marker position={[13.05, 80.25]}>
+                                                        <Popup>📍 Pickup (Farmer)</Popup>
+                                                    </Marker>
+                                                    <Marker position={[13.10, 80.30]}>
+                                                        <Popup>🏪 Destination (You)</Popup>
+                                                    </Marker>
+                                                </MapContainer>
+                                            </div>
+                                            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#6B7280' }}>* Location updates every 10 seconds via our real-time backend.</p>
+                                        </div>
+                                    ) : (
+                                        <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#FEF2F2', color: '#991B1B', borderRadius: '8px' }}>
+                                            Waiting for a transporter to accept this request...
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
 
                         {activeTab === 'Dashboard' && (
@@ -1000,6 +1123,11 @@ const RetailerDashboard = () => {
                                                                 onClick={() => handleViewInvoice(order)}
                                                                 style={{ backgroundColor: '#DBEAFE', color: '#1E40AF', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: '500' }}>
                                                                 View
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleTrackOrder(order.id)}
+                                                                style={{ marginLeft: '10px', backgroundColor: '#F3E8FF', color: '#7E22CE', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: '500' }}>
+                                                                Track
                                                             </button>
                                                         </td>
                                                         <td style={{ padding: '1rem 0' }}>

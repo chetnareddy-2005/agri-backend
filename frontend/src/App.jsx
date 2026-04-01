@@ -6,6 +6,7 @@ import Register from './pages/auth/Register'
 import AdminDashboard from './pages/dashboards/AdminDashboard'
 import FarmerDashboard from './pages/dashboards/FarmerDashboard'
 import RetailerDashboard from './pages/dashboards/RetailerDashboard'
+import TransporterDashboard from './pages/dashboards/TransporterDashboard'
 import ResetPassword from './pages/auth/ResetPassword'
 import SetPassword from './pages/auth/SetPassword'
 import PaymentSuccess from './pages/PaymentSuccess'
@@ -24,6 +25,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
         <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
+        <Route path="/transporter/dashboard" element={<TransporterDashboard />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
