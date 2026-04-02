@@ -12,6 +12,7 @@ import html2canvas from 'html2canvas';
 import ThemeToggle from '../../components/ThemeToggle';
 import LogoutModal from '../../components/LogoutModal';
 import Pagination from '../../components/Pagination';
+import WeatherIntelligence from './WeatherIntelligence';
 
 const FarmerDashboard = () => {
     const navigate = useNavigate();
@@ -687,6 +688,11 @@ const FarmerDashboard = () => {
                             <KPICard title="Pending Orders" value={stats.pendingOrders} subtext="Awaiting your action" icon={<Bell size={24} color="#db2777" />} />
                         </div>
 
+                        {/* Weather Intelligence Hub */}
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <WeatherIntelligence role="ROLE_FARMER" location={user?.businessName || "Hyderabad"} />
+                        </div>
+
                         {/* Charts Row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             {/* Pie Chart */}
@@ -832,7 +838,11 @@ const FarmerDashboard = () => {
 
                                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                                             {/* Farmer name is implied as propery of 'me' but useful for consistent UI structure if copied */}
-                                            <span style={{ fontWeight: '600', color: '#16a34a' }}>Avail:</span> {product.quantity} {product.unit}
+                                            {product.quantity <= 0 ? (
+                                                <span style={{ fontWeight: '600', color: '#EF4444' }}>Sold out</span>
+                                            ) : (
+                                                <><span style={{ fontWeight: '600', color: '#16a34a' }}>Avail:</span> {product.quantity} {product.unit}</>
+                                            )}
                                         </div>
 
                                         <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginBottom: '0.5rem' }}>{product.category} • {product.location}</p>

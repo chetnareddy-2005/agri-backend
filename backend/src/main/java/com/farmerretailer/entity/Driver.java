@@ -27,4 +27,14 @@ public class Driver {
     private Double currentLng;
 
     private boolean isAvailable = true;
+    private Double rating = 4.5;
+    
+    // Behavior tracking
+    private Integer totalRequests = 0;
+    private Integer acceptedRequests = 0;
+    private Integer cancelledRequests = 0;
+    private Integer deliveredRequests = 0;
+    
+    private String badge; // PRO, SILVER, GOLD, TOP_RATED
+    private Integer points = 0; // Gamification
 }

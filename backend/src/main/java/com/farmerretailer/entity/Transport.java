@@ -26,11 +26,30 @@ public class Transport {
 
     private String transportMethod; // OWN, PLATFORM
     private Double distanceKm;
-    private Double price; 
-    private String status; // PENDING, ACCEPTED, IN_TRANSIT, DELIVERED
+    private Double initialPrice; 
+    private Double updatedPrice;
+    private String priceChangedBy; // RETAILER, TRANSPORTER
+    private boolean isPriceAcceptedByRetailer = false;
+    private boolean isPriceAcceptedByTransporter = false;
 
+    // Advanced Pricing
+    private Double surgeMultiplier = 1.0;
+    private Double weatherMultiplier = 1.0;
+    private String priceReason; // "High Demand", "Rainy Weather"
+
+    // Scheduling
+    private java.time.LocalDate scheduledDate;
+    private String timeSlot; // Morning, Afternoon, Evening
+
+    private String status; // PENDING, SCHEDULED, PRICE_UPDATED, ACCEPTED, ON_THE_WAY, DELIVERED
     private boolean isConfirmedByRetailer = false;
-    
-    // To identify suggested vehicle
     private String suggestedVehicle;
+
+    // Delivery Proof
+    private String deliveryPhotoUrl;
+    private String signatureData;
+
+    // Post-delivery Ratings
+    private Double retailerToTransporterRating;
+    private Double transporterToRetailerRating;
 }

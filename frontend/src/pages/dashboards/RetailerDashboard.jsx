@@ -12,6 +12,7 @@ import ThemeToggle from '../../components/ThemeToggle';
 import LogoutModal from '../../components/LogoutModal';
 import FeedbackModal from '../../components/FeedbackModal';
 import Pagination from '../../components/Pagination';
+import WeatherIntelligence from './WeatherIntelligence';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -406,41 +407,14 @@ const RetailerDashboard = () => {
 
             if (res.ok) {
                 const orderData = await res.json();
-
-                // Transport Selection
-                const transportType = confirm("Order placed successfully! Do you want Platform Transport? (Cancel for Own Transport)");
-
-                if (transportType) {
-                    // Mock coordinates representing Chennai region for Farmer and Retailer
-                    const farmerLat = 13.05 + (Math.random() * 0.02 - 0.01);
-                    const farmerLng = 80.25 + (Math.random() * 0.02 - 0.01);
-                    const retailerLat = 13.10 + (Math.random() * 0.02 - 0.01);
-                    const retailerLng = 80.30 + (Math.random() * 0.02 - 0.01);
-                    
-                    const distance = parseFloat(getDistance(farmerLat, farmerLng, retailerLat, retailerLng).toFixed(2));
-                    
-                    const transRes = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/platform`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderId: orderData.id, distanceKm: distance }),
-                        credentials: 'include'
-                    });
-                    
-                    if (transRes.ok) {
-                        const tData = await transRes.json();
-                        alert(`Platform Transport Selected:\nDistance: ${tData.distanceKm}km\nSuggested Vehicle: ${tData.suggestedVehicle}\nEstimated Price: Rs.${tData.price}\n\nA transporter will be assigned shortly.`);
-                    } else {
-                        alert("Failed to assign platform transport.");
-                    }
-                } else {
-                    const transRes = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/own`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderId: orderData.id }),
-                        credentials: 'include'
-                    });
-                    if (transRes.ok) alert("Selected Own Transport. Please coordinate pickup with the farmer.");
-                }
+                
+                // Redirect to intelligent transport selection page
+                navigate('/select-transport', { 
+                    state: { 
+                        orderId: orderData.id, 
+                        product: product 
+                    } 
+                });
 
                 fetchProducts();
                 fetchMyOrders();
@@ -809,6 +783,10 @@ const RetailerDashboard = () => {
                                     </div>
                                 </div>
 
+                                <div style={{ marginBottom: '2.5rem' }}>
+                                    <WeatherIntelligence role="ROLE_RETAILER" location={user?.businessName || "Hyderabad"} />
+                                </div>
+
                                 {/* Charts Row */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                                     {/* Line Chart */}
@@ -988,53 +966,59 @@ const RetailerDashboard = () => {
                                                 filteredProducts
                                                     .slice((productsPage - 1) * ITEMS_PER_PAGE, productsPage * ITEMS_PER_PAGE)
                                                     .map(product => (
-                                                        <div key={product.id} style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                                                        <div key={product.id} className="product-card" style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '15px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                                             {!product.available && (
-                                                                <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#EF4444', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                                                                    SOLD
+                                                                <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#E74C3C', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                                                    🔴 Sold Out
                                                                 </div>
                                                             )}
                                                             <div onClick={() => setSelectedImageProduct(product.id)} style={{ cursor: 'pointer' }}>
                                                                 <ProductImage productId={product.id} />
                                                             </div>
-                                                            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>{product.name}</h4>
-                                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '0.25rem' }}>
-                                                                Farmer: <span style={{ fontWeight: '600', color: '#166534' }}>{product.farmerName}</span>
+                                                            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: '10px 0 5px', color: 'var(--text-secondary)' }}>{product.name}</h4>
+                                                            <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '5px' }}>
+                                                                Farmer: <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{product.farmerName}</span>
                                                             </div>
-                                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '0.25rem' }}>
-                                                                <span style={{ fontWeight: '600', color: '#16a34a' }}>Avail:</span> {product.quantity} {product.unit}
+                                                            <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '5px' }}>
+                                                                {product.quantity <= 0 ? (
+                                                                    <span style={{ fontWeight: 'bold', color: '#E74C3C' }}>🔴 Sold out</span>
+                                                                ) : (
+                                                                    <><span style={{ fontWeight: 'bold', color: '#2ECC71' }}>🟢 Available:</span> {product.quantity} {product.unit}</>
+                                                                )}
                                                             </div>
                                                             {product.winnerName && (
-                                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '0.25rem' }}>
-                                                                    Product Sold To: <span style={{ fontWeight: '600', color: '#2563EB' }}>{product.winnerName}</span>
+                                                                <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '5px' }}>
+                                                                    🛒 Product Sold To: <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{product.winnerName}</span>
                                                                 </div>
                                                             )}
-                                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginBottom: '0.5rem' }}>{product.category} • {product.location}</p>
-                                                            <div style={{ fontSize: '0.875rem', color: '#D97706', marginBottom: '0.5rem', fontWeight: '600' }}>
-                                                                Ends in: <CountdownTimer endTime={product.biddingEndTime} />
-                                                            </div>
-                                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem', flex: 1 }}>{product.description}</p>
+                                                            <p style={{ fontSize: '0.875rem', color: '#555', margin: '5px 0' }}>🌾 {product.category}: {product.location}</p>
+                                                            {product.listingType !== 'DIRECT' && (
+                                                                <div style={{ fontSize: '0.875rem', color: '#D97706', margin: '5px 0', fontWeight: '600' }}>
+                                                                    ⏳ Ends in: <CountdownTimer endTime={product.biddingEndTime} />
+                                                                </div>
+                                                            )}
+                                                            <p style={{ fontSize: '0.875rem', color: '#555', margin: '5px 0 1rem', flex: 1 }}>💬 {product.description}</p>
 
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
                                                                 <div>
-                                                                    <span style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
-                                                                        {product.listingType === 'DIRECT' ? 'Fixed Price / Unit:' : 'Base Price / Unit:'} ₹{product.price}
-                                                                    </span>
+                                                                    <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#2ECC71' }}>
+                                                                        💰 {product.listingType === 'DIRECT' ? 'Fixed Price / Unit:' : 'Base Price / Unit:'} ₹{product.price}
+                                                                    </div>
 
                                                                     {product.listingType !== 'DIRECT' && (
-                                                                        <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a' }}>
-                                                                            Max Bid: ₹{highestBids[product.id] || product.price}
+                                                                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#2ECC71' }}>
+                                                                            📈 Max Bid: ₹{highestBids[product.id] || product.price}
                                                                         </div>
                                                                     )}
                                                                     {product.listingType === 'DIRECT' && product.available && (
-                                                                        <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a' }}>
-                                                                            Ready to Buy
+                                                                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#2ECC71' }}>
+                                                                            ✅ Ready to Buy
                                                                         </div>
                                                                     )}
 
                                                                     {myBids[product.id] && product.listingType !== 'DIRECT' && (
-                                                                        <div style={{ fontSize: '0.85rem', color: '#4f46e5', marginTop: '2px', fontWeight: '600', backgroundColor: '#eef2ff', padding: '2px 6px', borderRadius: '4px', width: 'fit-content' }}>
-                                                                            Your Bid: ₹{myBids[product.id]}
+                                                                        <div style={{ fontSize: '0.85rem', color: '#3498DB', marginTop: '5px', fontWeight: 'bold' }}>
+                                                                            🏷️ Your Bid: ₹{myBids[product.id]}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1043,21 +1027,23 @@ const RetailerDashboard = () => {
                                                                     product.listingType === 'DIRECT' ? (
                                                                         <button
                                                                             onClick={() => handleBuyNow(product)}
-                                                                            style={{ backgroundColor: '#2563EB', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
-                                                                            Buy Now
+                                                                            className="product-card-btn buy-btn"
+                                                                            style={{ width: '100%', backgroundColor: '#3498DB', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                                                            🛍️ Buy Now
                                                                         </button>
                                                                     ) : (
                                                                         <button
                                                                             onClick={() => handlePlaceBid(product.id, product.price)}
-                                                                            style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
-                                                                            Place Bid
+                                                                            className="product-card-btn"
+                                                                            style={{ width: '100%', backgroundColor: '#166534', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                                                            🔨 Place Bid
                                                                         </button>
                                                                     )
                                                                 ) : (
                                                                     <button
                                                                         disabled
-                                                                        style={{ backgroundColor: '#9CA3AF', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: '600', cursor: 'not-allowed' }}>
-                                                                        Sold Out
+                                                                        style={{ width: '100%', backgroundColor: '#BDC3C7', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 'bold', cursor: 'not-allowed' }}>
+                                                                        🚫 Sold Out
                                                                     </button>
                                                                 )}
                                                             </div>

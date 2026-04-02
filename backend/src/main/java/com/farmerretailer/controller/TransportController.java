@@ -18,33 +18,70 @@ public class TransportController {
     @Autowired
     private TransportService transportService;
 
-    @PostMapping("/platform")
-    public ResponseEntity<?> createPlatformTransport(@RequestBody Map<String, Object> payload) {
+    @GetMapping("/recommended-drivers")
+    public ResponseEntity<List<TransportService.ScoredDriver>> getRecommendedDrivers(@RequestParam(defaultValue = "0") double lat, @RequestParam(defaultValue = "0") double lng) {
+        return ResponseEntity.ok(transportService.getRecommendedDrivers(lat, lng));
+    }
+
+    @GetMapping("/drivers")
+    public ResponseEntity<List<com.farmerretailer.entity.Driver>> getAvailableDrivers() {
+        return ResponseEntity.ok(transportService.getAvailableDrivers());
+    }
+
+    @PostMapping("/select")
+    public ResponseEntity<?> selectDriver(@RequestBody Map<String, Object> payload) {
         try {
             Long orderId = Long.valueOf(payload.get("orderId").toString());
             Double distanceKm = Double.valueOf(payload.get("distanceKm").toString());
-            Transport transport = transportService.createPlatformTransport(orderId, distanceKm);
+            Long driverId = Long.valueOf(payload.get("driverId").toString());
+            String scheduledDate = (String) payload.get("scheduledDate");
+            String timeSlot = (String) payload.get("timeSlot");
+            
+            Transport transport = transportService.createPlatformTransport(orderId, distanceKm, driverId, scheduledDate, timeSlot);
             return ResponseEntity.ok(transport);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    @PostMapping("/own")
-    public ResponseEntity<?> createOwnTransport(@RequestBody Map<String, Object> payload) {
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<?> submitRating(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         try {
-            Long orderId = Long.valueOf(payload.get("orderId").toString());
-            Transport transport = transportService.createOwnTransport(orderId);
-            return ResponseEntity.ok(transport);
+            Double rating = Double.valueOf(payload.get("rating").toString());
+            String fromRole = payload.get("fromRole").toString(); // RETAILER, TRANSPORTER
+            return ResponseEntity.ok(transportService.submitRating(id, rating, fromRole));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    @PutMapping("/{id}/confirm")
-    public ResponseEntity<?> confirmTransport(@PathVariable Long id) {
+    @PostMapping("/{id}/delivery-proof")
+    public ResponseEntity<?> submitProof(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         try {
-            return ResponseEntity.ok(transportService.confirmTransport(id));
+            String photoUrl = payload.get("photoUrl");
+            String signature = payload.get("signature");
+            return ResponseEntity.ok(transportService.submitDeliveryProof(id, photoUrl, signature));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/negotiate")
+    public ResponseEntity<?> negotiatePrice(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        try {
+            Double newPrice = Double.valueOf(payload.get("newPrice").toString());
+            String changedBy = payload.get("changedBy").toString(); // RETAILER or TRANSPORTER
+            return ResponseEntity.ok(transportService.negotiatePrice(id, newPrice, changedBy));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/accept-negotiation")
+    public ResponseEntity<?> acceptNegotiation(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        try {
+            String acceptedBy = payload.get("acceptedBy").toString();
+            return ResponseEntity.ok(transportService.acceptNegotiation(id, acceptedBy));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

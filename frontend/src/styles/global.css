@@ -340,3 +340,27 @@ input::-ms-clear {
   --accent-green: #6AA84F;
   /* Leaf Green */
 }
+
+/* Premium Product Card UI Styles */
+.product-card {
+    transition: transform 0.3s, box-shadow 0.3s, border 0.3s;
+    border: 1px solid transparent;
+}
+[data-theme='light'] .product-card {
+    background: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    border: 1px solid #2ECC71;
+}
+.product-card-btn {
+    transition: transform 0.2s, background-color 0.2s;
+}
+.product-card-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+.product-card-btn.buy-btn:hover {
+    background: #2E86C1 !important;
+}

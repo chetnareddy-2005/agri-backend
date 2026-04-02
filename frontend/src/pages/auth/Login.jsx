@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import '../../styles/global.css';
 
 const Login = () => {
@@ -10,6 +11,7 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -140,22 +142,45 @@ const Login = () => {
                             transition: 'all 0.3s'
                         }}
                     />
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            padding: '1rem',
-                            borderRadius: '8px',
-                            border: '1px solid #d1d5db',
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            fontSize: '1rem',
-                            outline: 'none'
-                        }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                paddingRight: '2.5rem',
+                                boxSizing: 'border-box',
+                                borderRadius: '8px',
+                                border: '1px solid #d1d5db',
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                fontSize: '1rem',
+                                outline: 'none'
+                            }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: 0
+                            }}
+                        >
+                            {showPassword ? <EyeOff size={20} color="#9ca3af" /> : <Eye size={20} color="#9ca3af" />}
+                        </button>
+                    </div>
 
                     <button
                         type="submit"

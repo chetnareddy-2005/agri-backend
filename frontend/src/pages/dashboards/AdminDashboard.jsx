@@ -5,6 +5,7 @@ import { LayoutDashboard, FileText, Users, MessageSquare, LogOut, Menu, Bell, Ch
 import '../../styles/global.css';
 import LogoutModal from '../../components/LogoutModal';
 import ThemeToggle from '../../components/ThemeToggle';
+import WeatherIntelligence from './WeatherIntelligence';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -497,6 +498,11 @@ const AdminDashboard = () => {
                                     <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Pending Verifications</p>
                                     <p style={{ fontSize: '0.75rem', color: '#db2777', marginTop: '0.25rem' }}>Click to review</p>
                                 </div>
+                            </div>
+
+                            {/* Weather Intelligence Hub */}
+                            <div style={{ marginBottom: '3rem' }}>
+                                <WeatherIntelligence role="ROLE_ADMIN" location="Hyderabad" />
                             </div>
 
                             {/* Charts Row */}
