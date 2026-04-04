@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import '../../styles/global.css';
 import farmerBg from '../../assets/farmer_bg.png';
 import retailerBg from '../../assets/retailer_bg.png';
+import transporterBg from '../../assets/transporter_bg.png';
 
 
 const Register = () => {
@@ -24,6 +25,8 @@ const Register = () => {
         mobileNumber: '',
         businessName: '',
         address: '',
+        city: '',
+        state: '',
         description: '',
     });
 
@@ -67,8 +70,8 @@ const Register = () => {
 
     const handleNext = () => {
         // Basic validation for Step 1
-        if (!formData.fullName || !formData.email || !formData.mobileNumber || !formData.businessName || !formData.address) {
-            setError('Please fill in all required fields.');
+        if (!formData.fullName || !formData.email || !formData.mobileNumber || !formData.businessName || !formData.address || !formData.city || !formData.state) {
+            setError('Please fill in all required fields including City and State.');
             return;
         }
         setError('');
@@ -127,6 +130,7 @@ const Register = () => {
     };
 
     const isFarmer = role === 'ROLE_FARMER';
+    const isRetailer = role === 'ROLE_RETAILER';
     const isTransporter = role === 'ROLE_TRANSPORTER';
 
     return (
@@ -146,10 +150,10 @@ const Register = () => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${isTransporter ? retailerBg : isFarmer ? farmerBg : retailerBg})`,
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${isTransporter ? transporterBg : isFarmer ? farmerBg : retailerBg})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'blur(5px)',
+                filter: 'blur(2px)',
                 zIndex: -1,
                 transition: 'background-image 0.8s ease'
             }} />
@@ -210,119 +214,143 @@ const Register = () => {
 
                 {/* Tabs - Only visible in Step 1 */}
                 {step === 1 && (
-                    <div style={{ display: 'flex', backgroundColor: '#F1F8E9', borderRadius: '8px', padding: '4px', marginBottom: '2rem', gap: '4px' }}>
+                    <div style={{ display: 'flex', backgroundColor: '#F1F8E9', borderRadius: '12px', padding: '6px', marginBottom: '2.5rem', gap: '8px' }}>
                         <button
                             type="button"
                             onClick={() => handleTabChange('ROLE_FARMER')}
                             style={{
-                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
+                                flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
                                 backgroundColor: isFarmer ? '#4CAF50' : 'transparent',
-                                color: isFarmer ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
+                                color: isFarmer ? 'white' : '#718096', fontWeight: '700', cursor: 'pointer', fontSize: '0.95rem',
+                                transition: 'all 0.3s ease',
+                                boxShadow: isFarmer ? '0 4px 12px rgba(76, 175, 80, 0.3)' : 'none'
                             }}
                         >
-                            Farmer
+                            Register as Farmer
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTabChange('ROLE_RETAILER')}
                             style={{
-                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
-                                backgroundColor: role === 'ROLE_RETAILER' ? '#4CAF50' : 'transparent',
-                                color: role === 'ROLE_RETAILER' ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
+                                flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
+                                backgroundColor: isRetailer ? '#4CAF50' : 'transparent',
+                                color: isRetailer ? 'white' : '#718096', fontWeight: '700', cursor: 'pointer', fontSize: '0.95rem',
+                                transition: 'all 0.3s ease',
+                                boxShadow: isRetailer ? '0 4px 12px rgba(76, 175, 80, 0.3)' : 'none'
                             }}
                         >
-                            Retailer
+                            Register as Retailer
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTabChange('ROLE_TRANSPORTER')}
                             style={{
-                                flex: 1, padding: '0.8rem 0.2rem', borderRadius: '6px', border: 'none',
+                                flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
                                 backgroundColor: isTransporter ? '#4CAF50' : 'transparent',
-                                color: isTransporter ? 'white' : '#718096', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem'
+                                color: isTransporter ? 'white' : '#718096', fontWeight: '700', cursor: 'pointer', fontSize: '0.95rem',
+                                transition: 'all 0.3s ease',
+                                boxShadow: isTransporter ? '0 4px 12px rgba(76, 175, 80, 0.3)' : 'none'
                             }}
                         >
-                            Transporter
+                            Register as Transporter
                         </button>
                     </div>
                 )}
 
-                {error && <div style={{ color: '#D32F2F', marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#FFEBEE', borderRadius: '8px', fontSize: '0.9rem' }}>{error}</div>}
-                {success && <div style={{ color: '#2E7D32', marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#E8F5E9', borderRadius: '8px', fontSize: '0.9rem' }}>{success}</div>}
+                {error && <div style={{ color: '#D32F2F', marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#FFEBEE', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
+                {success && <div style={{ color: '#2E7D32', marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#E8F5E9', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center' }}>{success}</div>}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                     {step === 1 && (
                         <>
-                            {/* Row 1 */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {/* Personal Info Row */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
                                         👤 Full Name *
                                     </label>
                                     <input
                                         type="text" name="fullName" placeholder="Enter your full name"
                                         value={formData.fullName} onChange={handleChange} required
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none' }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
                                         ✉️ Email *
                                     </label>
                                     <input
                                         type="email" name="email" placeholder="your.email@example.com"
                                         value={formData.email} onChange={handleChange} required
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none' }}
                                     />
                                 </div>
                             </div>
 
-                            {/* Row 2 */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {/* Contact & Business Info Row */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
                                         📞 Phone Number *
                                     </label>
                                     <input
                                         type="tel" name="mobileNumber" placeholder="+91 98765 43210"
                                         value={formData.mobileNumber} onChange={handleChange} required
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none' }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                        {isFarmer ? '📄 Farm Name' : isTransporter ? '🚚 Vehicle Type (e.g., Truck, Auto)' : '🏪 Business Name'} *
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
+                                        {isFarmer ? '🏢 Farm Name' : isTransporter ? '🚚 Vehicle Type' : '🏪 Business Name'} *
                                     </label>
                                     <input
-                                        type="text" name="businessName" placeholder={isFarmer ? "Your farm name" : isTransporter ? "Enter vehicle type" : "Your store name"}
+                                        type="text" name="businessName" placeholder={isFarmer ? "Your farm name" : isTransporter ? "e.g. Truck, Courier" : "Your store name"}
                                         value={formData.businessName} onChange={handleChange} required
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none' }}
                                     />
                                 </div>
                             </div>
 
-                            {/* Address */}
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                    📍 {isFarmer ? 'Farm Address' : isTransporter ? 'Base Location Address' : 'Business Address'} *
-                                </label>
-                                <input
-                                    type="text" name="address" placeholder="Enter your complete address"
-                                    value={formData.address} onChange={handleChange} required
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
-                                />
+                            {/* Location Section */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem' }}>
+                                <div style={{ gridColumn: 'span 3' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
+                                        📍 {isFarmer ? 'Farm Address' : isTransporter ? 'Base Location Address' : 'Business Address'} *
+                                    </label>
+                                    <input
+                                        type="text" name="address" placeholder="Enter complete address"
+                                        value={formData.address} onChange={handleChange} required
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                    />
+                                </div>
+                                <div style={{ gridColumn: 'span 1' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.85rem' }}>City *</label>
+                                    <input
+                                        type="text" name="city" placeholder="City"
+                                        value={formData.city} onChange={handleChange} required
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                    />
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.85rem' }}>State *</label>
+                                    <input
+                                        type="text" name="state" placeholder="State"
+                                        value={formData.state} onChange={handleChange} required
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+                                    />
+                                </div>
                             </div>
 
                             {/* Description */}
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                                    {isFarmer ? 'Farm Description (Optional)' : isTransporter ? 'Vehicle Capacity & Details' : 'Business Description (Optional)'}
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4A5568', fontWeight: '600', fontSize: '0.9rem' }}>
+                                    📝 {isFarmer ? 'Farm Description' : isTransporter ? 'Vehicle Capacity & Details' : 'Business Description'} (Optional)
                                 </label>
                                 <textarea
-                                    name="description" placeholder={isFarmer ? "Tell us about your farm" : isTransporter ? "e.g. 5 Ton Capacity, License Plate" : "Tell us about your business"}
-                                    value={formData.description} onChange={handleChange} rows="3"
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0', resize: 'vertical' }}
+                                    name="description" placeholder={isFarmer ? "Tell us about your crops" : isTransporter ? "e.g. 5 Ton capacity, Cargo Van" : "Tell us about your business"}
+                                    value={formData.description} onChange={handleChange} rows="2"
+                                    style={{ width: '100%', padding: '0.9rem', borderRadius: '10px', border: '1px solid #E2E8F0', resize: 'none', outline: 'none' }}
                                 />
                             </div>
 
@@ -330,11 +358,12 @@ const Register = () => {
                                 type="button"
                                 onClick={handleNext}
                                 style={{
-                                    backgroundColor: '#4CAF50', color: 'white', padding: '1rem', borderRadius: '8px', border: 'none',
-                                    fontSize: '1rem', fontWeight: '600', cursor: 'pointer', marginTop: '1rem'
+                                    backgroundColor: '#4CAF50', color: 'white', padding: '1.2rem', borderRadius: '12px', border: 'none',
+                                    fontSize: '1.1rem', fontWeight: '700', cursor: 'pointer', marginTop: '0.5rem',
+                                    boxShadow: '0 8px 20px rgba(76, 175, 80, 0.25)', transition: 'all 0.3s'
                                 }}
                             >
-                                Next Step →
+                                Next Step: Document Upload →
                             </button>
                         </>
                     )}

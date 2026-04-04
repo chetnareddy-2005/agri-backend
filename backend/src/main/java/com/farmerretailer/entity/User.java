@@ -34,6 +34,8 @@ public class User {
     // Additional fields for Farmer/Retailer profile
     private String businessName; // Farm Name or Store Name
     private String address;
+    private String city;
+    private String state;
     @Column(columnDefinition = "TEXT")
     private String description;
 

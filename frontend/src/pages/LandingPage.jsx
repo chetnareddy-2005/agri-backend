@@ -256,12 +256,15 @@ const LandingPage = () => {
           </div>
 
           {/* Call to Actions */}
-          <div style={{ marginTop: '4rem', display: 'flex', gap: '1.5rem', animation: 'fadeInUp 1s ease-out' }}>
+          <div style={{ marginTop: '4rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', animation: 'fadeInUp 1s ease-out' }}>
             <button onClick={() => navigate('/register?role=farmer')} style={{ backgroundColor: '#16a34a', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '999px', fontSize: '1.1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(22, 163, 74, 0.4)' }}>
               Start Selling
             </button>
             <button onClick={() => navigate('/register?role=retailer')} style={{ backgroundColor: 'white', color: 'var(--text-secondary)', border: '1px solid #D1D5DB', padding: '1rem 2.5rem', borderRadius: '999px', fontSize: '1.1rem', fontWeight: '600', cursor: 'pointer' }}>
               Start Buying
+            </button>
+            <button onClick={() => navigate('/register?role=transporter')} style={{ backgroundColor: '#2563EB', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '999px', fontSize: '1.1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.4)' }}>
+              Join Logistics
             </button>
           </div>
 

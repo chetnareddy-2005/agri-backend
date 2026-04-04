@@ -6,6 +6,7 @@ import '../../styles/global.css';
 import LogoutModal from '../../components/LogoutModal';
 import ThemeToggle from '../../components/ThemeToggle';
 import WeatherIntelligence from './WeatherIntelligence';
+import AlertBanner from '../../components/AlertBanner';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -46,12 +47,19 @@ const AdminDashboard = () => {
     const [msgSelectedUser, setMsgSelectedUser] = useState('');
     const [msgBody, setMsgBody] = useState('');
 
+    // Crisis Management State
+    const [crisisLocation, setCrisisLocation] = useState('Hyderabad');
+    const [crisisMsg, setCrisisMsg] = useState('Heavy Road Blockage due to construction');
+    const [weatherData, setWeatherData] = useState([]);
+    const [loadingWeather, setLoadingWeather] = useState(false);
+
     useEffect(() => {
         fetchPendingUsers();
         fetchStats();
         fetchTransactions();
         fetchComplaints();
-    }, []);
+        if (activeTab === 'Logistics') fetchAllWeatherData();
+    }, [activeTab]);
 
     const fetchStats = async () => {
         try {
@@ -147,6 +155,30 @@ const AdminDashboard = () => {
         setShowDocModal(false);
         setDocUrl('');
         setDocName('');
+    };
+
+    const fetchAllWeatherData = async () => {
+        setLoadingWeather(true);
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/all-weather`, { credentials: 'include' });
+            if (res.ok) setWeatherData(await res.json());
+        } catch (e) { console.error(e); }
+        finally { setLoadingWeather(false); }
+    };
+
+    const triggerRoadBlock = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/trigger-crisis`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ location: crisisLocation, message: crisisMsg })
+            });
+            if (res.ok) {
+                alert("🚨 Road Blockage Alert Broadcasted Successfully!");
+                setCrisisMsg("");
+            }
+        } catch (e) { console.error(e); }
     };
 
     const handleApprove = async () => {
@@ -475,6 +507,7 @@ const AdminDashboard = () => {
                 </header>
 
                 <main style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
+                    <AlertBanner location="Admin HQ" />
 
                     {/* OVERVIEW TAB */}
                     {activeTab === 'Overview' && (
@@ -592,6 +625,79 @@ const AdminDashboard = () => {
                                     </table>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* APPROVALS TAB */}
+                    {activeTab === 'Logistics' && (
+                        <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                            {/* Weather Management Section */}
+                            <section>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    🌡️ Weather Node Monitor
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                    {loadingWeather ? (
+                                        <p>Polling Weather Nodes...</p>
+                                    ) : weatherData.map(w => (
+                                        <div key={w.id} style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '15px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                                <h4 style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{w.location}</h4>
+                                                <span style={{ fontSize: '0.8rem', color: '#6B7280' }}>Updated: {new Date(w.lastUpdated).toLocaleTimeString()}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+                                                <div style={{ fontSize: '2rem' }}>{w.temperature}°C</div>
+                                                <div style={{ color: '#4B5563' }}>{w.condition}</div>
+                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    const temp = prompt("Enter new temperature:", w.temperature);
+                                                    if (temp) {
+                                                        // Call a hypothetical override API
+                                                        alert("Manual Override Saved (Simulated)");
+                                                    }
+                                                }}
+                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #3B82F6', color: '#3B82F6', background: 'transparent', cursor: 'pointer' }}
+                                            >Manual Override</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* Crisis Response Section */}
+                            <section style={{ backgroundColor: '#FEF2F2', padding: '2.5rem', borderRadius: '20px', border: '2px solid #FCA5A5' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#991B1B', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    🚨 Emergency Crisis Trigger
+                                </h3>
+                                <p style={{ color: '#B91C1C', marginBottom: '2rem' }}>Immediately broadcast alerts to all farmers and retailers in a specific region.</p>
+                                
+                                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: 1, minWidth: '250px' }}>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#991B1B', fontWeight: 'bold' }}>Target Location</label>
+                                        <input 
+                                            value={crisisLocation}
+                                            onChange={(e) => setCrisisLocation(e.target.value)}
+                                            placeholder="e.g. Hyderabad, Warangal..."
+                                            style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid #FCA5A5' }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 2, minWidth: '300px' }}>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#991B1B', fontWeight: 'bold' }}>Alert Message</label>
+                                        <input 
+                                            value={crisisMsg}
+                                            onChange={(e) => setCrisisMsg(e.target.value)}
+                                            placeholder="Describe the disruption..."
+                                            style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid #FCA5A5' }}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={triggerRoadBlock}
+                                        style={{ backgroundColor: '#DC2626', color: 'white', padding: '1rem 2.5rem', borderRadius: '12px', border: 'none', fontWeight: '800', cursor: 'pointer', transition: '0.3s' }}
+                                        onMouseOver={(e) => e.target.style.backgroundColor = '#991B1B'}
+                                        onMouseOut={(e) => e.target.style.backgroundColor = '#DC2626'}
+                                    >Broadcast High Risk Alert</button>
+                                </div>
+                            </section>
                         </div>
                     )}
 

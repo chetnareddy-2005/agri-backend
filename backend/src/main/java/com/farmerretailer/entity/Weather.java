@@ -20,7 +20,8 @@ public class Weather {
     
     private Double temperature;
     private Double rainProbability;
-    private String condition; // e.g., "Sunny", "Rainy", "Cloudy"
+    @Column(name = "weather_condition")
+    private String weatherCondition; // e.g., "Sunny", "Rainy", "Cloudy"
     private Double windSpeed;
     private Double humidity;
     

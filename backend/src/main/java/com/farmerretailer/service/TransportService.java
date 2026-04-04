@@ -76,7 +76,7 @@ public class TransportService {
         StringBuilder reason = new StringBuilder();
 
         // Weather impact on pricing
-        if (w != null && w.getCondition().toLowerCase().contains("rain")) {
+        if (w != null && w.getWeatherCondition().toLowerCase().contains("rain")) {
             weatherMultiplier = 1.25; // 25% Weather Surge
             reason.append("🌦️ Rainy Weather Surcharge (+25%) ");
         }
@@ -100,6 +100,10 @@ public class TransportService {
 
     public List<Driver> getAvailableDrivers() {
         return driverRepository.findByIsAvailableTrue();
+    }
+
+    public List<Driver> getAllTransporters() {
+        return driverRepository.findAll();
     }
 
     public Transport submitRating(Long transportId, Double rating, String fromRole) {

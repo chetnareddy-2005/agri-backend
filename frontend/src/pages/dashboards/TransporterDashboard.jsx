@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Truck, DollarSign, CheckCircle, Navigation, MapPin, Edit3, XCircle, Trophy, BarChart2, Star, ShieldCheck, Camera, PenTool } from 'lucide-react';
 import L from 'leaflet';
 import '../../styles/global.css';
+import AlertBanner from '../../components/AlertBanner';
 
 // Fix for default Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -157,6 +158,8 @@ const TransporterDashboard = () => {
                     <button onClick={handleLogout} style={{ backgroundColor: '#EF4444', color: 'white', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>Logout</button>
                 </div>
             </nav>
+
+            <AlertBanner location={user?.address || user?.businessName || "Hyderabad"} />
 
             <div style={{ padding: '2rem 3rem', maxWidth: '1400px', margin: '0 auto' }}>
                 

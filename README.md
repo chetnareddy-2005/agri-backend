@@ -1,93 +1,69 @@
-# 🌱 Farm2Trade: Agri-Supply Chain Dashboard
+# 🌾 Farm2Trade: Premium Agri-Logistics & Supply Chain Intelligence
 
-**Farm2Trade** is a robust, full-stack web application designed to eliminate middlemen, directly connecting **Farmers** and **Retailers**. The platform features comprehensive role-based dashboards, secure transactions, user identity validation, and an advanced Administrator panel to manage the entire agricultural supply chain.
-
----
-
-## 🚀 Live Deployments
-
-*   **Frontend (UI):** Hosted on [GitHub Pages](https://chetnareddy-2005.github.io/agri-supply-chain-dashboard/)
-*   **Backend (API):** Hosted securely via Docker Containers on [Render](https://agri-backend-xz72.onrender.com)
-*   *Please note: Due to free-tier hosting on Render, the backend may take 30-50 seconds to spin up on your first visit.*
+**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** to optimize agricultural logistics and trading.
 
 ---
 
-## 🛠️ Technology Stack Used
+## 🚀 System Flow & Ecosystem
 
-### **Frontend Architecture**
-*   **React 19.x:** Core component-based UI library.
-*   **Vite:** Ultra-fast modern frontend build tool and development server.
-*   **React Router DOM:** Client-side routing for dynamic, multi-page experiences (Admin, Farmer, Retailer Dashboards).
-*   **Recharts:** Composable charting library used for data-rich Admin visualizations (Pie Charts & Bar Charts).
-*   **Lucide React:** Beautiful, consistent icon toolkit mapped across the application.
-*   **PDF/Canvas Export:** `html2canvas` and `jspdf` for report generation workflows.
-*   **CSS3 & CSS Variables:** Pure CSS styling leveraging root variables for responsive dark/light mode adaptable themes (**No Tailwind required**).
-
-### **Backend Architecture**
-*   **Java 17:** Statically-typed object-oriented language acting as the core processing engine.
-*   **Spring Boot 3.x:** Enterprise Java framework handling core REST APIs.
-*   **Spring Security:** Handles API request protection, cross-site tracking resistance, and CORS configurations.
-*   **Spring Data JPA & Hibernate:** ORM mapping translating Java objects directly into relational database tables.
-*   **MySQL:** Relational database securely holding normalized User, Role, Transaction, and Complaint records.
-
-### **Integrations & Cloud Services**
-*   **Authentication mechanism:** Cross-Origin Cookie-based User Sessions tracked with `JSESSIONID` (`SameSite=None` + `Secure`).
-*   **Cashfree PG (Sandbox):** Payment gateway integration structure for transaction simulation.
-*   **Gmail SMTP Integration:** Programmatic email dispatcher used for notification alerts.
-*   **Docker:** Multistage containerization (Maven build stage -> Eclipse Temurin runtime stage) for foolproof Render deployments.
+The platform operates as a coordinated circular marketplace:
+1. **Farmer**: Lists produce (Vegetables, Grains, Fruits) with either a fixed price or a dynamic bidding period.
+2. **Retailer**: Explores the marketplace, places bids, and procures stock based on regional supply trends.
+3. **Escrow & Validation**: Payments are secured once an order is placed.
+4. **Logistics (Transporter)**: Transporters accept delivery requests, provide live GPS tracking, and submit e-signature proofs for fund release.
+5. **AI Planning**: Every user is guided by the **Weather Intelligence Hub**, which provides "Crop Advisory," "Harvest Windows," and "Risk Assessments" specific to their city.
 
 ---
 
-## ✨ Key Features & Functionality
+## 🎨 Dashboard Breakdown & Components
 
-### 1. Robust Role-Based Access Control (RBAC)
-Dedicated user isolation logic ensuring users only see what their role allows:
-*   **Farmers:** Request onboarding, list produce, track incoming retailer orders.
-*   **Retailers:** Register business, browse open crop inventory, checkout agricultural goods.
-*   **Administrators:** Ultimate oversight and control of the entire ecosystem.
+### 👨‍🌾 1. Farmer Hub (Operational Intelligence)
+*   **Metrics Row**: Quick-view cards for active Listings, Total Sales value, and Pending Orders.
+*   **Weather Intelligence**: Real-time localized climate data + AI advice for crop health and harvest timing.
+*   **Product Manager**: Multi-step auction/listing interface with dynamic bidding timers.
+*   **Supply Analytics**: Recharts-driven "Produce Mix" and "Monthly Sales" visualizations.
+*   **Invoice Engine**: jsPDF-powered automated invoice generation for every sale.
 
-### 2. Admin Verification Workflow
-New Farmers and Retailers must upload supporting identity/business **Documents** upon registration.
-Administrators review these applications from their dashboard and have the sole power to **Approve or Reject** them before users can physically use the platform.
+### 🏪 2. Retailer Hub (Procurement Foresight)
+*   **Smart Marketplace**: Grid-view of products with filtering by category, price, and distance.
+*   **Bidding UI**: Real-time counter-offer system for high-value auctions.
+*   **Procurement Trends**: Area charts showing procurement value fluctuations.
+*   **Regional Weather foresight**: AI advice on demand-driving weather events (e.g., "Heatwave coming: Stock up on moisture-sensitive vegetables").
 
-### 3. Complaint & Messaging System
-An interactive Help Desk. Users can open tickets regarding failed orders. Admins hold individual live-chat workflows mapped to each complaint ID, including features like **Unread Badges** so immediate attention is never missed.
+### 🚛 3. Transporter Hub (Precision Logistics)
+*   **Fleet Map**: Leaflet interactive map showing live GPS coordinates.
+*   **Bidding Hub**: Real-time negotiation for delivery prices between transporters and retailers.
+*   **Gamification**: "Driver Badge" system based on XP points, delivery speed, and rating.
+*   **Proof of Delivery**: Mobile-first camera and e-signature upload for secure order completion.
 
-### 4. Advanced Data Visualization Analytics
-Admins can visualize live supply-chain flow via responsive **Recharts** integrations, tracking User Distributions (Farmers vs Retailers) and Transaction Statuses (Shipped, Pending, Delivered) in dynamic, modern graphical views.
+### 🛡️ 4. Admin Portal (Governance)
+*   **User Verification**: Document vetting for new Farmers and Transporters to ensure safety.
+*   **Crisis Center**: Global AlertBanner system to push "Weather Alerts" or "Road Blockages" to specific cities.
+*   **Aggregated Stats**: Platform-wide total users, revenue, and trade health.
 
-### 5. Automated Build-and-Deploy CI/CD Mentality
-Custom deployment scripts automate the complex replacement of local development variables (`localhost:8080`) directly into heavily cached production environments (Render URLs), guaranteeing accurate and seamless Github Pages deployment pipelines.
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React, Vite, Lucide Icons, CSS Glassmorphism |
+| **Backend**| Spring Boot, Java, JPA/Hibernate, Security (JWT) |
+| **Database** | MySQL (with BLOB support for document verification) |
+| **Charts** | Recharts (Responsive Pie, Bar, and Area Charts) |
+| **Maps** | Leaflet with React-Leaflet (Live GPS Tracking) |
+| **AI Layer** | Custom "AI Planning Engine" (Weather-Condition Map logic) |
+| **Export** | jsPDF & html2canvas for Professional Invoicing |
 
 ---
 
-## 💻 Local Developer Setup
+## ✨ Key Features Stabilized
 
-### Prerequisites
-*   Node.js (v18+)
-*   Java 17 jdk
-*   MySQL Server (port 3306)
-
-### 1. Running the Spring Boot Backend
-```bash
-cd backend
-# Database creation via application.properties is automatic
-./mvnw spring-boot:run
-```
-
-### 2. Running the React Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 3. Deploying the Frontend to Production
-The project uses `gh-pages` branch deployment. You can fully compile and deploy via:
-```bash
-cd frontend
-npm run deploy
-```
+*   **Localized Weather (City-Detector)**: Automatically extracts city names from detailed addresses to ensure weather reports never show blank.
+*   **High-End "AI Deep-Dives"**: Glassmorphism modals providing scientific "Why?" rationale for farming and logistics advice.
+*   **Premium Registration**: Multi-step form with split address components (Address/City/State) for robust data structure.
+*   **Global AlertBanner**: Real-time, color-coded risk alerts (High/Medium) visible globally across all roles.
 
 ---
-*Created dynamically for the Farm2Trade project. Documentation accurately reflects deployment strategies updated March 2026.*
+
+Developed with ❤️ for the future of Indian Agriculture.

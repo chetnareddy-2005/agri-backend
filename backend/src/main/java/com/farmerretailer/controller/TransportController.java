@@ -2,6 +2,8 @@ package com.farmerretailer.controller;
 
 import com.farmerretailer.entity.Transport;
 import com.farmerretailer.service.TransportService;
+import com.farmerretailer.service.CrisisService;
+import com.farmerretailer.service.AllocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +14,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transport")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}, allowCredentials = "true")
 public class TransportController {
 
     @Autowired
     private TransportService transportService;
+
+    @Autowired
+    private CrisisService crisisService;
+    
+    @Autowired
+    private AllocationService allocationService;
 
     @GetMapping("/recommended-drivers")
     public ResponseEntity<List<TransportService.ScoredDriver>> getRecommendedDrivers(@RequestParam(defaultValue = "0") double lat, @RequestParam(defaultValue = "0") double lng) {
@@ -133,5 +141,23 @@ public class TransportController {
     public ResponseEntity<List<Transport>> getMyDeliveries(Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(transportService.getMyDeliveries(principal.getName()));
+    }
+
+    // --- NEW AI MODULE ENDPOINTS ---
+        
+    @GetMapping("/crisis")
+    public ResponseEntity<?> getActiveCrises(@RequestParam String location) {
+        return ResponseEntity.ok(crisisService.getActiveCrisesForLocation(location));
+    }
+
+    @PostMapping("/crisis/road-block")
+    public ResponseEntity<?> triggerRoadBlock(@RequestBody Map<String, String> payload) {
+        crisisService.triggerRoadBlockage(payload.get("location"), payload.get("message"));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/allocation-insights")
+    public ResponseEntity<?> getInsights(@RequestParam String destination) {
+        return ResponseEntity.ok(allocationService.getOptimizedAssignments(destination));
     }
 }
