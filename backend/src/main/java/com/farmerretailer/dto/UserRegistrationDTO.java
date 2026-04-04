@@ -13,6 +13,8 @@ public class UserRegistrationDTO {
     // New fields
     private String businessName;
     private String address;
+    private String city;
+    private String state;
     private String description;
     private String documentName;
 }

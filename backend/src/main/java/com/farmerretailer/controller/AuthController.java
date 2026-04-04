@@ -91,6 +91,8 @@ public class AuthController {
             responseMap.put("mobileNumber", user.getMobileNumber());
             responseMap.put("businessName", user.getBusinessName());
             responseMap.put("address", user.getAddress());
+            responseMap.put("city", user.getCity());
+            responseMap.put("state", user.getState());
             responseMap.put("description", user.getDescription());
             responseMap.put("documentName", user.getDocumentName());
             responseMap.put("verified", user.isVerified());
@@ -134,6 +136,8 @@ public class AuthController {
             user.setMobileNumber(registrationDTO.getMobileNumber());
             user.setBusinessName(registrationDTO.getBusinessName());
             user.setAddress(registrationDTO.getAddress());
+            user.setCity(registrationDTO.getCity());
+            user.setState(registrationDTO.getState());
             user.setDescription(registrationDTO.getDescription());
 
             // Set Document Name logic

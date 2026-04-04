@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -r https://github.com/chetnareddy-2005/agri-supply-chain-dashboard.git"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
