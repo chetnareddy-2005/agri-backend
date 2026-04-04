@@ -12,8 +12,10 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
     const [overrideData, setOverrideData] = useState({});
     const [activeCard, setActiveCard] = useState(null);
 
+    // location prop serves as the initial value only
+    // This allows the local search to persist during parent re-renders
     useEffect(() => {
-        if (location) {
+        if (location && currentLocation === "Hyderabad") { 
             setCurrentLocation(location);
         }
     }, [location]);

@@ -18,7 +18,7 @@ public class WeatherService {
     private final String WEATHER_URL = "http://api.weatherapi.com/v1/current.json?key=" + API_KEY + "&q=";
 
     public Weather getLatestWeather(String location) {
-        Optional<Weather> existing = weatherRepository.findByLocation(location);
+        Optional<Weather> existing = weatherRepository.findFirstByLocation(location);
         
         // Refresh every 1 hour (simulated shorter duration for demo)
         if (existing.isPresent()) {
@@ -48,7 +48,7 @@ public class WeatherService {
             JSONObject json = new JSONObject(response);
             JSONObject current = json.getJSONObject("current");
             
-            Weather weather = weatherRepository.findByLocation(location).orElse(new Weather());
+            Weather weather = weatherRepository.findFirstByLocation(location).orElse(new Weather());
             weather.setLocation(location);
             weather.setTemperature(current.has("temp_c") ? current.getDouble("temp_c") : 25.0);
             weather.setWeatherCondition(current.getJSONObject("condition").getString("text"));
@@ -70,15 +70,13 @@ public class WeatherService {
             return saved;
         } catch (Exception e) {
             System.err.println("Weather API Error for " + location + ": " + e.getMessage());
-            return weatherRepository.findByLocation(location).orElseGet(() -> {
-                // Return a safe fallback object to avoid 500 errors in controller
-                Weather fallback = new Weather();
-                fallback.setLocation(location);
-                fallback.setTemperature(25.0);
-                fallback.setWeatherCondition("Cloudy (Service Offline)");
-                fallback.setLastUpdated(LocalDateTime.now());
-                return fallback;
-            });
+            // Safe fallback to avoid 500 errors in controller
+            Weather fallback = new Weather();
+            fallback.setLocation(location);
+            fallback.setTemperature(25.0);
+            fallback.setWeatherCondition("Data Unavailable (Offline)");
+            fallback.setLastUpdated(LocalDateTime.now());
+            return fallback;
         }
     }
 

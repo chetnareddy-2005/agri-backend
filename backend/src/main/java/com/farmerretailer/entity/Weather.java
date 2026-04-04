@@ -14,6 +14,7 @@ public class Weather {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String location; // City or region
     private Double latitude;
     private Double longitude;
