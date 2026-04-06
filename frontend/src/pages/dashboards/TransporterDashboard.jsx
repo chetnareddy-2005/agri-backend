@@ -241,7 +241,7 @@ const TransporterDashboard = () => {
                                 <MetricCard title="Delivered" value={`${driverInfo.deliveredRequests} pkgs`} icon={<CheckCircle size={20} color="#0EA5E9" />} bgColor="#F0F9FF" />
                             </div>
 
-                            <AlertBanner location={user?.address || "Hyderabad"} />
+                            <AlertBanner location={user?.city || user?.address || "Hyderabad"} />
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem' }}>
                                 <section>

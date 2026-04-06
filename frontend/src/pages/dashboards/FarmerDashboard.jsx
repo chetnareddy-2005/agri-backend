@@ -690,7 +690,7 @@ const FarmerDashboard = () => {
 
                         {/* Weather Intelligence Hub */}
                         <div style={{ marginBottom: '2.5rem' }}>
-                            <WeatherIntelligence role="ROLE_FARMER" location={user?.businessName || "Hyderabad"} />
+                            <WeatherIntelligence role="ROLE_FARMER" location={user?.city || user?.address || "Hyderabad"} />
                         </div>
 
                         {/* Charts Row */}
