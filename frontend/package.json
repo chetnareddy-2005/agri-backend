@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://chetnareddy-2005.github.io/agri-supply-chain-dashboard",
+  "homepage": "https://chetnareddy-2005.github.io/agri-backend",
   "type": "module",
   "scripts": {
     "dev": "vite",
