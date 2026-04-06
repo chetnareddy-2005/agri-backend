@@ -143,6 +143,16 @@ public class TransportController {
         return ResponseEntity.ok(transportService.getMyDeliveries(principal.getName()));
     }
 
+    @GetMapping("/driver-info")
+    public ResponseEntity<com.farmerretailer.entity.Driver> getDriverInfo(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        try {
+            return ResponseEntity.ok(transportService.getDriverInfo(principal.getName()));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // --- NEW AI MODULE ENDPOINTS ---
         
     @GetMapping("/crisis")

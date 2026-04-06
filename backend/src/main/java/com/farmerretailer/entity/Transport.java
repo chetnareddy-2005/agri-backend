@@ -1,5 +1,6 @@
 package com.farmerretailer.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class Transport {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference
     private Order order;
 
     @ManyToOne
@@ -48,6 +50,7 @@ public class Transport {
     // Delivery Proof
     private String deliveryPhotoUrl;
     private String signatureData;
+    private boolean isPaid = false; // LOGISTICS PAYMENT
 
     // Post-delivery Ratings
     private Double retailerToTransporterRating;

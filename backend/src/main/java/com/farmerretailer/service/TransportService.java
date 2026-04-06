@@ -2,6 +2,7 @@ package com.farmerretailer.service;
 
 import com.farmerretailer.entity.Driver;
 import com.farmerretailer.entity.Order;
+import com.farmerretailer.entity.Product;
 import com.farmerretailer.entity.Transport;
 import com.farmerretailer.entity.User;
 import com.farmerretailer.entity.Weather;
@@ -42,6 +43,9 @@ public class TransportService {
 
     @Autowired
     private WeatherService weatherService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public Transport createPlatformTransport(Long orderId, Double distanceKm, Long driverId, String scheduledDate, String timeSlot) {
         Order order = orderRepository.findById(orderId)
@@ -91,6 +95,7 @@ public class TransportService {
         transport.setUpdatedPrice(aiPrice);
         transport.setSuggestedVehicle(driver.getVehicleType());
         transport.setConfirmedByRetailer(true);
+        transport.setPriceAcceptedByRetailer(true); // Retailer accepts their own AI-generated price upon selection
 
         driver.setTotalRequests((driver.getTotalRequests() != null ? driver.getTotalRequests() : 0) + 1);
         driverRepository.save(driver);
@@ -204,9 +209,11 @@ public class TransportService {
     public Transport negotiatePrice(Long transportId, Double newPrice, String changedBy) {
         Transport transport = transportRepository.findById(transportId)
                 .orElseThrow(() -> new RuntimeException("Transport not found"));
+        
         transport.setUpdatedPrice(newPrice);
         transport.setPriceChangedBy(changedBy);
         transport.setStatus("PRICE_UPDATED");
+        
         if ("RETAILER".equals(changedBy)) {
             transport.setPriceAcceptedByRetailer(true);
             transport.setPriceAcceptedByTransporter(false);
@@ -214,22 +221,94 @@ public class TransportService {
             transport.setPriceAcceptedByTransporter(true);
             transport.setPriceAcceptedByRetailer(false);
         }
-        return transportRepository.save(transport);
+        
+        Transport saved = transportRepository.save(transport);
+        
+        // Notify the other party
+        if ("TRANSPORTER".equals(changedBy)) {
+            notificationService.createNotification(
+                transport.getOrder().getRetailer(),
+                "💰 Logistics Price Update",
+                "The transporter has proposed a new price: ₹" + newPrice + " for Order #" + transport.getOrder().getId(),
+                "info",
+                transport.getId()
+            );
+        } else if (transport.getDriver() != null && transport.getDriver().getUser() != null) {
+            notificationService.createNotification(
+                transport.getDriver().getUser(),
+                "💰 Logistics Price Counter",
+                "The retailer has proposed a new price: ₹" + newPrice + " for Order #" + transport.getOrder().getId(),
+                "info",
+                transport.getId()
+            );
+        }
+        
+        return saved;
     }
 
     public Transport acceptNegotiation(Long transportId, String acceptedBy) {
         Transport transport = transportRepository.findById(transportId)
                 .orElseThrow(() -> new RuntimeException("Transport not found"));
+        
         if ("RETAILER".equals(acceptedBy)) transport.setPriceAcceptedByRetailer(true);
         else transport.setPriceAcceptedByTransporter(true);
 
-        if (transport.isPriceAcceptedByRetailer() && transport.isPriceAcceptedByTransporter()) {
+        if ((transport.isPriceAcceptedByRetailer() || transport.isConfirmedByRetailer()) && transport.isPriceAcceptedByTransporter()) {
             transport.setStatus("ACCEPTED");
             if (transport.getDriver() != null) {
                 Driver d = transport.getDriver();
                 d.setAvailable(false);
                 d.setAcceptedRequests((d.getAcceptedRequests() != null ? d.getAcceptedRequests() : 0) + 1);
                 driverRepository.save(d);
+                
+                // NOTIFY RETAILER
+                notificationService.createNotification(
+                    transport.getOrder().getRetailer(),
+                    "✅ Logistics Confirmed",
+                    "The price negotiation for Order #" + transport.getOrder().getId() + " is complete. Delivery is scheduled.",
+                    "success",
+                    transport.getId()
+                );
+                
+                // NOTIFY TRANSPORTER WITH FULL DETAILS
+                User retailer = transport.getOrder().getRetailer();
+                User farmer = transport.getOrder().getProduct().getFarmer();
+                Product product = transport.getOrder().getProduct();
+
+                String transporterMsg = String.format(
+                    "✅ Order #%d Assigned! \n\n" +
+                    "📍 PICKUP (Farmer): %s (%s), %s, %s, %s. [📞 %s]\n\n" +
+                    "🏁 DELIVERY (Retailer): %s (%s), %s, %s, %s. [📞 %s]\n\n" +
+                    "📦 Items: %.1f %s of %s.",
+                    transport.getOrder().getId(),
+                    farmer.getFullName(), farmer.getBusinessName() != null ? farmer.getBusinessName() : "Farm",
+                    product.getLocation() != null ? product.getLocation() : farmer.getAddress(),
+                    farmer.getCity(), farmer.getState(), farmer.getMobileNumber(),
+                    retailer.getFullName(), retailer.getBusinessName() != null ? retailer.getBusinessName() : "Store",
+                    retailer.getAddress(), retailer.getCity(), retailer.getState(), retailer.getMobileNumber(),
+                    transport.getOrder().getQuantity(), product.getUnit(), product.getName()
+                );
+
+                notificationService.createNotification(
+                    d.getUser(),
+                    "📦 Logistics Mission Assigned",
+                    transporterMsg,
+                    "success",
+                    transport.getId()
+                );
+                
+                // NEW: NOTIFY FARMER with Transporter Details
+                if (transport.getOrder().getProduct() != null && farmer != null) {
+                    String driverName = d.getUser() != null ? d.getUser().getFullName() : "Assigned Driver";
+                    String vehicleInfo = d.getVehicleType() != null ? d.getVehicleType() : "Vehicle";
+                    notificationService.createNotification(
+                        farmer,
+                        "🚚 Transporter Assigned",
+                        "A transporter has been assigned to pickup Order #" + transport.getOrder().getId() + ". Driver: " + driverName + " (" + vehicleInfo + ").",
+                        "info",
+                        transport.getId()
+                    );
+                }
             }
         }
         return transportRepository.save(transport);
@@ -287,6 +366,13 @@ public class TransportService {
                 .orElseThrow(() -> new RuntimeException("Driver profile not found"));
         return transportRepository.findByDriverId(driver.getId()).stream()
                 .filter(t -> !"DELIVERED".equals(t.getStatus())).toList();
+    }
+
+    public Driver getDriverInfo(String driverEmail) {
+        User user = userRepository.findByEmail(driverEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return driverRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Driver profile not found"));
     }
 
     public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

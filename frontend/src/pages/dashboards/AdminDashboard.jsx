@@ -12,7 +12,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [pendingUsers, setPendingUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [stats, setStats] = useState({ totalUsers: 0, farmers: 0, retailers: 0 });
+    const [stats, setStats] = useState({ totalUsers: 0, farmers: 0, retailers: 0, transportersCount: 0 });
 
     const [transactions, setTransactions] = useState([]);
     const [complaints, setComplaints] = useState([]);
@@ -116,7 +116,19 @@ const AdminDashboard = () => {
     };
 
     const fetchApprovedUsers = async (role) => {
-        const endpoint = role === 'farmer' ? 'approved-farmers' : 'approved-retailers';
+        let endpoint = '';
+        let title = '';
+        if (role === 'farmer') {
+            endpoint = 'approved-farmers';
+            title = 'Approved Farmers';
+        } else if (role === 'retailer') {
+            endpoint = 'approved-retailers';
+            title = 'Approved Retailers';
+        } else if (role === 'transporter') {
+            endpoint = 'approved-transporters';
+            title = 'Approved Transporters';
+        }
+
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, {
                 credentials: 'include'
@@ -124,7 +136,7 @@ const AdminDashboard = () => {
             if (response.ok) {
                 const data = await response.json();
                 setUserList(data);
-                setListModalTitle(role === 'farmer' ? 'Approved Farmers' : 'Approved Retailers');
+                setListModalTitle(title);
                 setShowListModal(true);
             }
         } catch (error) {
@@ -241,6 +253,8 @@ const AdminDashboard = () => {
                     fetchApprovedUsers('farmer');
                 } else if (user.role === 'ROLE_RETAILER') {
                     fetchApprovedUsers('retailer');
+                } else if (user.role === 'ROLE_TRANSPORTER') {
+                    fetchApprovedUsers('transporter');
                 }
                 fetchStats();
             } else {
@@ -363,9 +377,10 @@ const AdminDashboard = () => {
     // Data for Pie Chart
     const pieData = [
         { name: 'Farmers', value: stats.farmers },
-        { name: 'Retailers', value: stats.retailers }
+        { name: 'Retailers', value: stats.retailers },
+        { name: 'Transporters', value: stats.transportersCount || 0 }
     ];
-    const COLORS = ['#16a34a', '#2563eb']; // Vibrant Green, Vibrant Blue
+    const COLORS = ['#16a34a', '#2563eb', '#f59e0b']; // Vibrant Green, Vibrant Blue, Vibrant Amber
 
     const NavItem = ({ icon, label, active, onClick }) => (
         <div
@@ -513,7 +528,7 @@ const AdminDashboard = () => {
                     {activeTab === 'Overview' && (
                         <>
                             {/* Stats Section with Chart */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                                 <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                                     <h3 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #16a34a, #2563eb)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{stats.totalUsers}</h3>
                                     <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Total Users</p>
@@ -525,6 +540,10 @@ const AdminDashboard = () => {
                                 <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer', borderLeft: '5px solid #2563eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} onClick={() => fetchApprovedUsers('retailer')}>
                                     <h3 style={{ color: '#2563eb', fontSize: '2rem', fontWeight: 'bold' }}>{stats.retailers}</h3>
                                     <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Retailers</p>
+                                </div>
+                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer', borderLeft: '5px solid #f59e0b', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} onClick={() => fetchApprovedUsers('transporter')}>
+                                    <h3 style={{ color: '#f59e0b', fontSize: '2rem', fontWeight: 'bold' }}>{stats.transportersCount || 0}</h3>
+                                    <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Transporters</p>
                                 </div>
                                 <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', borderLeft: '5px solid #db2777', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }} onClick={() => setActiveTab('Approvals')}>
                                     <h3 style={{ color: '#db2777', fontSize: '2rem', fontWeight: 'bold' }}>{pendingUsers.length}</h3>
@@ -730,7 +749,7 @@ const AdminDashboard = () => {
                                                         color: user.role === 'ROLE_FARMER' ? '#166534' : '#9A3412',
                                                         padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600'
                                                     }}>
-                                                        {user.role === 'ROLE_FARMER' ? 'Farmer' : 'Retailer'}
+                                                        {user.role === 'ROLE_FARMER' ? 'Farmer' : user.role === 'ROLE_RETAILER' ? 'Retailer' : 'Transporter'}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '1rem' }}>
@@ -758,7 +777,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div>
                                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>Send New Message</h3>
-                                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Start a conversation with a specific Farmer or Retailer</p>
+                                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Start a conversation with a specific Farmer, Retailer or Transporter</p>
                                 </div>
                             </div>
 
@@ -782,12 +801,12 @@ const AdminDashboard = () => {
                                                 <tr key={complaint.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                                     <td style={{ padding: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>{complaint.user?.fullName} ({complaint.user?.email})</td>
                                                     <td style={{ padding: '1rem' }}>
-                                                        <span style={{
-                                                            backgroundColor: complaint.user?.role === 'ROLE_FARMER' ? '#DCFCE7' : '#FFEDD5',
-                                                            color: complaint.user?.role === 'ROLE_FARMER' ? '#166534' : '#9A3412',
+                                                         <span style={{
+                                                            backgroundColor: complaint.user?.role === 'ROLE_FARMER' ? '#DCFCE7' : complaint.user?.role === 'ROLE_RETAILER' ? '#DBEAFE' : '#FEF3C7',
+                                                            color: complaint.user?.role === 'ROLE_FARMER' ? '#166534' : complaint.user?.role === 'ROLE_RETAILER' ? '#1E40AF' : '#D97706',
                                                             padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold'
                                                         }}>
-                                                            {complaint.user?.role === 'ROLE_FARMER' ? 'Farmer' : 'Retailer'}
+                                                            {complaint.user?.role === 'ROLE_FARMER' ? 'Farmer' : complaint.user?.role === 'ROLE_RETAILER' ? 'Retailer' : 'Transporter'}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{new Date(complaint.timestamp).toLocaleString()}</td>

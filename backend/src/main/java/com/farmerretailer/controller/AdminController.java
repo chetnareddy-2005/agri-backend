@@ -59,6 +59,11 @@ public class AdminController {
         return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.ROLE_RETAILER));
     }
 
+    @GetMapping("/approved-transporters")
+    public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getApprovedTransporters() {
+        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.ROLE_TRANSPORTER));
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<java.util.Map<String, Object>> getDashboardStats() {
         System.out.println("Fetching dashboard stats...");
@@ -66,13 +71,16 @@ public class AdminController {
         long total = userService.countTotalUsers(); // Keeps total registered
         long farmers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_FARMER);
         long retailers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_RETAILER);
+        long transporters = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_TRANSPORTER);
 
         System.out.println(
-                "Stats: Total=" + total + ", Approved Farmers=" + farmers + ", Approved Retailers=" + retailers);
+                "Stats: Total=" + total + ", Approved Farmers=" + farmers + ", Approved Retailers=" + retailers + ", Approved Transporters=" + transporters);
 
         stats.put("totalUsers", total);
         stats.put("farmers", farmers);
         stats.put("retailers", retailers);
+        stats.put("transportersCount", transporters);
+        System.out.println("DEBUG: Final stats map: " + stats);
         return ResponseEntity.ok(stats);
 
     }

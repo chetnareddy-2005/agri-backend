@@ -33,6 +33,9 @@ public class PaymentService {
     private NotificationService notificationService;
 
     @org.springframework.beans.factory.annotation.Autowired
+    private com.farmerretailer.repository.TransportRepository transportRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
     private EmailService emailService;
 
     public java.util.Map<String, String> createOrder(Double amount, String customerId, String customerPhone,
@@ -131,47 +134,55 @@ public class PaymentService {
             if (isSuccess) {
                 // Update DB Order Status
                 try {
-                    // Try to find order by ID (assuming ID string matches DB)
-                    // If ID format implies Long, parse it. But our ID is String in Entity?
-                    // Let's assume orderId is String or we parse it.
-                    // Actually, Order ID is Long in Entity typically.
-                    // But we used "ORD_..." previously.
-                    // If we pass DB ID (e.g. "101"), cashfree allows alphanum.
-                    // So we should just use the ID as string.
-                    Long dbId = Long.parseLong(orderId);
-                    java.util.Optional<com.farmerretailer.entity.Order> orderOpt = orderRepository.findById(dbId);
-                    if (orderOpt.isPresent()) {
-                        com.farmerretailer.entity.Order order = orderOpt.get();
-                        // Only update if not already CONFIRMED/DELIVERED/PAID
-                        // Let's set to "CONFIRMED" or "PAID"
-                        if (!"CONFIRMED".equals(order.getStatus()) && !"DELIVERED".equals(order.getStatus())) {
-                            order.setStatus("CONFIRMED"); // Or PAID
+                    String[] parts = orderId.split("_");
+                    Long dbId = Long.parseLong(parts[0]);
+                    String paymentType = parts.length > 1 ? parts[1] : "PRODUCT";
+
+                    if ("PRODUCT".equalsIgnoreCase(paymentType)) {
+                        java.util.Optional<com.farmerretailer.entity.Order> orderOpt = orderRepository.findById(dbId);
+                        if (orderOpt.isPresent()) {
+                            com.farmerretailer.entity.Order order = orderOpt.get();
+                            order.setPaid(true);
+                            if (!"CONFIRMED".equals(order.getStatus()) && !"DELIVERED".equals(order.getStatus())) {
+                                order.setStatus("CONFIRMED");
+                            }
                             orderRepository.save(order);
 
                             notificationService.createNotification(
                                     order.getRetailer(),
-                                    "Payment Successful",
-                                    "Payment for order #" + order.getId() + " received. Status updated to CONFIRMED.",
+                                    "Product Payment Successful",
+                                    "Payment for order #" + order.getId() + " products received.",
                                     "success");
 
-                            // 1) Farmer should get email notification
                             if (order.getProduct().getFarmer() != null) {
                                 emailService.sendPaymentSuccessFarmer(order.getProduct().getFarmer().getEmail(), order);
                             }
+                        }
+                    } else if ("LOGISTICS".equalsIgnoreCase(paymentType)) {
+                        java.util.Optional<com.farmerretailer.entity.Transport> transportOpt = transportRepository.findByOrderId(dbId);
+                        if (transportOpt.isPresent()) {
+                            com.farmerretailer.entity.Transport transport = transportOpt.get();
+                            transport.setPaid(true);
+                            transportRepository.save(transport);
 
-                            // 2) Both farmer and retailer should get invoice mail
-                            if (order.getRetailer() != null) {
-                                emailService.sendInvoiceNotification(order.getRetailer().getEmail(), order, false);
-                            }
-                            if (order.getProduct().getFarmer() != null) {
-                                emailService.sendInvoiceNotification(order.getProduct().getFarmer().getEmail(), order,
-                                        true);
+                            notificationService.createNotification(
+                                    transport.getOrder().getRetailer(),
+                                    "Logistics Payment Successful",
+                                    "Transport charges for order #" + dbId + " received.",
+                                    "success");
+                           
+                            if (transport.getDriver() != null && transport.getDriver().getUser() != null) {
+                                notificationService.createNotification(
+                                    transport.getDriver().getUser(),
+                                    "Payment Received",
+                                    "Retailer has paid for delivery of Order #" + dbId + ".",
+                                    "info"
+                                );
                             }
                         }
                     }
-                } catch (NumberFormatException e) {
-                    // ID wasn't a number, maybe it was a test ID... ignore
-                    System.out.println("Order ID not numeric, skipping DB update: " + orderId);
+                } catch (Exception e) {
+                    System.out.println("Error updating DB after payment: " + e.getMessage());
                 }
             }
 

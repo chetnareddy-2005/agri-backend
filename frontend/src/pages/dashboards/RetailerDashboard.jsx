@@ -208,7 +208,7 @@ const RetailerDashboard = () => {
         }
     };
 
-    const handlePayment = async (order) => {
+    const handlePayment = async (order, type = 'PRODUCT') => {
         if (!window.Cashfree) {
             alert("Payment SDK not loaded yet. Please refresh.");
             return;
@@ -219,15 +219,21 @@ const RetailerDashboard = () => {
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : {};
 
+            const amount = type === 'PRODUCT' ? (order.totalPrice || 0) : (order.transport?.updatedPrice || 0);
+            if (amount <= 0) {
+                alert("Amount must be greater than zero.");
+                return;
+            }
+
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    amount: order.totalPrice,
+                    amount: amount,
                     customerId: String(user.id || 'guest'),
                     customerPhone: user.mobileNumber || "9999999999",
                     customerName: user.fullName || "Guest",
-                    orderId: String(order.id) // PASS THE DB ORDER ID
+                    orderId: `${order.id}_${type}` // e.g. 19_PRODUCT or 19_LOGISTICS
                 }),
                 credentials: 'include'
             });
@@ -784,7 +790,7 @@ const RetailerDashboard = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '2.5rem' }}>
-                                    <WeatherIntelligence role="ROLE_RETAILER" location={user?.businessName || "Hyderabad"} />
+                                    <WeatherIntelligence role="ROLE_RETAILER" location={user?.city || user?.address || "Hyderabad"} />
                                 </div>
 
                                 {/* Charts Row */}
@@ -1102,7 +1108,7 @@ const RetailerDashboard = () => {
                                                         <td style={{ padding: '1rem 0', fontWeight: '500', color: '#166534' }}>{order.product?.farmer?.fullName || 'N/A'}</td>
                                                         <td style={{ padding: '1rem 0' }}>{order.product?.name}</td>
                                                         <td style={{ padding: '1rem 0' }}>{order.quantity}</td>
-                                                        <td style={{ padding: '1rem 0' }}>₹{order.totalPrice}</td>
+                                                        <td style={{ padding: '1rem 0' }}>₹{(order.totalPrice || 0) + (order.transport?.updatedPrice || 0)}</td>
                                                         <td style={{ padding: '1rem 0' }}>{order.status === 'CONFIRMED' ? 'PENDING' : order.status}</td>
                                                         <td style={{ padding: '1rem 0' }}>
                                                             <button
@@ -1117,17 +1123,31 @@ const RetailerDashboard = () => {
                                                             </button>
                                                         </td>
                                                         <td style={{ padding: '1rem 0' }}>
-                                                            {order.status !== 'CONFIRMED' && order.status !== 'DELIVERED' && order.status !== 'SHIPPED' && order.status !== 'CANCELLED' ? (
-                                                                <button
-                                                                    onClick={() => handlePayment(order)}
-                                                                    style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: '500' }}>
-                                                                    Pay Now
-                                                                </button>
-                                                            ) : (
-                                                                <span style={{ backgroundColor: '#ECFDF5', color: '#047857', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', display: 'inline-block' }}>
-                                                                    Payment Done
-                                                                </span>
-                                                            )}
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                                {/* PRODUCT PAYMENT SECTION */}
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
+                                                                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>📦 Product</span>
+                                                                    {order.isPaid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' ? (
+                                                                        <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
+                                                                    ) : (
+                                                                        <button onClick={() => handlePayment(order, 'PRODUCT')} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* LOGISTICS PAYMENT SECTION */}
+                                                                {order.transport ? (
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
+                                                                        <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>🚚 Logistics</span>
+                                                                        {order.transport.isPaid ? (
+                                                                            <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
+                                                                        ) : (
+                                                                             <button onClick={() => handlePayment(order, 'LOGISTICS')} style={{ backgroundColor: '#1D4ED8', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontStyle: 'italic', padding: '0 10px' }}>Waiting for Logistics...</div>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))

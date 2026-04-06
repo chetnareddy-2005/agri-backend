@@ -128,6 +128,20 @@ const InvoiceTemplate = ({ order, id }) => {
                             <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.9rem' }}>{order?.quantity || 1} {order?.product?.unit || 'Units'}</td>
                             <td style={{ padding: '1rem 0.75rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold' }}>{formatCurrency(order?.totalPrice || 0)}</td>
                         </tr>
+                        {order?.transport && (
+                            <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                                <td style={{ padding: '1rem 0.75rem', fontSize: '0.9rem' }}>02</td>
+                                <td style={{ padding: '1rem 0.75rem', fontSize: '0.9rem', fontWeight: '500' }}>
+                                    Logistics & Transport
+                                    <div style={{ fontSize: '0.75rem', color: 'black', marginTop: '4px' }}>
+                                        Driver: {order.transport.driver?.user?.fullName || 'Assigned Driver'} ({order.transport.driver?.vehicleType || 'Vehicle'})
+                                    </div>
+                                </td>
+                                <td style={{ padding: '1rem 0.75rem', textAlign: 'right', fontSize: '0.9rem' }}>-</td>
+                                <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.9rem' }}>1 Trip</td>
+                                <td style={{ padding: '1rem 0.75rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold' }}>{formatCurrency(order.transport.updatedPrice || 0)}</td>
+                            </tr>
+                        )}
                         {/* Empty rows to fill space if needed, or just let it adjust */}
                     </tbody>
                 </table>
@@ -137,13 +151,20 @@ const InvoiceTemplate = ({ order, id }) => {
             <div style={{ padding: '0 3rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ width: '250px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.9rem', color: '#4B5563' }}>
-                        <span>SUB TOTAL</span>
+                        <span>PRODUCT SUBTOTAL</span>
                         <span>{formatCurrency(order?.totalPrice || 0)}</span>
                     </div>
 
+                    {order?.transport && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.9rem', color: '#4B5563' }}>
+                            <span>LOGISTICS CHARGE</span>
+                            <span>{formatCurrency(order.transport.updatedPrice || 0)}</span>
+                        </div>
+                    )}
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderTop: '2px solid #2DD4BF', marginTop: '0.5rem', fontWeight: 'bold', color: '#0F766E', fontSize: '1.1rem' }}>
                         <span>Grand Total</span>
-                        <span>{formatCurrency(order?.totalPrice || 0)}</span>
+                        <span>{formatCurrency((order?.totalPrice || 0) + (order?.transport?.updatedPrice || 0))}</span>
                     </div>
                 </div>
             </div>

@@ -28,7 +28,11 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 .cors(cors -> cors.configurationSource(request -> {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(java.util.Arrays.asList("http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "https://chetnareddy-2005.github.io")); // Frontend URLs
+                    config.setAllowedOrigins(java.util.Arrays.asList(
+                            "http://localhost:5173", 
+                            "http://localhost:5174", 
+                            "https://chetnareddy-2005.github.io"
+                    )); // Frontend URLs
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(java.util.Collections.singletonList("*"));
                     config.setAllowCredentials(true);

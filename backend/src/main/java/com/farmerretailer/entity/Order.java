@@ -1,5 +1,6 @@
 package com.farmerretailer.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -29,8 +30,13 @@ public class Order {
     private LocalDateTime orderDate;
 
     private LocalDateTime deliveredAt;
+    
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Transport transport;
 
     private boolean paymentNotificationSent = false;
+    private boolean isPaid = false;
 
     public boolean isPaymentNotificationSent() {
         return paymentNotificationSent;
@@ -38,6 +44,14 @@ public class Order {
 
     public void setPaymentNotificationSent(boolean paymentNotificationSent) {
         this.paymentNotificationSent = paymentNotificationSent;
+    }
+
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean paid) {
+        isPaid = paid;
     }
 
     @PrePersist
@@ -122,5 +136,13 @@ public class Order {
 
     public void setDeliveredAt(LocalDateTime deliveredAt) {
         this.deliveredAt = deliveredAt;
+    }
+
+    public Transport getTransport() {
+        return transport;
+    }
+
+    public void setTransport(Transport transport) {
+        this.transport = transport;
     }
 }
