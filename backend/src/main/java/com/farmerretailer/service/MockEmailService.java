@@ -104,4 +104,13 @@ public class MockEmailService implements EmailService {
                 .println("Click here to view/download: http://localhost:8080/api/orders/" + order.getId() + "/invoice");
         System.out.println("==================================================");
     }
+
+    @Override
+    public void sendOtpEmail(String toEmail, String otp) {
+        System.out.println("==================================================");
+        System.out.println("MOCK EMAIL SERVICE - OTP VERIFICATION TO: " + toEmail);
+        System.out.println("Subject: Farm2Trade Security OTP");
+        System.out.println("Body: Your continuous authentication OTP is: " + otp);
+        System.out.println("==================================================");
+    }
 }

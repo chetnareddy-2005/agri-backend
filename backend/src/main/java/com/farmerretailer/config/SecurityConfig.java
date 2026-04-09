@@ -40,6 +40,8 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/v1/telemetry/**").permitAll()
+                        .requestMatchers("/api/v1/gemini/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(

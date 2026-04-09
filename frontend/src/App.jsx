@@ -15,26 +15,29 @@ import OrderTracking from './pages/dashboards/OrderTracking'
 import './styles/global.css'
 
 import Chatbot from './components/Chatbot'
+import ContinuousAuthWrapper from './components/ContinuousAuthWrapper'
 
 function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/set-password" element={<SetPassword />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-        <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
-        <Route path="/transporter/dashboard" element={<TransporterDashboard />} />
-        <Route path="/select-transport" element={<TransportSelection />} />
-        <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-      </Routes>
-      <Chatbot />
-    </HashRouter>
+    <ContinuousAuthWrapper>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+          <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
+          <Route path="/transporter/dashboard" element={<TransporterDashboard />} />
+          <Route path="/select-transport" element={<TransportSelection />} />
+          <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Routes>
+        <Chatbot />
+      </HashRouter>
+    </ContinuousAuthWrapper>
   )
 }
 

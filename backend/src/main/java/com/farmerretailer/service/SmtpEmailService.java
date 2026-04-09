@@ -294,4 +294,26 @@ public class SmtpEmailService implements EmailService {
             System.err.println("Failed to send HTML invoice notification to " + to + ": " + e.getMessage());
         }
     }
+
+    @Async
+    @Override
+    public void sendOtpEmail(String toEmail, String otp) {
+        if (emailSender == null) {
+            System.err.println("JavaMailSender not configured. Skipping OTP to " + toEmail);
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("noreply@farm2trade.com");
+            message.setTo(toEmail);
+            message.setSubject("Farm2Trade Security: Your OTP");
+            message.setText("Hello,\n\n" +
+                    "We detected some unusual activity on your account.\n" +
+                    "Please use the following OTP to verify your identity: " + otp + "\n\n" +
+                    "Best regards,\nFarmTrade Security Team");
+            emailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP to " + toEmail + ": " + e.getMessage());
+        }
+    }
 }

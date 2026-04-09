@@ -4,6 +4,16 @@
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **Frontend:** [https://chetnareddy-2005.github.io/agri-backend/](https://chetnareddy-2005.github.io/agri-backend/)
+
+🔗 **Backend API:** [https://agri-backend-xz72.onrender.com](https://agri-backend-xz72.onrender.com)
+
+⚠️ *Note: Backend is hosted on free tier (Render), first load may take ~30-50 seconds.*
+
+---
+
 ## 🚀 System Flow & Ecosystem
 
 The platform operates as a coordinated circular marketplace:
@@ -43,12 +53,22 @@ The platform operates as a coordinated circular marketplace:
 
 ---
 
+## 🔐 Continuous Authentication (Zero-Trust Security)
+
+To ensure high-fidelity anti-fraud protection for Farmer payouts and Retailer transactions, Farm2Trade integrates an autonomous machine-learning security layer:
+*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence, scroll frequency, and mouse speed. 
+*   **Anomaly Detection**: A standalone Flask/Python microservice running an **IsolationForest** model builds a unique profile for every user.
+*   **Dynamic Risk Engine**: Evaluates session risk in real-time. Automatically prompts for OTP on medium friction and instantly drops high-risk/hijacked sessions.
+
+---
+
 ## 🛠️ Technology Stack
 
 | Layer | Technologies |
 | :--- | :--- |
 | **Frontend** | React, Vite, Lucide Icons, CSS Glassmorphism |
-| **Backend**| Spring Boot, Java, JPA/Hibernate, Security (JWT) |
+| **Main Backend**| Spring Boot, Java, JPA/Hibernate, Security (JWT) |
+| **ML/Auth Service** | Python, Flask, Scikit-Learn (Isolation Forest) |
 | **Database** | MySQL (with BLOB support for document verification) |
 | **Charts** | Recharts (Responsive Pie, Bar, and Area Charts) |
 | **Maps** | Leaflet with React-Leaflet (Live GPS Tracking) |
@@ -59,6 +79,7 @@ The platform operates as a coordinated circular marketplace:
 
 ## ✨ Key Features Stabilized
 
+*   **Continuous Authentication System**: ML-powered anomaly detection protecting against account hijackings using biometric telemetry (typing cadence, mouse velocity).
 *   **Localized Weather (City-Detector)**: Automatically extracts city names from detailed addresses to ensure weather reports never show blank.
 *   **High-End "AI Deep-Dives"**: Glassmorphism modals providing scientific "Why?" rationale for farming and logistics advice.
 *   **Premium Registration**: Multi-step form with split address components (Address/City/State) for robust data structure.

@@ -21,4 +21,6 @@ public interface EmailService {
     void sendPaymentSuccessFarmer(String to, com.farmerretailer.entity.Order order);
 
     void sendInvoiceNotification(String to, com.farmerretailer.entity.Order order, boolean isFarmer);
+
+    void sendOtpEmail(String toEmail, String otp);
 }
