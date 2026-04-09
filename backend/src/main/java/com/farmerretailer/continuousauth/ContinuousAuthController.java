@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.farmerretailer.service.EmailService;
 import com.farmerretailer.gemini.GeminiAIService;
 import com.farmerretailer.gemini.dto.SecurityAnalysisRequest;
+import com.farmerretailer.repository.AuditLogRepository;
+import com.farmerretailer.entity.AuditLog;
 
 @RestController
 @RequestMapping("/api/v1/telemetry")
@@ -27,8 +29,31 @@ public class ContinuousAuthController {
     @Autowired
     private GeminiAIService geminiAIService;
 
-    // Temporary storage for OTPs (In prod use Redis/DB)
-    private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+
+    public static class OtpData {
+        private String otp;
+        private long expiryTime;
+        private int attempts;
+
+        public OtpData(String otp, long expiryTime) {
+            this.otp = otp;
+            this.expiryTime = expiryTime;
+            this.attempts = 0;
+        }
+
+        public String getOtp() { return otp; }
+        public long getExpiryTime() { return expiryTime; }
+        public int getAttempts() { return attempts; }
+
+        public void incrementAttempts() {
+            this.attempts++;
+        }
+    }
+
+    // Temporary storage for OTPs now using OtpData structure
+    private final ConcurrentHashMap<String, OtpData> otpStorage = new ConcurrentHashMap<>();
     
     // Quick cache for user's last telemetry so Gemini has context
     private final Map<String, ContinuousAuthRequestDTO> lastTelemetryCache = new ConcurrentHashMap<>();
@@ -40,24 +65,24 @@ public class ContinuousAuthController {
     @PostMapping("/evaluate")
     public ResponseEntity<?> evaluateTelemetry(@RequestBody ContinuousAuthRequestDTO requestDTO) {
         ContinuousAuthResponseDTO response = anomalyDetectionService.evaluateRisk(requestDTO);
+        String userId = requestDTO.getUserId();
         
         switch(response.getRiskLevel()) {
             case "HIGH":
-                // Real scenario: trigger JWT invalidation and logout
+                auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED"));
                 Map<String, String> highRiskBody = new HashMap<>();
                 highRiskBody.put("error", "Session terminated due to high risk behavior.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(highRiskBody);
                 
             case "MEDIUM":
-                // Trigger Step-up Authentication via OTP
+                auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_REQUIRED"));
                 String otp = generateOtp();
-                String userId = requestDTO.getUserId();
+                long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins
                 
-                otpStorage.put(userId, otp);
+                otpStorage.put(userId, new OtpData(otp, expiryTime));
                 lastTelemetryCache.put(userId, requestDTO);
                 
-                // Fallback email routing if ID is anonymous
-                String targetEmail = userId.contains("@") ? userId : "farmer_bob@farm2trade.com";
+                String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
                 emailService.sendOtpEmail(targetEmail, otp);
                 
                 Map<String, String> mediumRiskBody = new HashMap<>();
@@ -67,6 +92,9 @@ public class ContinuousAuthController {
                 
             case "LOW":
             default:
+                if (Math.random() < 0.1) { // Sparsely log LOW to avoid huge DB size during tracking
+                    auditLogRepository.save(new AuditLog(userId, "LOW", "ALLOWED"));
+                }
                 return ResponseEntity.ok(response);
         }
     }
@@ -76,31 +104,52 @@ public class ContinuousAuthController {
         String userId = req.get("userId");
         String enteredOtp = req.get("otp");
 
-        if (userId != null && otpStorage.containsKey(userId) && otpStorage.get(userId).equals(enteredOtp)) {
-            // Successfully verified step-up! Now use Gemini AI to explain the anomaly!
-            ContinuousAuthRequestDTO lastReq = lastTelemetryCache.get(userId);
-            
-            String explanation = "Verified successfully.";
-            if (lastReq != null) {
-                SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
-                sr.setTypingSpeedWpm(lastReq.getTelemetry().getTypingSpeedWpm());
-                sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
-                sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
-                sr.setIpAddress("127.0.0.1 (Frontend)");
-                sr.setRiskScore("-0.05"); // It triggered MEDIUM
-                
-                explanation = geminiAIService.analyzeSecurity(sr);
-            }
-            
-            otpStorage.remove(userId);
-            lastTelemetryCache.remove(userId);
+        OtpData data = otpStorage.get(userId);
 
-            Map<String, String> successResponse = new HashMap<>();
-            successResponse.put("status", "VERIFIED");
-            successResponse.put("geminiExplanation", explanation);
-            return ResponseEntity.ok(successResponse);
+        if (data == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No OTP found"));
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("INVALID OTP");
+        // Expiry check
+        if (System.currentTimeMillis() > data.getExpiryTime()) {
+            otpStorage.remove(userId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "OTP expired"));
+        }
+
+        // Retry limit (max 3)
+        if (data.getAttempts() >= 3) {
+            otpStorage.remove(userId);
+            auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED_MAX_RETRIES"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Too many attempts"));
+        }
+
+        // Validate OTP
+        if (!data.getOtp().equals(enteredOtp)) {
+            data.incrementAttempts();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid OTP"));
+        }
+
+        // Success
+        auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_VERIFIED"));
+        otpStorage.remove(userId);
+        
+        ContinuousAuthRequestDTO lastReq = lastTelemetryCache.remove(userId);
+        
+        String explanation = "Verified successfully.";
+        if (lastReq != null) {
+            SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
+            sr.setTypingSpeedWpm(lastReq.getTelemetry().getTypingSpeedWpm());
+            sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
+            sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
+            sr.setIpAddress("127.0.0.1 (Frontend)");
+            sr.setRiskScore("-0.05"); // It triggered MEDIUM
+            
+            explanation = geminiAIService.analyzeSecurity(sr);
+        }
+        
+        Map<String, String> successResponse = new HashMap<>();
+        successResponse.put("status", "VERIFIED");
+        successResponse.put("geminiExplanation", explanation);
+        return ResponseEntity.ok(successResponse);
     }
 }
