@@ -1,6 +1,6 @@
 # 🌾 Farm2Trade: Premium Agri-Logistics & Supply Chain Intelligence
 
-**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** to optimize agricultural logistics and trading.
+**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** and a **Zero-Trust Security Infrastructure** to optimize agricultural logistics and trading.
 
 ---
 
@@ -14,6 +14,21 @@
 
 ---
 
+## 🛡️ Zero-Trust Security Infrastructure (Continuous Authentication)
+
+To ensure high-fidelity anti-fraud protection for Farmer payouts and Retailer transactions, Farm2Trade integrates an autonomous machine-learning security layer:
+
+*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence, scroll frequency, and mouse speed in real-time. 
+*   **Anomaly Detection**: A standalone Flask/Python microservice running an **IsolationForest** model builds a unique profile for every user, detecting hijacking attempts instantly.
+*   **Premium Risk Observability**: Integrated **SmallRiskGauge (Gauge Charts)** on all dashboards provide real-time visual feedback of the session's security state.
+*   **Step-Up Authentication**:
+    *   **Medium Risk**: Automatically triggers an email-based OTP challenge.
+    *   **High Risk**: Triggers immediate session termination and account lockout.
+    *   **Hardening**: Implemented 5-minute OTP expiry and strict 3-attempt retry limits.
+*   **Infinite Audit Logs**: A dedicated Admin interface to monitor every security event, risk evaluation, and step-up challenge across the entire platform.
+
+---
+
 ## 🚀 System Flow & Ecosystem
 
 The platform operates as a coordinated circular marketplace:
@@ -21,16 +36,16 @@ The platform operates as a coordinated circular marketplace:
 2. **Retailer**: Explores the marketplace, places bids, and procures stock based on regional supply trends.
 3. **Escrow & Validation**: Payments are secured once an order is placed.
 4. **Logistics (Transporter)**: Transporters accept delivery requests, provide live GPS tracking, and submit e-signature proofs for fund release.
-5. **AI Planning**: Every user is guided by the **Weather Intelligence Hub**, which provides "Crop Advisory," "Harvest Windows," and "Risk Assessments" specific to their city.
+5. **AI Planning**: Every user is guided by the **Weather Intelligence Hub**, providing "Crop Advisory" and "Risk Assessments" specific to their city.
 
 ---
 
 ## 🎨 Dashboard Breakdown & Components
 
 ### 👨‍🌾 1. Farmer Hub (Operational Intelligence)
-*   **Metrics Row**: Quick-view cards for active Listings, Total Sales value, and Pending Orders.
-*   **Weather Intelligence**: Real-time localized climate data + AI advice for crop health and harvest timing.
-*   **Product Manager**: Multi-step auction/listing interface with dynamic bidding timers.
+*   **Risk Meter**: Real-time gauge showing session security status.
+*   **Weather Intelligence**: Real-time localized climate data + AI advice for crop health.
+*   **Product Manager**: Multi-step auction interface with dynamic bidding timers.
 *   **Supply Analytics**: Recharts-driven "Produce Mix" and "Monthly Sales" visualizations.
 *   **Invoice Engine**: jsPDF-powered automated invoice generation for every sale.
 
@@ -38,27 +53,16 @@ The platform operates as a coordinated circular marketplace:
 *   **Smart Marketplace**: Grid-view of products with filtering by category, price, and distance.
 *   **Bidding UI**: Real-time counter-offer system for high-value auctions.
 *   **Procurement Trends**: Area charts showing procurement value fluctuations.
-*   **Regional Weather foresight**: AI advice on demand-driving weather events (e.g., "Heatwave coming: Stock up on moisture-sensitive vegetables").
 
 ### 🚛 3. Transporter Hub (Precision Logistics)
 *   **Fleet Map**: Leaflet interactive map showing live GPS coordinates.
-*   **Bidding Hub**: Real-time negotiation for delivery prices between transporters and retailers.
-*   **Gamification**: "Driver Badge" system based on XP points, delivery speed, and rating.
-*   **Proof of Delivery**: Mobile-first camera and e-signature upload for secure order completion.
+*   **Bidding Hub**: Real-time negotiation for delivery prices.
+*   **Gamification**: "Driver Badge" system based on XP points and delivery reliability.
 
-### 🛡️ 4. Admin Portal (Governance)
-*   **User Verification**: Document vetting for new Farmers and Transporters to ensure safety.
-*   **Crisis Center**: Global AlertBanner system to push "Weather Alerts" or "Road Blockages" to specific cities.
-*   **Aggregated Stats**: Platform-wide total users, revenue, and trade health.
-
----
-
-## 🔐 Continuous Authentication (Zero-Trust Security)
-
-To ensure high-fidelity anti-fraud protection for Farmer payouts and Retailer transactions, Farm2Trade integrates an autonomous machine-learning security layer:
-*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence, scroll frequency, and mouse speed. 
-*   **Anomaly Detection**: A standalone Flask/Python microservice running an **IsolationForest** model builds a unique profile for every user.
-*   **Dynamic Risk Engine**: Evaluates session risk in real-time. Automatically prompts for OTP on medium friction and instantly drops high-risk/hijacked sessions.
+### 🛡️ 4. Admin Portal (Governance & Observability)
+*   **Security Audit Logs**: Centralized view of all Zero-Trust auth events and risk scores.
+*   **User Verification**: Document vetting for new Farmers and Transporters.
+*   **Crisis Center**: Global AlertBanner system to push critical weather or road alerts.
 
 ---
 
@@ -66,24 +70,23 @@ To ensure high-fidelity anti-fraud protection for Farmer payouts and Retailer tr
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React, Vite, Lucide Icons, CSS Glassmorphism |
-| **Main Backend**| Spring Boot, Java, JPA/Hibernate, Security (JWT) |
-| **ML/Auth Service** | Python, Flask, Scikit-Learn (Isolation Forest) |
-| **Database** | MySQL (with BLOB support for document verification) |
-| **Charts** | Recharts (Responsive Pie, Bar, and Area Charts) |
+| **Frontend** | React 19, Vite, Lucide Icons, CSS Glassmorphism |
+| **Charts & Gauges** | Recharts, React-Gauge-Chart (Premium Visuals) |
+| **Main Backend**| Spring Boot 3.x, Java 17, JPA/Hibernate, Security (Session/JSESSIONID) |
+| **AI/ML Service** | Python, Flask, Scikit-Learn (Isolation Forest Model) |
+| **Database** | MySQL (Audit Logging & Transaction Persistence) |
 | **Maps** | Leaflet with React-Leaflet (Live GPS Tracking) |
-| **AI Layer** | Custom "AI Planning Engine" (Weather-Condition Map logic) |
 | **Export** | jsPDF & html2canvas for Professional Invoicing |
 
 ---
 
 ## ✨ Key Features Stabilized
 
-*   **Continuous Authentication System**: ML-powered anomaly detection protecting against account hijackings using biometric telemetry (typing cadence, mouse velocity).
-*   **Localized Weather (City-Detector)**: Automatically extracts city names from detailed addresses to ensure weather reports never show blank.
-*   **High-End "AI Deep-Dives"**: Glassmorphism modals providing scientific "Why?" rationale for farming and logistics advice.
-*   **Premium Registration**: Multi-step form with split address components (Address/City/State) for robust data structure.
-*   **Global AlertBanner**: Real-time, color-coded risk alerts (High/Medium) visible globally across all roles.
+*   **Premium Security Visualization**: Animated gauge charts for real-time AI security monitoring.
+*   **Hardened Auth logic**: Production-ready OTP handling with instant session termination on 401/403 security errors.
+*   **Localized Weather (City-Detector)**: Intelligent extraction of location data to ensure accurate AI advice.
+*   **High-End "AI Deep-Dives"**: Glassmorphism modals providing scientific "Why?" rationale for farming advice.
+*   **Persistent Audit Trail**: Full database-level logging of every authentication decision for platform accountability.
 
 ---
 
