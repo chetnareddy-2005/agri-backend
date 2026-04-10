@@ -143,6 +143,12 @@ const ContinuousAuthWrapper = ({ children }) => {
             })
             .catch(err => {
                 isTracking.current = false; 
+                if (err.message === "Too many attempts" || err.message === "Session terminated due to high risk behavior.") {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('auth_risk_level');
+                    window.location.href = "/"; // Instant landing page redirect
+                    return;
+                }
                 setAlertMessage(err.message);
             });
 
@@ -174,15 +180,18 @@ const ContinuousAuthWrapper = ({ children }) => {
                 credentials: 'include',
                 body: JSON.stringify({ userId: user.email, otp: otpInput.trim() })
             });
-            const data = await res.json();
-            
-            if (res.ok && data.status === "VERIFIED") {
-                setGeminiInsight(data.geminiExplanation);
-            } else {
+            if (res.status === 403 || res.status === 401) {
+                const data = await res.json();
+                if (res.status === 403 || data.error === "Too many attempts") {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('auth_risk_level');
+                    window.location.href = "/";
+                    return;
+                }
                 alert(data.error || "Invalid OTP");
             }
         } catch (e) {
-            alert("Verification Failed.");
+            console.error("Verification Failed:", e);
         }
     };
 

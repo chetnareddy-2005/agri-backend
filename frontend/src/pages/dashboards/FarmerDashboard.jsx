@@ -35,7 +35,8 @@ const FarmerDashboard = () => {
 
     const handleUnauthorized = () => {
         localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.removeItem('auth_risk_level');
+        navigate('/');
     };
 
     useEffect(() => {
