@@ -66,6 +66,18 @@ public class ContinuousAuthController {
     public ResponseEntity<?> evaluateTelemetry(@RequestBody ContinuousAuthRequestDTO requestDTO) {
         ContinuousAuthResponseDTO response = anomalyDetectionService.evaluateRisk(requestDTO);
         String userId = requestDTO.getUserId();
+
+        // Very Important Debug Logging
+        System.out.println("Score: " + response.getScore());
+        System.out.println("Risk (from Python): " + response.getRiskLevel());
+
+        // Quick Fix (Demo Trigger) - Force OTP if mouse is frantically shaken!
+        Double mouseSpeed = requestDTO.getTelemetry().getMouseMovementAvgSpeed();
+        if (mouseSpeed != null && mouseSpeed > 1000) {
+            response.setRiskLevel("MEDIUM");
+            System.out.println("Risk (Forced via Hackathon Logic): MEDIUM");
+        }
+
         
         switch(response.getRiskLevel()) {
             case "HIGH":
@@ -84,6 +96,12 @@ public class ContinuousAuthController {
                 
                 String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
                 emailService.sendOtpEmail(targetEmail, otp);
+                
+                // 🔥 HACKATHON DEMO: Print it directly to terminal so you don't even need to open Gmail!
+                System.out.println("==================================================");
+                System.out.println("🚨 OTP REQUIRED FOR USER: " + targetEmail);
+                System.out.println("🔑 THE SECRET OTP IS: >>> " + otp + " <<<");
+                System.out.println("==================================================");
                 
                 Map<String, String> mediumRiskBody = new HashMap<>();
                 mediumRiskBody.put("challenge", "OTP_REQUIRED");
@@ -142,7 +160,7 @@ public class ContinuousAuthController {
             sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
             sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
             sr.setIpAddress("127.0.0.1 (Frontend)");
-            sr.setRiskScore("-0.05"); // It triggered MEDIUM
+            sr.setRiskScore(-0.05); // It triggered MEDIUM
             
             explanation = geminiAIService.analyzeSecurity(sr);
         }

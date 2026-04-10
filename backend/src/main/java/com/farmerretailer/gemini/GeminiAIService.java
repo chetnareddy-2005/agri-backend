@@ -22,7 +22,7 @@ public class GeminiAIService {
     private String geminiApiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=";
 
     public String analyzeSecurity(SecurityAnalysisRequest request) {
         String prompt = String.format(
