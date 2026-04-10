@@ -90,4 +90,39 @@ The platform operates as a coordinated circular marketplace:
 
 ---
 
+## 🛠️ Setup & Installation
+
+Follow these steps to run the Farm2Trade ecosystem locally.
+
+### 📋 Prerequisites
+*   **Java**: 17 or higher
+*   **Node.js**: 18.x or higher
+*   **Python**: 3.9 or higher
+*   **MySQL**: 8.x
+
+### 💻 Execution Commands
+
+#### 1. Backend (Spring Boot)
+```bash
+cd backend
+mvn clean install
+mvn spring-boot:run
+```
+
+#### 2. ML & Security Service (Flask)
+```bash
+cd continuous-auth
+pip install -r requirements.txt
+python app.py
+```
+
+#### 3. Frontend (Vite/React)
+```bash
+cd frontend
+npm install --legacy-peer-deps
+npm run dev
+```
+
+---
+
 Developed with ❤️ for the future of Indian Agriculture.
