@@ -408,7 +408,7 @@ const FarmerDashboard = () => {
     };
 
     const confirmLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.clear();
         navigate('/login');
     };
 

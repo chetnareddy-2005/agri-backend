@@ -31,6 +31,9 @@ public class AuthController {
     private org.springframework.security.authentication.AuthenticationManager authenticationManager;
 
     // Explicitly use HttpSessionSecurityContextRepository to persist session
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.farmerretailer.config.TokenRegistry tokenRegistry;
+
     private final org.springframework.security.web.context.SecurityContextRepository securityContextRepository = new org.springframework.security.web.context.HttpSessionSecurityContextRepository();
 
     @Autowired
@@ -83,6 +86,10 @@ public class AuthController {
                 return ResponseEntity.status(403).body("Account is pending approval.");
             }
 
+            // Generate token for header-based auth fallback
+            String token = java.util.UUID.randomUUID().toString();
+            tokenRegistry.registerToken(token, authentication);
+
             java.util.Map<String, Object> responseMap = new java.util.HashMap<>();
             responseMap.put("message", "Login successful");
             responseMap.put("role", user.getRole());
@@ -96,9 +103,9 @@ public class AuthController {
             responseMap.put("description", user.getDescription());
             responseMap.put("documentName", user.getDocumentName());
             responseMap.put("verified", user.isVerified());
-            responseMap.put("verified", user.isVerified());
             responseMap.put("active", user.isActive());
             responseMap.put("mustChangePassword", user.isMustChangePassword()); // Flag for frontend
+            responseMap.put("token", token); // Return the token to the frontend
 
             return ResponseEntity.ok(responseMap);
 
@@ -190,6 +197,13 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating password: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(jakarta.servlet.http.HttpServletRequest request) {
+        String token = request.getHeader("X-Auth-Token");
+        tokenRegistry.removeToken(token);
+        return ResponseEntity.ok("Logged out");
     }
 }
 

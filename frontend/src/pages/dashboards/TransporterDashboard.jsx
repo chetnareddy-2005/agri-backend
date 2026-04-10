@@ -158,7 +158,7 @@ const TransporterDashboard = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.clear();
         navigate('/');
     };
 

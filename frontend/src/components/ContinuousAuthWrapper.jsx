@@ -172,9 +172,10 @@ const ContinuousAuthWrapper = ({ children }) => {
         const userString = localStorage.getItem('user');
         if (!userString) {
             alert("No active session found. Please log in again.");
-            window.location.href = '/login';
+            window.location.hash = "#/login"; // Use hash for consistency
             return;
         }
+        const user = JSON.parse(userString);
         const authToken = localStorage.getItem('auth_token');
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/verify-otp`, {

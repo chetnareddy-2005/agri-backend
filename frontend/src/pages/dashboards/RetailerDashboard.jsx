@@ -613,7 +613,7 @@ const RetailerDashboard = () => {
     };
 
     const confirmLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.clear();
         navigate('/login');
     };
 

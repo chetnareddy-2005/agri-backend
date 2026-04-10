@@ -405,7 +405,7 @@ const AdminDashboard = () => {
     };
 
     const confirmLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.clear();
         navigate('/login');
     };
 

@@ -8,6 +8,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class SecurityConfig {
 
+    private final TokenRegistry tokenRegistry;
+
+    public SecurityConfig(TokenRegistry tokenRegistry) {
+        this.tokenRegistry = tokenRegistry;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -23,6 +29,9 @@ public class SecurityConfig {
     @Bean
     public org.springframework.security.web.SecurityFilterChain securityFilterChain(
             org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
+        
+        org.springframework.security.web.context.SecurityContextRepository repo = new org.springframework.security.web.context.HttpSessionSecurityContextRepository();
+
         http
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
@@ -30,14 +39,20 @@ public class SecurityConfig {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
                     config.setAllowedOrigins(java.util.Arrays.asList(
                             "http://localhost:5173", 
-                            "http://localhost:5174", 
+                            "http://localhost:5174",
+                            "http://127.0.0.1:5173",
+                            "http://127.0.0.1:5174",
                             "https://chetnareddy-2005.github.io"
                     )); // Frontend URLs
-                    config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowedHeaders(java.util.Collections.singletonList("*"));
+                    config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    config.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "X-Auth-Token", "Accept"));
                     config.setAllowCredentials(true);
+                    config.setMaxAge(3600L);
                     return config;
                 }))
+                .addFilterBefore(new TokenAuthenticationFilter(tokenRegistry), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .securityContext(context -> context.securityContextRepository(repo))
+                .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/v1/telemetry/**").permitAll()
