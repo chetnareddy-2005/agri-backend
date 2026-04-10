@@ -22,9 +22,10 @@
 
 ---
 
-## 🛡️ Zero-Trust Security Infrastructure
+## 🛡️ Zero-Trust Security Architecture
 
-### 🔄 System Flow
+![Zero-Trust Flow](./architecture.png)
+
 `User -> Frontend -> Backend (Spring Boot) -> ML Service (Flask) -> Risk Engine (Isolation Forest) -> OTP/Auth`
 
 **Core API Architecture:**
