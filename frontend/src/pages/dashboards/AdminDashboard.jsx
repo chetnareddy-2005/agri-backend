@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { LayoutDashboard, FileText, Users, MessageSquare, LogOut, Menu, Bell, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, MessageSquare, LogOut, Menu, Bell, ChevronRight, Shield } from 'lucide-react';
 import '../../styles/global.css';
 import LogoutModal from '../../components/LogoutModal';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -16,6 +16,7 @@ const AdminDashboard = () => {
 
     const [transactions, setTransactions] = useState([]);
     const [complaints, setComplaints] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]);
 
     // Tab State
     const [activeTab, setActiveTab] = useState('Overview');
@@ -59,6 +60,7 @@ const AdminDashboard = () => {
         fetchTransactions();
         fetchComplaints();
         if (activeTab === 'Logistics') fetchAllWeatherData();
+        if (activeTab === 'Security Logs') fetchAuditLogs();
     }, [activeTab]);
 
     const fetchStats = async () => {
@@ -94,6 +96,18 @@ const AdminDashboard = () => {
             }
         } catch (error) {
             console.error("Error fetching complaints:", error);
+        }
+    };
+
+    const fetchAuditLogs = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/audit-logs`, { credentials: 'include' });
+            if (response.ok) {
+                const data = await response.json();
+                setAuditLogs(data);
+            }
+        } catch (error) {
+            console.error("Error fetching audit logs:", error);
         }
     };
 
@@ -467,6 +481,12 @@ const AdminDashboard = () => {
                         active={activeTab === 'Complaints'}
                         onClick={() => setActiveTab('Complaints')}
                     />
+                    <NavItem
+                        icon={<Shield size={20} />}
+                        label="Security Logs"
+                        active={activeTab === 'Security Logs'}
+                        onClick={() => setActiveTab('Security Logs')}
+                    />
                 </nav>
 
                 <div style={{ padding: '2rem 1.5rem', borderTop: '1px solid var(--border-color)' }}>
@@ -638,6 +658,53 @@ const AdminDashboard = () => {
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '1rem', color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>{new Date(txn.date).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* SECURITY LOGS TAB */}
+                    {activeTab === 'Security Logs' && (
+                        <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)' }}>
+                            <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 'bold' }}>🛡️ Infinite Zero-Trust Audit Logs</h3>
+                            <p style={{ color: 'var(--text-tertiary)', marginBottom: '2rem' }}>Observability into real-time continuous authentication events and step-up challenges.</p>
+                            
+                            {auditLogs.length === 0 ? (
+                                <p style={{ color: 'var(--text-tertiary)', padding: '2rem', textAlign: 'center', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>No security events logged yet.</p>
+                            ) : (
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', textAlign: 'left', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                                                <th style={{ padding: '1rem' }}>User Email</th>
+                                                <th style={{ padding: '1rem' }}>Risk Level</th>
+                                                <th style={{ padding: '1rem' }}>Action Taken</th>
+                                                <th style={{ padding: '1rem' }}>Timestamp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {auditLogs.map((log, idx) => (
+                                                <tr key={log.id || idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                    <td style={{ padding: '1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{log.userId}</td>
+                                                    <td style={{ padding: '1rem' }}>
+                                                        <span style={{
+                                                            padding: '4px 12px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'bold',
+                                                            backgroundColor: log.riskLevel === 'LOW' ? '#DCFCE7' : log.riskLevel === 'MEDIUM' ? '#FEF3C7' : '#FEE2E2',
+                                                            color: log.riskLevel === 'LOW' ? '#166534' : log.riskLevel === 'MEDIUM' ? '#92400E' : '#991B1B'
+                                                        }}>
+                                                            {log.riskLevel}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                                                        <code style={{ fontSize: '0.9rem', backgroundColor: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px' }}>{log.action}</code>
+                                                    </td>
+                                                    <td style={{ padding: '1rem', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                                                        {new Date(log.timestamp).toLocaleString()}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>

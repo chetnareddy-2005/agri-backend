@@ -13,6 +13,7 @@ import ThemeToggle from '../../components/ThemeToggle';
 import LogoutModal from '../../components/LogoutModal';
 import Pagination from '../../components/Pagination';
 import WeatherIntelligence from './WeatherIntelligence';
+import RiskMeter from '../../components/RiskMeter';
 
 const FarmerDashboard = () => {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ const FarmerDashboard = () => {
     const [myListings, setMyListings] = useState([]);
     // productBids removed as highestBid is now in product object
     const [stats, setStats] = useState({ listings: 0, totalSales: 0, pendingOrders: 0 });
+    const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
 
     const handleUnauthorized = () => {
         localStorage.removeItem('user');
@@ -43,6 +45,11 @@ const FarmerDashboard = () => {
         }
         // fetchStats(); // Removed as stats are now calculated dynamically
         fetchReceivedOrders();
+
+        const riskInterval = setInterval(() => {
+            setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
+        }, 2000);
+        return () => clearInterval(riskInterval);
     }, []);
 
     // Polling for real-time updates
@@ -667,7 +674,8 @@ const FarmerDashboard = () => {
                         </h1>
                         <p style={{ color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Calm • Modern • Farmer-friendly</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                        <RiskMeter risk={riskLevel} />
                         <ThemeToggle />
                     </div>
                 </header>

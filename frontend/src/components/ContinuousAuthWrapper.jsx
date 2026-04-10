@@ -11,6 +11,7 @@ const ContinuousAuthWrapper = ({ children }) => {
     });
 
     const [alertMessage, setAlertMessage] = useState(null);
+    const [currentRisk, setCurrentRisk] = useState('LOW');
 
     useEffect(() => {
         // Track Typing
@@ -81,7 +82,14 @@ const ContinuousAuthWrapper = ({ children }) => {
             const normalizedScroll = (scrollFrequency > 10) ? 150 : 3;
 
             // 4. REQUIRE CONSISTENT BEHAVIOR (Now triggers for 350 as well)
-            if (scaledMouse > 200 || normalizedTyping > 200) {
+            let risk = "LOW";
+            if (scaledMouse > 4000) risk = "HIGH";
+            else if (scaledMouse > 200 || normalizedTyping > 200) risk = "MEDIUM";
+
+            setCurrentRisk(risk);
+            localStorage.setItem('auth_risk_level', risk);
+
+            if (risk !== "LOW") {
                 anomalyCount++;
             } else {
                 anomalyCount = 0;

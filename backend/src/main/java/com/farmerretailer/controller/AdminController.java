@@ -12,6 +12,9 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private com.farmerretailer.repository.AuditLogRepository auditLogRepository;
+
     @PostMapping("/approve/{userId}")
     public ResponseEntity<String> approveUser(@PathVariable Long userId) {
         try {
@@ -107,6 +110,11 @@ public class AdminController {
             transactions.add(t);
         }
         return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<java.util.List<com.farmerretailer.entity.AuditLog>> getAuditLogs() {
+        return ResponseEntity.ok(auditLogRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "timestamp")));
     }
 
     @DeleteMapping("/reset-products")
