@@ -1,6 +1,14 @@
 # 🌾 Farm2Trade: Premium Agri-Logistics & Supply Chain Intelligence
 
-**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** and a **Zero-Trust Security Infrastructure** to optimize agricultural logistics and trading.
+### 🚀 Key Highlights:
+- **AI-Driven Continuous Authentication**: Seamless behavior-based security.
+- **Risk-Based Step-Up Auth**: Automated OTP challenges for anomalous sessions.
+- **Real-Time Security Observability**: High-fidelity gauge visualization and audit logging.
+- **Agricultural Marketplace**: Secure crop auctioning and logistics orchestration.
+
+---
+
+**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** and a **Zero-Trust Security Infrastructure**.
 
 ---
 
@@ -14,55 +22,39 @@
 
 ---
 
-## 🛡️ Zero-Trust Security Infrastructure (Continuous Authentication)
+## 🛡️ Zero-Trust Security Infrastructure
 
-To ensure high-fidelity anti-fraud protection for Farmer payouts and Retailer transactions, Farm2Trade integrates an autonomous machine-learning security layer:
+### 🔄 System Flow
+`User -> Frontend -> Backend (Spring Boot) -> ML Service (Flask) -> Risk Engine (Isolation Forest) -> OTP/Auth`
 
-*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence, scroll frequency, and mouse speed in real-time. 
-*   **Anomaly Detection**: A standalone Flask/Python microservice running an **IsolationForest** model builds a unique profile for every user, detecting hijacking attempts instantly.
-*   **Premium Risk Observability**: Integrated **SmallRiskGauge (Gauge Charts)** on all dashboards provide real-time visual feedback of the session's security state.
-*   **Step-Up Authentication**:
-    *   **Medium Risk**: Automatically triggers an email-based OTP challenge.
-    *   **High Risk**: Triggers immediate session termination and account lockout.
-    *   **Hardening**: Implemented 5-minute OTP expiry and strict 3-attempt retry limits.
-*   **Infinite Audit Logs**: A dedicated Admin interface to monitor every security event, risk evaluation, and step-up challenge across the entire platform.
+**Core API Architecture:**
+1.  `POST /api/auth/login` → Authenticate user and initiate JSESSIONID.
+2.  `POST /api/auth/risk-check` → ML Model evaluates behavioral telemetry (mouse/typing).
+3.  `POST /api/auth/verify-otp` → Conditional step-up challenge for anomalous sessions.
+4.  `GET /api/admin/audit-logs` → Real-time observability for administrators.
 
----
-
-## 🚀 System Flow & Ecosystem
-
-The platform operates as a coordinated circular marketplace:
-1. **Farmer**: Lists produce (Vegetables, Grains, Fruits) with either a fixed price or a dynamic bidding period.
-2. **Retailer**: Explores the marketplace, places bids, and procures stock based on regional supply trends.
-3. **Escrow & Validation**: Payments are secured once an order is placed.
-4. **Logistics (Transporter)**: Transporters accept delivery requests, provide live GPS tracking, and submit e-signature proofs for fund release.
-5. **AI Planning**: Every user is guided by the **Weather Intelligence Hub**, providing "Crop Advisory" and "Risk Assessments" specific to their city.
+### 🔐 Key Security Features
+*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence and mouse velocity.
+*   **Dynamic Risk Engine**: Evaluates risk levels (LOW/MEDIUM/HIGH) in real-time.
+*   **Hardened Guardrails**: 5-minute OTP expiry and strict 3-attempt retry limits.
+*   **Instant Termination**: Automatically kills hijacked sessions on High-Risk detection.
 
 ---
 
-## 🎨 Dashboard Breakdown & Components
+## 🚀 Dashboard Breakdown & Components
 
 ### 👨‍🌾 1. Farmer Hub (Operational Intelligence)
-*   **Risk Meter**: Real-time gauge showing session security status.
-*   **Weather Intelligence**: Real-time localized climate data + AI advice for crop health.
-*   **Product Manager**: Multi-step auction interface with dynamic bidding timers.
-*   **Supply Analytics**: Recharts-driven "Produce Mix" and "Monthly Sales" visualizations.
+*   **SmallRiskGauge**: Real-time animated gauge showing session security status.
+*   **Weather Intelligence**: Real-time localized climate data + AI crop advice.
 *   **Invoice Engine**: jsPDF-powered automated invoice generation for every sale.
 
 ### 🏪 2. Retailer Hub (Procurement Foresight)
-*   **Smart Marketplace**: Grid-view of products with filtering by category, price, and distance.
-*   **Bidding UI**: Real-time counter-offer system for high-value auctions.
+*   **Smart Marketplace**: Grid-view of products with filtering and dynamic bidding.
 *   **Procurement Trends**: Area charts showing procurement value fluctuations.
 
 ### 🚛 3. Transporter Hub (Precision Logistics)
 *   **Fleet Map**: Leaflet interactive map showing live GPS coordinates.
 *   **Bidding Hub**: Real-time negotiation for delivery prices.
-*   **Gamification**: "Driver Badge" system based on XP points and delivery reliability.
-
-### 🛡️ 4. Admin Portal (Governance & Observability)
-*   **Security Audit Logs**: Centralized view of all Zero-Trust auth events and risk scores.
-*   **User Verification**: Document vetting for new Farmers and Transporters.
-*   **Crisis Center**: Global AlertBanner system to push critical weather or road alerts.
 
 ---
 
@@ -70,53 +62,35 @@ The platform operates as a coordinated circular marketplace:
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, Lucide Icons, CSS Glassmorphism |
-| **Charts & Gauges** | Recharts, React-Gauge-Chart (Premium Visuals) |
-| **Main Backend**| Spring Boot 3.x, Java 17, JPA/Hibernate, Security (Session/JSESSIONID) |
-| **AI/ML Service** | Python, Flask, Scikit-Learn (Isolation Forest Model) |
-| **Database** | MySQL (Audit Logging & Transaction Persistence) |
-| **Maps** | Leaflet with React-Leaflet (Live GPS Tracking) |
-| **Export** | jsPDF & html2canvas for Professional Invoicing |
-
----
-
-## ✨ Key Features Stabilized
-
-*   **Premium Security Visualization**: Animated gauge charts for real-time AI security monitoring.
-*   **Hardened Auth logic**: Production-ready OTP handling with instant session termination on 401/403 security errors.
-*   **Localized Weather (City-Detector)**: Intelligent extraction of location data to ensure accurate AI advice.
-*   **High-End "AI Deep-Dives"**: Glassmorphism modals providing scientific "Why?" rationale for farming advice.
-*   **Persistent Audit Trail**: Full database-level logging of every authentication decision for platform accountability.
+| **Frontend** | React 19, Vite, Lucide Icons, react-gauge-chart |
+| **Main Backend**| Spring Boot 3.x, Java 17, JPA/Hibernate, MySql |
+| **ML/Auth Service** | Flask, Python 3.9, Scikit-Learn (Isolation Forest) |
+| **Logistics** | Leaflet Maps, Real-Time GPS Tracking |
 
 ---
 
 ## 🛠️ Setup & Installation
 
-Follow these steps to run the Farm2Trade ecosystem locally.
-
 ### 📋 Prerequisites
-*   **Java**: 17 or higher
-*   **Node.js**: 18.x or higher
-*   **Python**: 3.9 or higher
-*   **MySQL**: 8.x
+*   **Java**: 17+ | **Node.js**: 18+ | **Python**: 3.9+ | **MySQL**: 8.x
 
 ### 💻 Execution Commands
 
-#### 1. Backend (Spring Boot)
+#### 1. Backend (Java)
 ```bash
 cd backend
 mvn clean install
 mvn spring-boot:run
 ```
 
-#### 2. ML & Security Service (Flask)
+#### 2. ML Security Service (Python)
 ```bash
 cd continuous-auth
 pip install -r requirements.txt
 python app.py
 ```
 
-#### 3. Frontend (Vite/React)
+#### 3. Frontend (React)
 ```bash
 cd frontend
 npm install --legacy-peer-deps
