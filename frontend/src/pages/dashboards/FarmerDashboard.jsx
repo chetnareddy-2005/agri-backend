@@ -13,7 +13,7 @@ import ThemeToggle from '../../components/ThemeToggle';
 import LogoutModal from '../../components/LogoutModal';
 import Pagination from '../../components/Pagination';
 import WeatherIntelligence from './WeatherIntelligence';
-import RiskMeter from '../../components/RiskMeter';
+import SmallRiskGauge from '../../components/SmallRiskGauge';
 
 const FarmerDashboard = () => {
     const navigate = useNavigate();
@@ -675,8 +675,11 @@ const FarmerDashboard = () => {
                         </h1>
                         <p style={{ color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Calm • Modern • Farmer-friendly</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                        <RiskMeter risk={riskLevel} />
+                    <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-tertiary)', letterSpacing: '1px' }}>SECURITY STATUS</span>
+                            <SmallRiskGauge risk={riskLevel} />
+                        </div>
                         <ThemeToggle />
                     </div>
                 </header>

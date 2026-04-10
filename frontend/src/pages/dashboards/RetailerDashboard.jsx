@@ -13,6 +13,7 @@ import LogoutModal from '../../components/LogoutModal';
 import FeedbackModal from '../../components/FeedbackModal';
 import Pagination from '../../components/Pagination';
 import WeatherIntelligence from './WeatherIntelligence';
+import SmallRiskGauge from '../../components/SmallRiskGauge';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -59,6 +60,7 @@ const RetailerDashboard = () => {
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
     const [notifications, setNotifications] = useState([]);
+    const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
     const [filteredOrderStatus, setFilteredOrderStatus] = useState(null);
 
     // Pagination State
@@ -161,7 +163,13 @@ const RetailerDashboard = () => {
             fetchNotifications();
         }, 5000); // 5 seconds
 
-        return () => clearInterval(interval);
+        const riskInterval = setInterval(() => {
+            setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
+        }, 2000);
+        return () => {
+            clearInterval(interval);
+            clearInterval(riskInterval);
+        };
     }, []);
 
     // ... fetchProducts ...
@@ -702,9 +710,12 @@ const RetailerDashboard = () => {
                             Welcome, <span style={{ color: 'var(--text-tertiary)', fontSize: '1.2rem', fontWeight: 'normal' }}>{user?.fullName || 'Retailer'}</span>
                         </h1>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                             <span style={{ fontWeight: "600", fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Risk Level</span>
+                             <SmallRiskGauge risk={riskLevel} />
+                        </div>
                         <ThemeToggle />
-
                         <button onClick={handleLogout} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: '500', cursor: 'pointer' }}>Log out</button>
                     </div>
                 </header>

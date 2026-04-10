@@ -7,12 +7,14 @@ import LogoutModal from '../../components/LogoutModal';
 import ThemeToggle from '../../components/ThemeToggle';
 import WeatherIntelligence from './WeatherIntelligence';
 import AlertBanner from '../../components/AlertBanner';
+import SmallRiskGauge from '../../components/SmallRiskGauge';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [pendingUsers, setPendingUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState({ totalUsers: 0, farmers: 0, retailers: 0, transportersCount: 0 });
+    const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
 
     const [transactions, setTransactions] = useState([]);
     const [complaints, setComplaints] = useState([]);
@@ -61,6 +63,11 @@ const AdminDashboard = () => {
         fetchComplaints();
         if (activeTab === 'Logistics') fetchAllWeatherData();
         if (activeTab === 'Security Logs') fetchAuditLogs();
+
+        const riskInterval = setInterval(() => {
+            setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
+        }, 2000);
+        return () => clearInterval(riskInterval);
     }, [activeTab]);
 
     const fetchStats = async () => {
@@ -526,8 +533,8 @@ const AdminDashboard = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                         <div style={{ position: 'relative', cursor: 'pointer' }}>
                             <Bell size={20} color="var(--text-secondary)" />
-                            {/* Notification Badge Placeholder */}
                         </div>
+                        <SmallRiskGauge risk={riskLevel} />
                         <ThemeToggle />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#dbeafe', color: '#1e40af', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>

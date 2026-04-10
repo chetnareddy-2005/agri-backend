@@ -6,6 +6,7 @@ import L from 'leaflet';
 import '../../styles/global.css';
 import AlertBanner from '../../components/AlertBanner';
 import ThemeToggle from '../../components/ThemeToggle';
+import SmallRiskGauge from '../../components/SmallRiskGauge';
 
 // Fix for default Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -29,6 +30,7 @@ const TransporterDashboard = () => {
     const [negotiatedPrice, setNegotiatedPrice] = useState(0);
     const [showProofModal, setShowProofModal] = useState(false);
     const [currentProofOrder, setCurrentProofOrder] = useState(null);
+    const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -47,9 +49,14 @@ const TransporterDashboard = () => {
         const locInterval = setInterval(updateLocation, 30000); // 30s
         const fetchInterval = setInterval(fetchDashboardData, 10000); // 10s
 
+        const riskInterval = setInterval(() => {
+            setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
+        }, 2000);
+
         return () => {
             clearInterval(locInterval);
             clearInterval(fetchInterval);
+            clearInterval(riskInterval);
         };
     }, [navigate]);
 
@@ -217,6 +224,10 @@ const TransporterDashboard = () => {
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{activeTab}</h2>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                             <span style={{ fontWeight: "600", fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Risk Level</span>
+                             <SmallRiskGauge risk={riskLevel} />
+                        </div>
                         <ThemeToggle />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div style={{ textAlign: 'right' }}>
