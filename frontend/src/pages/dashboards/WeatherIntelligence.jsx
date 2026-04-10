@@ -34,9 +34,16 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
                 searchTarget = parts[parts.length - 2]?.trim() || parts[parts.length - 1]?.trim();
             }
 
+            const authToken = localStorage.getItem('auth_token');
             const [wRes, aiRes] = await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}`, { credentials: 'include' }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}/${role === 'FARMER' ? 'farmer-ai' : 'retailer-ai'}`, { credentials: 'include' })
+                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}`, { 
+                    headers: { 'X-Auth-Token': authToken || '' },
+                    credentials: 'include' 
+                }),
+                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}/${role === 'FARMER' ? 'farmer-ai' : 'retailer-ai'}`, { 
+                    headers: { 'X-Auth-Token': authToken || '' },
+                    credentials: 'include' 
+                })
             ]);
 
             if (wRes.ok) {
@@ -46,7 +53,10 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
                 setOverrideData(data);
             } else {
                 // Fallback to Hyderabad if city not found
-                const fallback = await fetch(`${import.meta.env.VITE_API_URL}/api/weather/Hyderabad`, { credentials: 'include' });
+                const fallback = await fetch(`${import.meta.env.VITE_API_URL}/api/weather/Hyderabad`, { 
+                    headers: { 'X-Auth-Token': authToken || '' },
+                    credentials: 'include' 
+                });
                 if (fallback.ok) setWeather(await fallback.json());
             }
             
@@ -69,9 +79,13 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
 
     const handleSaveOverride = async () => {
         try {
+            const authToken = localStorage.getItem('auth_token');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/weather/${weather.id}/override`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Auth-Token': authToken || ''
+                },
                 credentials: 'include',
                 body: JSON.stringify(overrideData)
             });

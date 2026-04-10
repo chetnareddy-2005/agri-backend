@@ -41,8 +41,9 @@ const Login = () => {
                     return;
                 }
 
-                // Store user info in localStorage for simple session management
+                // Store user info and token in localStorage for header-based auth fallback
                 localStorage.setItem('user', JSON.stringify(data));
+                if (data.token) localStorage.setItem('auth_token', data.token);
 
                 // Redirect based on role
                 if (data.role === 'FARMER') {

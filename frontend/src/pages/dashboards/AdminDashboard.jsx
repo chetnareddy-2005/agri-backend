@@ -21,8 +21,22 @@ const AdminDashboard = () => {
     const [auditLogs, setAuditLogs] = useState([]);
 
     // Tab State
-    const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const fetchWithAuth = async (url, options = {}) => {
+        const authToken = localStorage.getItem('auth_token');
+        const headers = {
+            ...options.headers,
+            'X-Auth-Token': authToken || ''
+        };
+        const res = await fetch(url, { ...options, headers, credentials: 'include' });
+        if (res.status === 401) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            navigate('/');
+        }
+        return res;
+    };
 
     // Modal State
     const [selectedUser, setSelectedUser] = useState(null);
@@ -72,7 +86,7 @@ const AdminDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { credentials: 'include' });
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setStats(data);
@@ -84,7 +98,7 @@ const AdminDashboard = () => {
 
     const fetchTransactions = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/transactions`, { credentials: 'include' });
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/transactions`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setTransactions(data);
@@ -96,7 +110,7 @@ const AdminDashboard = () => {
 
     const fetchComplaints = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/all`, { credentials: 'include' });
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/all`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setComplaints(data);
@@ -108,7 +122,7 @@ const AdminDashboard = () => {
 
     const fetchAuditLogs = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/audit-logs`, { credentials: 'include' });
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/audit-logs`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setAuditLogs(data);
@@ -120,7 +134,7 @@ const AdminDashboard = () => {
 
     const fetchPendingUsers = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/pending-users`, {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/pending-users`, {
                 credentials: 'include'
             });
             if (response.ok) {
@@ -151,7 +165,7 @@ const AdminDashboard = () => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, {
                 credentials: 'include'
             });
             if (response.ok) {
@@ -193,7 +207,7 @@ const AdminDashboard = () => {
     const fetchAllWeatherData = async () => {
         setLoadingWeather(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/all-weather`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/all-weather`, { credentials: 'include' });
             if (res.ok) setWeatherData(await res.json());
         } catch (e) { console.error(e); }
         finally { setLoadingWeather(false); }
@@ -201,7 +215,7 @@ const AdminDashboard = () => {
 
     const triggerRoadBlock = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/trigger-crisis`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/trigger-crisis`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -217,7 +231,7 @@ const AdminDashboard = () => {
     const handleApprove = async () => {
         if (!selectedUser) return;
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/approve/${selectedUser.id}`, {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/approve/${selectedUser.id}`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -240,7 +254,7 @@ const AdminDashboard = () => {
         if (!window.confirm("Are you sure you want to reject (and delete) this user?")) return;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/reject/${selectedUser.id}`, {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/reject/${selectedUser.id}`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -263,7 +277,7 @@ const AdminDashboard = () => {
         if (!window.confirm(`Are you sure you want to delete user ${user.fullName}?`)) return;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/delete/${user.id}`, {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/delete/${user.id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -296,7 +310,7 @@ const AdminDashboard = () => {
         // Mark as read if unread
         if (complaint.hasUnreadMessagesForAdmin) {
             try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${complaint.id}/mark-read-admin`, {
+                await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/${complaint.id}/mark-read-admin`, {
                     method: 'PUT',
                     credentials: 'include'
                 });
@@ -313,7 +327,7 @@ const AdminDashboard = () => {
     const handleSendReply = async () => {
         if (!chatReply.trim() || !selectedComplaint) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: chatReply }),
@@ -347,7 +361,7 @@ const AdminDashboard = () => {
         setMsgSelectedUser('');
         const endpoint = role === 'farmer' ? 'approved-farmers' : 'approved-retailers';
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setMsgTargetList(data);
@@ -364,7 +378,7 @@ const AdminDashboard = () => {
         }
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/send-message`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/send-message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: msgSelectedUser, message: msgBody }),

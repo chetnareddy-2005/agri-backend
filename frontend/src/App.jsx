@@ -19,8 +19,8 @@ import ContinuousAuthWrapper from './components/ContinuousAuthWrapper'
 
 function App() {
   return (
-    <ContinuousAuthWrapper>
-      <HashRouter>
+    <HashRouter>
+      <ContinuousAuthWrapper>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -36,8 +36,8 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
         <Chatbot />
-      </HashRouter>
-    </ContinuousAuthWrapper>
+      </ContinuousAuthWrapper>
+    </HashRouter>
   )
 }
 

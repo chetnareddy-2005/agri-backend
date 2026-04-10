@@ -26,6 +26,15 @@ const FarmerDashboard = () => {
         setSearchParams({ tab: tabName });
     };
 
+    const fetchWithAuth = async (url, options = {}) => {
+        const authToken = localStorage.getItem('auth_token');
+        const headers = {
+            ...options.headers,
+            'X-Auth-Token': authToken || ''
+        };
+        return fetch(url, { ...options, headers, credentials: 'include' });
+    };
+
     const [user, setUser] = useState(null);
     const [myOrders, setMyOrders] = useState([]);
     const [myListings, setMyListings] = useState([]);
@@ -63,7 +72,7 @@ const FarmerDashboard = () => {
 
     const fetchReceivedOrders = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/received-orders`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/received-orders`, { credentials: 'include' });
             if (res.status === 401) {
                 handleUnauthorized();
                 return;
@@ -79,7 +88,7 @@ const FarmerDashboard = () => {
 
     const fetchMyListings = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/products/my-products`, { credentials: 'include' });
             if (res.status === 401) {
                 handleUnauthorized();
                 return;
@@ -109,7 +118,7 @@ const FarmerDashboard = () => {
 
     const fetchMyFeedbacks = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/feedback/received`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/feedback/received`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setFeedbacks(data);
@@ -123,7 +132,7 @@ const FarmerDashboard = () => {
         // Mark as read if not already
         if (!notification.read && !notification.isRead) {
             try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${notification.id}/read`, {
+                await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/notifications/${notification.id}/read`, {
                     method: 'PUT',
                     credentials: 'include'
                 });
@@ -139,7 +148,7 @@ const FarmerDashboard = () => {
             setActiveTab('Help');
             try {
                 // Fetch all my complaints to find the right one (or use specific endpoint if available)
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/my-complaints`, { credentials: 'include' });
+                const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/my-complaints`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     setMyComplaints(data);
@@ -156,7 +165,7 @@ const FarmerDashboard = () => {
 
     const fetchNotifications = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/my-notifications`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/notifications/my-notifications`, { credentials: 'include' });
             if (res.status === 401) {
                 handleUnauthorized();
                 return;
@@ -174,7 +183,7 @@ const FarmerDashboard = () => {
 
     const markAllAsRead = async () => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/mark-all-read`, {
+            await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/notifications/mark-all-read`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -188,7 +197,7 @@ const FarmerDashboard = () => {
 
     const fetchMyComplaints = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/my-complaints`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/my-complaints`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setMyComplaints(data);
@@ -201,7 +210,7 @@ const FarmerDashboard = () => {
     const handleCreateComplaint = async () => {
         if (!newComplaintMsg.trim()) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/create`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: newComplaintMsg }),
@@ -229,7 +238,7 @@ const FarmerDashboard = () => {
     const handleSendReply = async () => {
         if (!chatReply.trim() || !selectedComplaint) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/complaints/${selectedComplaint.id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: chatReply }),
@@ -295,7 +304,7 @@ const FarmerDashboard = () => {
 
     const fetchMonthlySales = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stats/farmer/monthly-sales`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/farmer/monthly-sales`, { credentials: 'include' });
             if (res.status === 401) {
                 handleUnauthorized();
                 return;
@@ -317,7 +326,7 @@ const FarmerDashboard = () => {
     const handleDeleteListing = async (productId) => {
         if (!confirm("Are you sure you want to delete this listing?")) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/products/${productId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -359,7 +368,7 @@ const FarmerDashboard = () => {
         };
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${editingProduct.id}`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/products/${editingProduct.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -491,7 +500,7 @@ const FarmerDashboard = () => {
                 : `${import.meta.env.VITE_API_URL}/api/products/add`;
             const method = editingProductId ? 'PUT' : 'POST';
 
-            const response = await fetch(url, {
+            const response = await fetchWithAuth(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -525,7 +534,7 @@ const FarmerDashboard = () => {
 
     const handleStatusChange = async (orderId, newStatus) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}/status`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus }),
@@ -548,7 +557,7 @@ const FarmerDashboard = () => {
     const handleViewBids = async (product) => {
         setSelectedProduct(product);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bids/product/${product.id}`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/bids/product/${product.id}`, { credentials: 'include' });
             if (res.ok) {
                 const bids = await res.json();
                 setSelectedProductBids(bids);
@@ -564,7 +573,7 @@ const FarmerDashboard = () => {
     const handleAcceptBid = async (bidId) => {
         if (!confirm("Are you sure you want to accept this bid? This will close the auction and notify other bidders.")) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bids/accept/${bidId}`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/bids/accept/${bidId}`, {
                 method: 'POST',
                 credentials: 'include'
             });

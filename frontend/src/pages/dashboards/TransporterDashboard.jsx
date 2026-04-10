@@ -27,10 +27,23 @@ const TransporterDashboard = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [editingPriceId, setEditingPriceId] = useState(null);
-    const [negotiatedPrice, setNegotiatedPrice] = useState(0);
-    const [showProofModal, setShowProofModal] = useState(false);
     const [currentProofOrder, setCurrentProofOrder] = useState(null);
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
+
+    const fetchWithAuth = async (url, options = {}) => {
+        const authToken = localStorage.getItem('auth_token');
+        const headers = {
+            ...options.headers,
+            'X-Auth-Token': authToken || ''
+        };
+        const res = await fetch(url, { ...options, headers, credentials: 'include' });
+        if (res.status === 401) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            navigate('/');
+        }
+        return res;
+    };
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -86,7 +99,7 @@ const TransporterDashboard = () => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 setLocation({ lat, lng });
-                await fetch(`${import.meta.env.VITE_API_URL}/api/transport/location`, {
+                await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/location`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -98,7 +111,7 @@ const TransporterDashboard = () => {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${id}/status`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -110,7 +123,7 @@ const TransporterDashboard = () => {
 
     const handleNegotiate = async (id) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${id}/negotiate`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${id}/negotiate`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -122,7 +135,7 @@ const TransporterDashboard = () => {
 
     const handleAcceptPrice = async (id) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${id}/accept-negotiation`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${id}/accept-negotiation`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -134,7 +147,7 @@ const TransporterDashboard = () => {
 
     const submitProof = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${currentProofOrder.id}/delivery-proof`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${currentProofOrder.id}/delivery-proof`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

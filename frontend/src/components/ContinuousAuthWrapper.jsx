@@ -114,11 +114,14 @@ const ContinuousAuthWrapper = ({ children }) => {
             
             const user = JSON.parse(userString);
 
+            const authToken = localStorage.getItem('auth_token');
+
             // 5. REDUCED CALL FREQUENCY allows us to only fire critical telemetry
-            fetch("http://localhost:8080/api/v1/telemetry/evaluate", {
+            fetch(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/evaluate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Auth-Token": authToken || ""
                 },
                 credentials: 'include',
                 body: JSON.stringify({
@@ -146,7 +149,7 @@ const ContinuousAuthWrapper = ({ children }) => {
                 if (err.message === "Too many attempts" || err.message === "Session terminated due to high risk behavior.") {
                     localStorage.removeItem('user');
                     localStorage.removeItem('auth_risk_level');
-                    window.location.href = "/"; // Instant landing page redirect
+                    window.location.hash = "#/"; // Safe HashRouter redirect
                     return;
                 }
                 setAlertMessage(err.message);
@@ -172,11 +175,14 @@ const ContinuousAuthWrapper = ({ children }) => {
             window.location.href = '/login';
             return;
         }
-        const user = JSON.parse(userString);
+        const authToken = localStorage.getItem('auth_token');
         try {
-            const res = await fetch("http://localhost:8080/api/v1/telemetry/verify-otp", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/verify-otp`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": authToken || ""
+                },
                 credentials: 'include',
                 body: JSON.stringify({ userId: user.email, otp: otpInput.trim() })
             });
@@ -185,7 +191,7 @@ const ContinuousAuthWrapper = ({ children }) => {
                 if (res.status === 403 || data.error === "Too many attempts") {
                     localStorage.removeItem('user');
                     localStorage.removeItem('auth_risk_level');
-                    window.location.href = "/";
+                    window.location.hash = "#/";
                     return;
                 }
                 alert(data.error || "Invalid OTP");
