@@ -36,7 +36,7 @@ public class StatsService {
             User user = userOpt.get();
             Long userId = user.getId();
 
-            if (user.getRole() == Role.ROLE_FARMER) {
+            if (user.getRole() == Role.FARMER) {
                 // Add Profile Details to refresh frontend state
                 stats.put("userProfile", new java.util.HashMap<String, Object>() {
                     {
@@ -93,7 +93,7 @@ public class StatsService {
                     salesData.add(point);
                 }
                 stats.put("salesData", salesData);
-            } else if (user.getRole() == Role.ROLE_RETAILER) {
+            } else if (user.getRole() == Role.RETAILER) {
                 // Add Profile Details for Retailer as well
                 stats.put("userProfile", new java.util.HashMap<String, Object>() {
                     {
@@ -194,3 +194,4 @@ public class StatsService {
         return stats;
     }
 }
+

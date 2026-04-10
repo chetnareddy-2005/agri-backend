@@ -40,7 +40,7 @@ public class User {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "ENUM('ADMIN', 'FARMER', 'RETAILER', 'TRANSPORTER')")
     private Role role;
 
     private boolean isActive = true;

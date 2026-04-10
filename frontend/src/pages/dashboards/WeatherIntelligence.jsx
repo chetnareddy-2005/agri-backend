@@ -36,7 +36,7 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
 
             const [wRes, aiRes] = await Promise.all([
                 fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}`, { credentials: 'include' }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}/${role === 'ROLE_FARMER' ? 'farmer-ai' : 'retailer-ai'}`, { credentials: 'include' })
+                fetch(`${import.meta.env.VITE_API_URL}/api/weather/${encodeURIComponent(searchTarget)}/${role === 'FARMER' ? 'farmer-ai' : 'retailer-ai'}`, { credentials: 'include' })
             ]);
 
             if (wRes.ok) {
@@ -266,7 +266,7 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
-                    {role === 'ROLE_FARMER' ? (
+                    {role === 'FARMER' ? (
                       <>
                         {renderAICard('crop', aiInsights?.crop)}
                         {renderAICard('timing', aiInsights?.timing)}
@@ -360,3 +360,4 @@ const WeatherIntelligence = ({ role, location = "Hyderabad" }) => {
 };
 
 export default WeatherIntelligence;
+

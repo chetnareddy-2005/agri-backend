@@ -723,7 +723,7 @@ const FarmerDashboard = () => {
 
                         {/* Weather Intelligence Hub */}
                         <div style={{ marginBottom: '2.5rem' }}>
-                            <WeatherIntelligence role="ROLE_FARMER" location={user?.city || user?.address || "Hyderabad"} />
+                            <WeatherIntelligence role="FARMER" location={user?.city || user?.address || "Hyderabad"} />
                         </div>
 
                         {/* Charts Row */}
@@ -1670,15 +1670,15 @@ const FarmerDashboard = () => {
                                         );
                                     })()}
                                     {selectedComplaint.responses && selectedComplaint.responses.map(response => (
-                                        <div key={response.id} style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: response.responder?.role === 'ROLE_ADMIN' ? 'flex-start' : 'flex-end' }}>
+                                        <div key={response.id} style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: response.responder?.role === 'ADMIN' ? 'flex-start' : 'flex-end' }}>
                                             <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: '4px' }}>
-                                                {response.responder?.role === 'ROLE_ADMIN' ? 'Support' : 'You'} • {new Date(response.timestamp).toLocaleString()}
+                                                {response.responder?.role === 'ADMIN' ? 'Support' : 'You'} • {new Date(response.timestamp).toLocaleString()}
                                             </div>
                                             <div style={{
-                                                backgroundColor: response.responder?.role === 'ROLE_ADMIN' ? '#F3F4F6' : '#DBEAFE',
-                                                color: response.responder?.role === 'ROLE_ADMIN' ? '#1F2937' : '#1E40AF',
+                                                backgroundColor: response.responder?.role === 'ADMIN' ? '#F3F4F6' : '#DBEAFE',
+                                                color: response.responder?.role === 'ADMIN' ? '#1F2937' : '#1E40AF',
                                                 padding: '0.75rem',
-                                                borderRadius: response.responder?.role === 'ROLE_ADMIN' ? '12px 12px 12px 0' : '12px 12px 0 12px',
+                                                borderRadius: response.responder?.role === 'ADMIN' ? '12px 12px 12px 0' : '12px 12px 0 12px',
                                                 display: 'inline-block',
                                                 maxWidth: '80%'
                                             }}>
@@ -1863,3 +1863,4 @@ const SuccessOverlay = ({ show, onAnimationEnd }) => {
 };
 
 export default FarmerDashboard;
+

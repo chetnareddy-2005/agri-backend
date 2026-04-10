@@ -54,17 +54,17 @@ public class AdminController {
 
     @GetMapping("/approved-farmers")
     public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getApprovedFarmers() {
-        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.ROLE_FARMER));
+        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.FARMER));
     }
 
     @GetMapping("/approved-retailers")
     public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getApprovedRetailers() {
-        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.ROLE_RETAILER));
+        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.RETAILER));
     }
 
     @GetMapping("/approved-transporters")
     public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getApprovedTransporters() {
-        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.ROLE_TRANSPORTER));
+        return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.TRANSPORTER));
     }
 
     @GetMapping("/stats")
@@ -72,9 +72,9 @@ public class AdminController {
         System.out.println("Fetching dashboard stats...");
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
         long total = userService.countTotalUsers(); // Keeps total registered
-        long farmers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_FARMER);
-        long retailers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_RETAILER);
-        long transporters = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.ROLE_TRANSPORTER);
+        long farmers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.FARMER);
+        long retailers = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.RETAILER);
+        long transporters = userService.countVerifiedUsersByRole(com.farmerretailer.model.Role.TRANSPORTER);
 
         System.out.println(
                 "Stats: Total=" + total + ", Approved Farmers=" + farmers + ", Approved Retailers=" + retailers + ", Approved Transporters=" + transporters);
@@ -143,3 +143,4 @@ public class AdminController {
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
 }
+

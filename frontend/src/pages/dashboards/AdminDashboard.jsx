@@ -270,11 +270,11 @@ const AdminDashboard = () => {
             if (response.ok) {
                 alert("User deleted successfully.");
                 // Refresh the list
-                if (user.role === 'ROLE_FARMER') {
+                if (user.role === 'FARMER') {
                     fetchApprovedUsers('farmer');
-                } else if (user.role === 'ROLE_RETAILER') {
+                } else if (user.role === 'RETAILER') {
                     fetchApprovedUsers('retailer');
-                } else if (user.role === 'ROLE_TRANSPORTER') {
+                } else if (user.role === 'TRANSPORTER') {
                     fetchApprovedUsers('transporter');
                 }
                 fetchStats();
@@ -581,7 +581,7 @@ const AdminDashboard = () => {
 
                             {/* Weather Intelligence Hub */}
                             <div style={{ marginBottom: '3rem' }}>
-                                <WeatherIntelligence role="ROLE_ADMIN" location="Hyderabad" />
+                                <WeatherIntelligence role="ADMIN" location="Hyderabad" />
                             </div>
 
                             {/* Charts Row */}
@@ -819,11 +819,11 @@ const AdminDashboard = () => {
                                                 <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{user.email}</td>
                                                 <td style={{ padding: '1rem' }}>
                                                     <span style={{
-                                                        backgroundColor: user.role === 'ROLE_FARMER' ? '#DCFCE7' : '#FFEDD5',
-                                                        color: user.role === 'ROLE_FARMER' ? '#166534' : '#9A3412',
+                                                        backgroundColor: user.role === 'FARMER' ? '#DCFCE7' : '#FFEDD5',
+                                                        color: user.role === 'FARMER' ? '#166534' : '#9A3412',
                                                         padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600'
                                                     }}>
-                                                        {user.role === 'ROLE_FARMER' ? 'Farmer' : user.role === 'ROLE_RETAILER' ? 'Retailer' : 'Transporter'}
+                                                        {user.role === 'FARMER' ? 'Farmer' : user.role === 'RETAILER' ? 'Retailer' : 'Transporter'}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '1rem' }}>
@@ -876,11 +876,11 @@ const AdminDashboard = () => {
                                                     <td style={{ padding: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>{complaint.user?.fullName} ({complaint.user?.email})</td>
                                                     <td style={{ padding: '1rem' }}>
                                                          <span style={{
-                                                            backgroundColor: complaint.user?.role === 'ROLE_FARMER' ? '#DCFCE7' : complaint.user?.role === 'ROLE_RETAILER' ? '#DBEAFE' : '#FEF3C7',
-                                                            color: complaint.user?.role === 'ROLE_FARMER' ? '#166534' : complaint.user?.role === 'ROLE_RETAILER' ? '#1E40AF' : '#D97706',
+                                                            backgroundColor: complaint.user?.role === 'FARMER' ? '#DCFCE7' : complaint.user?.role === 'RETAILER' ? '#DBEAFE' : '#FEF3C7',
+                                                            color: complaint.user?.role === 'FARMER' ? '#166534' : complaint.user?.role === 'RETAILER' ? '#1E40AF' : '#D97706',
                                                             padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold'
                                                         }}>
-                                                            {complaint.user?.role === 'ROLE_FARMER' ? 'Farmer' : complaint.user?.role === 'ROLE_RETAILER' ? 'Retailer' : 'Transporter'}
+                                                            {complaint.user?.role === 'FARMER' ? 'Farmer' : complaint.user?.role === 'RETAILER' ? 'Retailer' : 'Transporter'}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{new Date(complaint.timestamp).toLocaleString()}</td>
@@ -944,8 +944,8 @@ const AdminDashboard = () => {
 
                         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <div style={{
-                                width: '80px', height: '80px', borderRadius: '50%', backgroundColor: selectedUser.role === 'ROLE_FARMER' ? '#DCFCE7' : '#DBEAFE',
-                                display: 'inline-flex', justifyContent: 'center', alignItems: 'center', fontSize: '2rem', color: selectedUser.role === 'ROLE_FARMER' ? '#166534' : '#1E40AF', fontWeight: 'bold', marginBottom: '1rem'
+                                width: '80px', height: '80px', borderRadius: '50%', backgroundColor: selectedUser.role === 'FARMER' ? '#DCFCE7' : '#DBEAFE',
+                                display: 'inline-flex', justifyContent: 'center', alignItems: 'center', fontSize: '2rem', color: selectedUser.role === 'FARMER' ? '#166534' : '#1E40AF', fontWeight: 'bold', marginBottom: '1rem'
                             }}>
                                 {selectedUser.fullName.charAt(0).toUpperCase()}
                             </div>
@@ -953,11 +953,11 @@ const AdminDashboard = () => {
                             <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{selectedUser.email}</p>
                             <span style={{
                                 marginTop: '1rem', display: 'inline-block',
-                                backgroundColor: selectedUser.role === 'ROLE_FARMER' ? '#DCFCE7' : '#FFEDD5',
-                                color: selectedUser.role === 'ROLE_FARMER' ? '#166534' : '#9A3412',
+                                backgroundColor: selectedUser.role === 'FARMER' ? '#DCFCE7' : '#FFEDD5',
+                                color: selectedUser.role === 'FARMER' ? '#166534' : '#9A3412',
                                 padding: '4px 12px', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: '600'
                             }}>
-                                {selectedUser.role === 'ROLE_FARMER' ? 'Farmer' : 'Retailer'} Application
+                                {selectedUser.role === 'FARMER' ? 'Farmer' : 'Retailer'} Application
                             </span>
                         </div>
 
@@ -1255,15 +1255,15 @@ const AdminDashboard = () => {
 
 
                                 {selectedComplaint.responses && selectedComplaint.responses.map(res => (
-                                    <div key={res.id} style={{ marginBottom: '1rem', display: 'flex', justifyContent: res.responder.role === 'ROLE_ADMIN' ? 'flex-end' : 'flex-start' }}>
+                                    <div key={res.id} style={{ marginBottom: '1rem', display: 'flex', justifyContent: res.responder.role === 'ADMIN' ? 'flex-end' : 'flex-start' }}>
                                         <div style={{
-                                            backgroundColor: res.responder.role === 'ROLE_ADMIN' ? '#DBEAFE' : 'var(--bg-secondary)',
-                                            color: res.responder.role === 'ROLE_ADMIN' ? '#1E40AF' : 'var(--text-secondary)',
+                                            backgroundColor: res.responder.role === 'ADMIN' ? '#DBEAFE' : 'var(--bg-secondary)',
+                                            color: res.responder.role === 'ADMIN' ? '#1E40AF' : 'var(--text-secondary)',
                                             padding: '0.75rem 1rem', borderRadius: '12px',
-                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)', maxWidth: '80%', border: res.responder.role === 'ROLE_ADMIN' ? 'none' : '1px solid var(--border-color)'
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)', maxWidth: '80%', border: res.responder.role === 'ADMIN' ? 'none' : '1px solid var(--border-color)'
                                         }}>
-                                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '4px', color: res.responder.role === 'ROLE_ADMIN' ? '#1e3a8a' : 'var(--text-tertiary)' }}>
-                                                {res.responder.role === 'ROLE_ADMIN' ? 'Admin (You)' : res.responder.fullName}
+                                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '4px', color: res.responder.role === 'ADMIN' ? '#1e3a8a' : 'var(--text-tertiary)' }}>
+                                                {res.responder.role === 'ADMIN' ? 'Admin (You)' : res.responder.fullName}
                                             </div>
                                             {res.message}
                                         </div>
@@ -1380,3 +1380,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

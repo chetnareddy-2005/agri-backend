@@ -45,13 +45,13 @@ const Login = () => {
                 localStorage.setItem('user', JSON.stringify(data));
 
                 // Redirect based on role
-                if (data.role === 'ROLE_FARMER') {
+                if (data.role === 'FARMER') {
                     navigate('/farmer/dashboard');
-                } else if (data.role === 'ROLE_RETAILER') {
+                } else if (data.role === 'RETAILER') {
                     navigate('/retailer/dashboard');
-                } else if (data.role === 'ROLE_TRANSPORTER') {
+                } else if (data.role === 'TRANSPORTER') {
                     navigate('/transporter/dashboard');
-                } else if (data.role === 'ROLE_ADMIN') {
+                } else if (data.role === 'ADMIN') {
                     navigate('/admin/dashboard');
                 } else {
                     navigate('/');
@@ -211,3 +211,4 @@ const Login = () => {
 };
 
 export default Login;
+

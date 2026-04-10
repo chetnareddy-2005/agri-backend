@@ -36,11 +36,11 @@ public class ProductService {
         User farmer = userRepository.findByEmail(farmerEmail)
                 .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
-        if (!farmer.getRole().equals(Role.ROLE_FARMER)) {
+        if (!farmer.getRole().equals(Role.FARMER)) {
             System.out.println("DEBUG: Role Mismatch!");
             System.out.println("User Email: " + farmer.getEmail());
             System.out.println("User Role: " + farmer.getRole());
-            System.out.println("Expected Role: " + Role.ROLE_FARMER);
+            System.out.println("Expected Role: " + Role.FARMER);
             throw new RuntimeException("Only farmers can list products. Current role: " + farmer.getRole());
         }
 
@@ -72,7 +72,7 @@ public class ProductService {
     }
 
     private void notifyRetailers(Product product) {
-        List<User> retailers = userRepository.findByRole(Role.ROLE_RETAILER);
+        List<User> retailers = userRepository.findByRole(Role.RETAILER);
         String productLink = "http://localhost:5173/retailer/dashboard"; // Link to dashboard
 
         for (User retailer : retailers) {
@@ -214,7 +214,7 @@ public class ProductService {
 
         // Notify Retailers if Price or Quantity changed
         try {
-            List<User> retailers = userRepository.findByRole(Role.ROLE_RETAILER);
+            List<User> retailers = userRepository.findByRole(Role.RETAILER);
 
             // Price Update Notification
             if (Double.compare(oldPrice, savedProduct.getPrice()) != 0) {
@@ -266,3 +266,4 @@ public class ProductService {
         productRepository.delete(product);
     }
 }
+

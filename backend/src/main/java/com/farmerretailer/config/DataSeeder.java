@@ -37,7 +37,7 @@ public class DataSeeder {
             admin.setFullName("Admin");
             admin.setEmail("admin@agriconnect.com");
             admin.setPassword(passwordEncoder.encode("Admin@123"));
-            admin.setRole(Role.ROLE_ADMIN);
+            admin.setRole(Role.ADMIN);
             admin.setMobileNumber("0000000000");
             admin.setVerified(true);
             admin.setActive(true);
@@ -56,7 +56,7 @@ public class DataSeeder {
             farmer.setFullName("Test Farmer");
             farmer.setEmail("farmer@test.com");
             farmer.setPassword(passwordEncoder.encode("password"));
-            farmer.setRole(Role.ROLE_FARMER);
+            farmer.setRole(Role.FARMER);
             farmer.setMobileNumber("1111111111");
             farmer.setVerified(true);
             farmer.setActive(true);
@@ -75,7 +75,7 @@ public class DataSeeder {
             retailer.setFullName("Test Retailer");
             retailer.setEmail("retailer@test.com");
             retailer.setPassword(passwordEncoder.encode("password"));
-            retailer.setRole(Role.ROLE_RETAILER);
+            retailer.setRole(Role.RETAILER);
             retailer.setMobileNumber("2222222222");
             retailer.setVerified(true);
             retailer.setActive(true);
@@ -86,3 +86,4 @@ public class DataSeeder {
         }
     }
 }
+

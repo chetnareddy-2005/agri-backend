@@ -153,11 +153,11 @@ public class AuthController {
                 user.setDocumentName(registrationDTO.getDocumentName());
             }
 
-            // Default to ROLE_FARMER if not specified or invalid, but handle string to enum
+            // Default to FARMER if not specified or invalid, but handle string to enum
             try {
                 user.setRole(com.farmerretailer.model.Role.valueOf(registrationDTO.getRole()));
             } catch (IllegalArgumentException | NullPointerException e) {
-                user.setRole(com.farmerretailer.model.Role.ROLE_FARMER);
+                user.setRole(com.farmerretailer.model.Role.FARMER);
             }
 
             user.setVerified(false); // New users are not verified by default
@@ -192,3 +192,4 @@ public class AuthController {
         }
     }
 }
+

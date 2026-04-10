@@ -39,7 +39,7 @@ const TransporterDashboard = () => {
             return;
         }
         const parsedUser = JSON.parse(storedUser);
-        if (parsedUser.role !== 'ROLE_TRANSPORTER') {
+        if (parsedUser.role !== 'TRANSPORTER') {
             navigate('/login');
             return;
         }
@@ -388,3 +388,4 @@ const modalOverlayStyle = { position: 'fixed', top: 0, left: 0, width: '100vw', 
 const uploadPlaceholderStyle = { padding: '1.5rem', border: '1px dashed var(--border-color)', borderRadius: '16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-tertiary)', cursor: 'pointer' };
 
 export default TransporterDashboard;
+

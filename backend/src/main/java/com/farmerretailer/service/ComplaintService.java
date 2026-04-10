@@ -47,7 +47,7 @@ public class ComplaintService {
 
                 // Update status if Admin responds
                 // Update status if Admin responds
-                if (responder.getRole() == com.farmerretailer.model.Role.ROLE_ADMIN) {
+                if (responder.getRole() == com.farmerretailer.model.Role.ADMIN) {
                         complaint.setHasUnreadMessagesForAdmin(false);
                 } else {
                         complaint.setHasUnreadMessagesForAdmin(true);
@@ -120,3 +120,4 @@ public class ComplaintService {
                 complaintRepository.save(complaint);
         }
 }
+

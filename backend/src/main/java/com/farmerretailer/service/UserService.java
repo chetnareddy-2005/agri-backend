@@ -89,7 +89,7 @@ public class UserService {
         // So just deleting user's complaints is sufficient for their own complaints.
         complaintRepository.deleteByUserId(userId);
 
-        if (user.getRole() == com.farmerretailer.model.Role.ROLE_FARMER) {
+        if (user.getRole() == com.farmerretailer.model.Role.FARMER) {
             // 3. Delete Farmer's Products (and their dependencies)
             java.util.List<com.farmerretailer.entity.Product> products = productRepository.findByFarmerId(userId);
             for (com.farmerretailer.entity.Product product : products) {
@@ -107,7 +107,7 @@ public class UserService {
                 // Delete Product
                 productRepository.delete(product);
             }
-        } else if (user.getRole() == com.farmerretailer.model.Role.ROLE_RETAILER) {
+        } else if (user.getRole() == com.farmerretailer.model.Role.RETAILER) {
             // 4. Delete Retailer's Orders & their Feedbacks
             java.util.List<com.farmerretailer.entity.Order> retailerOrders = orderRepository.findByRetailerId(userId);
             for (com.farmerretailer.entity.Order order : retailerOrders) {
@@ -149,7 +149,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode("PENDING_SETUP"));
         User savedUser = userRepository.save(user);
 
-        if (savedUser.getRole() == com.farmerretailer.model.Role.ROLE_TRANSPORTER) {
+        if (savedUser.getRole() == com.farmerretailer.model.Role.TRANSPORTER) {
             com.farmerretailer.entity.Driver driver = new com.farmerretailer.entity.Driver();
             driver.setUser(savedUser);
             // Default mappings from User fields
@@ -190,3 +190,4 @@ public class UserService {
         return userRepository.count();
     }
 }
+

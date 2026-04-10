@@ -10,7 +10,7 @@ const Register = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const [role, setRole] = useState('ROLE_FARMER');
+    const [role, setRole] = useState('FARMER');
     const [step, setStep] = useState(1); // Added pagination state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -46,9 +46,9 @@ const Register = () => {
         const roleParam = searchParams.get('role');
         if (roleParam) {
             const lowerRole = roleParam.toLowerCase();
-            if (lowerRole === 'retailer') setRole('ROLE_RETAILER');
-            else if (lowerRole === 'transporter') setRole('ROLE_TRANSPORTER');
-            else setRole('ROLE_FARMER');
+            if (lowerRole === 'retailer') setRole('RETAILER');
+            else if (lowerRole === 'transporter') setRole('TRANSPORTER');
+            else setRole('FARMER');
         }
     }, [searchParams]);
 
@@ -129,9 +129,9 @@ const Register = () => {
         }
     };
 
-    const isFarmer = role === 'ROLE_FARMER';
-    const isRetailer = role === 'ROLE_RETAILER';
-    const isTransporter = role === 'ROLE_TRANSPORTER';
+    const isFarmer = role === 'FARMER';
+    const isRetailer = role === 'RETAILER';
+    const isTransporter = role === 'TRANSPORTER';
 
     return (
         <div style={{
@@ -217,7 +217,7 @@ const Register = () => {
                     <div style={{ display: 'flex', backgroundColor: '#F1F8E9', borderRadius: '12px', padding: '6px', marginBottom: '2.5rem', gap: '8px' }}>
                         <button
                             type="button"
-                            onClick={() => handleTabChange('ROLE_FARMER')}
+                            onClick={() => handleTabChange('FARMER')}
                             style={{
                                 flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
                                 backgroundColor: isFarmer ? '#4CAF50' : 'transparent',
@@ -230,7 +230,7 @@ const Register = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => handleTabChange('ROLE_RETAILER')}
+                            onClick={() => handleTabChange('RETAILER')}
                             style={{
                                 flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
                                 backgroundColor: isRetailer ? '#4CAF50' : 'transparent',
@@ -243,7 +243,7 @@ const Register = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => handleTabChange('ROLE_TRANSPORTER')}
+                            onClick={() => handleTabChange('TRANSPORTER')}
                             style={{
                                 flex: 1, padding: '1rem 0.5rem', borderRadius: '8px', border: 'none',
                                 backgroundColor: isTransporter ? '#4CAF50' : 'transparent',
@@ -441,3 +441,4 @@ const Register = () => {
 };
 
 export default Register;
+
