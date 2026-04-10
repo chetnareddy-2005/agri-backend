@@ -31,6 +31,11 @@ const FarmerDashboard = () => {
     // productBids removed as highestBid is now in product object
     const [stats, setStats] = useState({ listings: 0, totalSales: 0, pendingOrders: 0 });
 
+    const handleUnauthorized = () => {
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
+
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -51,6 +56,10 @@ const FarmerDashboard = () => {
     const fetchReceivedOrders = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/received-orders`, { credentials: 'include' });
+            if (res.status === 401) {
+                handleUnauthorized();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json();
                 setMyOrders(data);
@@ -63,6 +72,10 @@ const FarmerDashboard = () => {
     const fetchMyListings = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, { credentials: 'include' });
+            if (res.status === 401) {
+                handleUnauthorized();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json();
                 setMyListings(data);
@@ -136,6 +149,10 @@ const FarmerDashboard = () => {
     const fetchNotifications = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/my-notifications`, { credentials: 'include' });
+            if (res.status === 401) {
+                handleUnauthorized();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json();
                 setNotifications(data);
@@ -271,6 +288,10 @@ const FarmerDashboard = () => {
     const fetchMonthlySales = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stats/farmer/monthly-sales`, { credentials: 'include' });
+            if (res.status === 401) {
+                handleUnauthorized();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json();
                 setSalesData(data);

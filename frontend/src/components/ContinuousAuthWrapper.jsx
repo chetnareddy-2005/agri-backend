@@ -112,6 +112,7 @@ const ContinuousAuthWrapper = ({ children }) => {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     userId: user.email,
                     telemetry: {
@@ -162,6 +163,7 @@ const ContinuousAuthWrapper = ({ children }) => {
             const res = await fetch("http://localhost:8080/api/v1/telemetry/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify({ userId: user.email, otp: otpInput.trim() })
             });
             const data = await res.json();
