@@ -133,11 +133,11 @@ const ContinuousAuthWrapper = ({ children }) => {
                     }
                 })
             })
-            .then(res => {
+            .then(async (res) => {
                 if (res.status === 403 || res.status === 401) {
-                    return res.json().then(data => {
-                        throw new Error(data.challenge || data.error || "Security Violation");
-                    });
+                    const data = await res.json();
+                    if (data.otp) setReceivedOtp(data.otp);
+                    throw new Error(data.challenge || data.error || "Security Violation");
                 }
                 return res.json();
             })
@@ -166,6 +166,7 @@ const ContinuousAuthWrapper = ({ children }) => {
     }, []);
 
     const [otpInput, setOtpInput] = useState('');
+    const [receivedOtp, setReceivedOtp] = useState(null);
     const [geminiInsight, setGeminiInsight] = useState(null);
 
     const handleVerifyOtp = async () => {
@@ -196,9 +197,24 @@ const ContinuousAuthWrapper = ({ children }) => {
                     return;
                 }
                 alert(data.error || "Invalid OTP");
+                return;
+            }
+
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('auth_risk_level', 'LOW');
+                setCurrentRisk('LOW');
+                setGeminiInsight(data.geminiExplanation);
+                setAlertMessage(null); // Successfully verified, hide the overlay
+                setReceivedOtp(null); // Clear the OTP display
+                isTracking.current = true; // Resume tracking
+            } else {
+                const data = await res.json();
+                alert(data.error || "Verification failed. Please try again.");
             }
         } catch (e) {
             console.error("Verification Failed:", e);
+            alert("An error occurred during verification. Please check the console.");
         }
     };
 
@@ -236,6 +252,12 @@ const ContinuousAuthWrapper = ({ children }) => {
                     <div style={{ marginTop: '20px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '30px', borderRadius: '15px' }}>
                         <h2 style={{ marginBottom: '15px' }}>Suspicious Behavior Detected</h2>
                         <p style={{ marginBottom: '20px' }}>A Step-Up Authentication OTP has been sent to your registered email.</p>
+                        {receivedOtp && (
+                            <div style={{ backgroundColor: 'white', color: '#dc2626', padding: '10px 20px', borderRadius: '8px', display: 'inline-block', fontSize: '1.5rem', fontWeight: '900', letterSpacing: '8px', marginBottom: '20px', border: '2px dashed #dc2626' }}>
+                                {receivedOtp}
+                            </div>
+                        )}
+                        <br />
                         <input 
                             type="text" 
                             placeholder="Enter 6-digit OTP" 
@@ -255,7 +277,9 @@ const ContinuousAuthWrapper = ({ children }) => {
                 <button 
                     onClick={() => {
                         localStorage.removeItem('user');
-                        window.location.href = '/login';
+                        localStorage.removeItem('auth_risk_level');
+                        setReceivedOtp(null);
+                        window.location.href = '#/login';
                     }} 
                     style={{ marginTop: '40px', padding: '10px 20px', fontSize: '1.1rem', backgroundColor: 'transparent', border: '1px solid white', color: 'white', cursor: 'pointer', borderRadius: '5px' }}
                 >

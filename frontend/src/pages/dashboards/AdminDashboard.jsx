@@ -21,6 +21,7 @@ const AdminDashboard = () => {
     const [auditLogs, setAuditLogs] = useState([]);
 
     // Tab State
+    const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const fetchWithAuth = async (url, options = {}) => {
@@ -967,11 +968,11 @@ const AdminDashboard = () => {
                             <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{selectedUser.email}</p>
                             <span style={{
                                 marginTop: '1rem', display: 'inline-block',
-                                backgroundColor: selectedUser.role === 'FARMER' ? '#DCFCE7' : '#FFEDD5',
-                                color: selectedUser.role === 'FARMER' ? '#166534' : '#9A3412',
+                                backgroundColor: selectedUser.role === 'FARMER' ? '#DCFCE7' : selectedUser.role === 'RETAILER' ? '#DBEAFE' : '#FEF3C7',
+                                color: selectedUser.role === 'FARMER' ? '#166534' : selectedUser.role === 'RETAILER' ? '#1E40AF' : '#D97706',
                                 padding: '4px 12px', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: '600'
                             }}>
-                                {selectedUser.role === 'FARMER' ? 'Farmer' : 'Retailer'} Application
+                                {selectedUser.role === 'FARMER' ? 'Farmer' : selectedUser.role === 'RETAILER' ? 'Retailer' : 'Transporter'} Application
                             </span>
                         </div>
 
@@ -1079,7 +1080,13 @@ const AdminDashboard = () => {
                                         <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                             <td style={{ padding: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>{user.fullName}</td>
                                             <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{user.email}</td>
-                                            <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{user.businessName || '-'}</td>
+                                            <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                                                {user.role === 'TRANSPORTER' ? (
+                                                    <span style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: '600' }}>🚚 {user.businessName || 'Vehicle'}</span>
+                                                ) : (
+                                                    user.businessName || '-'
+                                                )}
+                                            </td>
                                             <td style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
                                                 <button
                                                     className="btn"

@@ -27,7 +27,9 @@ const TransporterDashboard = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [editingPriceId, setEditingPriceId] = useState(null);
+    const [negotiatedPrice, setNegotiatedPrice] = useState(0);
     const [currentProofOrder, setCurrentProofOrder] = useState(null);
+    const [showProofModal, setShowProofModal] = useState(false);
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
 
     const fetchWithAuth = async (url, options = {}) => {

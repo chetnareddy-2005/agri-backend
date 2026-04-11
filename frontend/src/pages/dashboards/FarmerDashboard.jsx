@@ -74,12 +74,17 @@ const FarmerDashboard = () => {
         try {
             const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/received-orders`, { credentials: 'include' });
             if (res.status === 401) {
+                console.warn("Unauthorized access to received-orders");
                 handleUnauthorized();
                 return;
             }
             if (res.ok) {
                 const data = await res.json();
+                console.log("Fetched orders:", data.length);
                 setMyOrders(data);
+            } else {
+                const errorText = await res.text();
+                console.error(`Failed to fetch orders: ${res.status} - ${errorText}`);
             }
         } catch (error) {
             console.error("Error fetching received orders:", error);
@@ -90,12 +95,17 @@ const FarmerDashboard = () => {
         try {
             const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/products/my-products`, { credentials: 'include' });
             if (res.status === 401) {
+                console.warn("Unauthorized access to my-products");
                 handleUnauthorized();
                 return;
             }
             if (res.ok) {
                 const data = await res.json();
+                console.log("Fetched listings:", data.length);
                 setMyListings(data);
+            } else {
+                const errorText = await res.text();
+                console.error(`Failed to fetch listings: ${res.status} - ${errorText}`);
             }
         } catch (error) {
             console.error("Error fetching my listings:", error);
@@ -878,12 +888,32 @@ const FarmerDashboard = () => {
 
                                         <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>{product.name}</h4>
 
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                            {/* Farmer name is implied as propery of 'me' but useful for consistent UI structure if copied */}
-                                            {product.quantity <= 0 ? (
-                                                <span style={{ fontWeight: '600', color: '#EF4444' }}>Sold out</span>
-                                            ) : (
-                                                <><span style={{ fontWeight: '600', color: '#16a34a' }}>Avail:</span> {product.quantity} {product.unit}</>
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                                    {product.quantity <= 0 ? (
+                                                        <span style={{ fontWeight: '700', color: '#EF4444' }}>Out of Stock</span>
+                                                    ) : (
+                                                        <><span style={{ fontWeight: '600', color: '#16a34a' }}>Avail:</span> {product.quantity} {product.unit}</>
+                                                    )}
+                                                </div>
+                                                {product.buyers && product.buyers.length > 0 && (
+                                                    <div style={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: '600' }}>
+                                                        Sold: {product.buyers.reduce((sum, b) => sum + b.quantity, 0)} {product.unit}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Progress Bar for Stock Utilization */}
+                                            {product.buyers && product.buyers.length > 0 && (
+                                                <div style={{ width: '100%', height: '6px', backgroundColor: '#E5E7EB', borderRadius: '3px', overflow: 'hidden' }}>
+                                                    <div style={{
+                                                        width: `${(product.buyers.reduce((sum, b) => sum + b.quantity, 0) / (product.quantity + product.buyers.reduce((sum, b) => sum + b.quantity, 0))) * 100}%`,
+                                                        height: '100%',
+                                                        backgroundColor: '#2563EB',
+                                                        transition: 'width 0.5s ease-in-out'
+                                                    }}></div>
+                                                </div>
                                             )}
                                         </div>
 

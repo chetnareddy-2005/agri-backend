@@ -158,94 +158,111 @@ const TransportSelection = () => {
 
                         {/* Assignments List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            {aiAssignments.map((assignment, idx) => (
-                                <div key={assignment.driverId} style={{ 
-                                    backgroundColor: 'white', padding: '1.5rem', borderRadius: '20px', display: 'flex', gap: '2rem',
-                                    border: idx === 0 ? '2px solid #3B82F6' : '1px solid #E2E8F0',
-                                    transition: '0.2s', position: 'relative', overflow: 'hidden'
+                            {aiAssignments.length > 0 ? (
+                                aiAssignments.map((assignment, idx) => (
+                                    <div key={assignment.driverId} style={{ 
+                                        backgroundColor: 'white', padding: '1.5rem', borderRadius: '20px', display: 'flex', gap: '2rem',
+                                        border: idx === 0 ? '2px solid #3B82F6' : '1px solid #E2E8F0',
+                                        transition: '0.2s', position: 'relative', overflow: 'hidden'
+                                    }}>
+                                        {idx === 0 && (
+                                            <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: '#3B82F6', color: 'white', padding: '4px 16px', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '0 0 0 12px' }}>
+                                                AI TOP RECOMMENDATION
+                                            </div>
+                                        )}
+
+                                        {/* Driver Avatar & Score */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '120px' }}>
+                                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#F1F5F9', border: '3px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
+                                                👤
+                                            </div>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: assignment.score > 70 ? '#10B981' : '#3B82F6' }}>{assignment.score}%</div>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#64748B', letterSpacing: '0.05em' }}>ALLOCATION SCORE</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Driver Info */}
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ marginBottom: '1rem' }}>
+                                                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0F172A', margin: '0 0 4px' }}>{assignment.driverName}</h3>
+                                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                                    <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <Truck size={14} /> {assignment.vehicle}
+                                                    </span>
+                                                    <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', color: assignment.risk === 'SAFE' ? '#10B981' : '#F59E0B' }}>
+                                                        <ShieldCheck size={14} /> {assignment.risk} Status
+                                                    </span>
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#3B82F6', backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '6px' }}>
+                                                        {assignment.badge}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                                <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '12px' }}>
+                                                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', marginBottom: '4px' }}>Efficiency Analysis</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <div style={{ flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px' }}>
+                                                            <div style={{ width: `${assignment.efficiency}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '3px' }}></div>
+                                                        </div>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{assignment.efficiency}%</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '12px' }}>
+                                                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', marginBottom: '4px' }}>Fairness Bias Check</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <div style={{ flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px' }}>
+                                                            <div style={{ width: `${assignment.fairness}%`, height: '100%', backgroundColor: '#8B5CF6', borderRadius: '3px' }}></div>
+                                                        </div>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{assignment.fairness}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ backgroundColor: '#FFFBEB', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #D97706', display: 'flex', gap: '10px' }}>
+                                                <Scale size={16} color="#D97706" style={{ marginTop: '2px' }} />
+                                                <p style={{ margin: 0, fontSize: '0.8rem', color: '#92400E', lineHeight: '1.4' }}>
+                                                    <strong>Marketplace Fairness:</strong> {assignment.explanation}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action */}
+                                        <div style={{ width: '180px', borderLeft: '1px solid #E2E8F0', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '8px' }}>
+                                            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                                                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F172A' }}>₹{(25 + (6 * 1.5)).toFixed(0)}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>ESTIMATED FARE</div>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleSelectDriver(assignment)}
+                                                style={{ 
+                                                    width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
+                                                    backgroundColor: assignment.isRecommended ? '#3B82F6' : '#0F172A',
+                                                    color: 'white', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s',
+                                                    boxShadow: assignment.isRecommended ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none'
+                                                }}
+                                            >Confirm Selection</button>
+                                            <div style={{ fontSize: '0.65rem', color: '#94A3B8', textAlign: 'center' }}>~15 mins pickup ETA</div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ 
+                                    backgroundColor: 'white', padding: '4rem', borderRadius: '24px', textAlign: 'center',
+                                    border: '1px dashed #E2E8F0'
                                 }}>
-                                    {idx === 0 && (
-                                        <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: '#3B82F6', color: 'white', padding: '4px 16px', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '0 0 0 12px' }}>
-                                            AI TOP RECOMMENDATION
-                                        </div>
-                                    )}
-
-                                    {/* Driver Avatar & Score */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '120px' }}>
-                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#F1F5F9', border: '3px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
-                                            👤
-                                        </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: '1.5rem', fontWeight: '800', color: assignment.score > 70 ? '#10B981' : '#3B82F6' }}>{assignment.score}%</div>
-                                            <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#64748B', letterSpacing: '0.05em' }}>ALLOCATION SCORE</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Driver Info */}
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ marginBottom: '1rem' }}>
-                                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0F172A', margin: '0 0 4px' }}>{assignment.driverName}</h3>
-                                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                                <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    <Truck size={14} /> {assignment.vehicle}
-                                                </span>
-                                                <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', color: assignment.risk === 'SAFE' ? '#10B981' : '#F59E0B' }}>
-                                                    <ShieldCheck size={14} /> {assignment.risk} Status
-                                                </span>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#3B82F6', backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '6px' }}>
-                                                    {assignment.badge}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                                            <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '12px' }}>
-                                                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', marginBottom: '4px' }}>Efficiency Analysis</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <div style={{ flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px' }}>
-                                                        <div style={{ width: `${assignment.efficiency}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '3px' }}></div>
-                                                    </div>
-                                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{assignment.efficiency}%</span>
-                                                </div>
-                                            </div>
-                                            <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '12px' }}>
-                                                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', marginBottom: '4px' }}>Fairness Bias Check</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <div style={{ flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px' }}>
-                                                        <div style={{ width: `${assignment.fairness}%`, height: '100%', backgroundColor: '#8B5CF6', borderRadius: '3px' }}></div>
-                                                    </div>
-                                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{assignment.fairness}%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ backgroundColor: '#FFFBEB', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #D97706', display: 'flex', gap: '10px' }}>
-                                            <Scale size={16} color="#D97706" style={{ marginTop: '2px' }} />
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#92400E', lineHeight: '1.4' }}>
-                                                <strong>Marketplace Fairness:</strong> {assignment.explanation}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Action */}
-                                    <div style={{ width: '180px', borderLeft: '1px solid #E2E8F0', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '8px' }}>
-                                        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                                            <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F172A' }}>₹{(25 + (6 * 1.5)).toFixed(0)}</div>
-                                            <div style={{ fontSize: '0.7rem', color: '#64748B' }}>ESTIMATED FARE</div>
-                                        </div>
-                                        <button 
-                                            onClick={() => handleSelectDriver(assignment)}
-                                            style={{ 
-                                                width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
-                                                backgroundColor: assignment.isRecommended ? '#3B82F6' : '#0F172A',
-                                                color: 'white', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s',
-                                                boxShadow: assignment.isRecommended ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none'
-                                            }}
-                                        >Confirm</button>
-                                        <div style={{ fontSize: '0.65rem', color: '#94A3B8', textAlign: 'center' }}>~15 mins pickup ETA</div>
+                                    <Truck size={48} color="#94A3B8" style={{ marginBottom: '1rem' }} />
+                                    <h3 style={{ color: '#0F172A', fontWeight: '700', marginBottom: '0.5rem' }}>No Available Transporters</h3>
+                                    <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+                                        The AI Engine couldn't find any drivers currently online and available for this route.
+                                    </p>
+                                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                                        <button onClick={fetchAiInsights} style={{ padding: '10px 20px', backgroundColor: '#F1F5F9', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer' }}>Refresh Search</button>
+                                        <button onClick={() => navigate('/retailer/dashboard')} style={{ padding: '10px 20px', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer' }}>Back to Dashboard</button>
                                     </div>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
 
