@@ -150,6 +150,14 @@ public class TransportService {
             d.setAvailable(true);
             driverRepository.save(d);
         }
+
+        // SYNC with Order Status
+        if (transport.getOrder() != null) {
+            Order order = transport.getOrder();
+            order.setStatus("DELIVERED");
+            order.setDeliveredAt(java.time.LocalDateTime.now());
+            orderRepository.save(order);
+        }
         
         return transportRepository.save(transport);
     }
@@ -315,7 +323,10 @@ public class TransportService {
     }
 
     public List<Transport> getAvailableRequests() {
-        return transportRepository.findByStatus("PENDING").stream().filter(Transport::isConfirmedByRetailer).toList();
+        return transportRepository.findByStatus("PENDING").stream()
+                .filter(Transport::isConfirmedByRetailer)
+                .filter(t -> t.getOrder() != null && "SHIPPED".equalsIgnoreCase(t.getOrder().getStatus()))
+                .toList();
     }
 
     public Transport acceptTransport(Long transportId, String driverEmail) {
@@ -329,6 +340,10 @@ public class TransportService {
         transport.setStatus("ACCEPTED");
         driver.setAvailable(false);
         driverRepository.save(driver);
+        
+        // Optionally update order status to PICKED_UP or similar if needed
+        // but user only mentioned PENDING, SHIPPED, and then DELIVERED.
+        
         return transportRepository.save(transport);
     }
     
@@ -336,12 +351,21 @@ public class TransportService {
         Transport transport = transportRepository.findById(transportId)
             .orElseThrow(() -> new RuntimeException("Transport not found"));
         transport.setStatus(status);
-        if ("DELIVERED".equals(status) && transport.getDriver() != null) {
+        
+        if ("DELIVERED".equalsIgnoreCase(status) && transport.getDriver() != null) {
             Driver d = transport.getDriver();
             d.setAvailable(true);
             d.setDeliveredRequests((d.getDeliveredRequests() != null ? d.getDeliveredRequests() : 0) + 1);
             d.setPoints((d.getPoints() != null ? d.getPoints() : 0) + 20); // Bonus for delivery
             driverRepository.save(d);
+            
+            // SYNC with Order Status
+            if (transport.getOrder() != null) {
+                Order order = transport.getOrder();
+                order.setStatus("DELIVERED");
+                order.setDeliveredAt(java.time.LocalDateTime.now());
+                orderRepository.save(order);
+            }
         }
         return transportRepository.save(transport);
     }

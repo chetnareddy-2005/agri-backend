@@ -279,25 +279,23 @@ const RetailerDashboard = () => {
 
     // ... fetchHighestBid ...
 
-    const fetchMyBids = async () => {
+    const fetchMyOrders = async () => {
         try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/bids/my-bids`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, { credentials: 'include' });
+            if (res.status === 401) {
+                console.warn("Unauthorized access to my-orders");
+                return;
+            }
             if (res.ok) {
-                const bids = await res.json();
-                const bidMap = {};
-                bids.forEach(b => {
-                    // Start with 0 or check if higher? Usually we want the highest bid per product by THIS user.
-                    // The list might have multiple bids for same product.
-                    // Let's take the max.
-                    const pid = b.product.id;
-                    if (!bidMap[pid] || b.amount > bidMap[pid]) {
-                        bidMap[pid] = b.amount;
-                    }
-                });
-                setMyBids(bidMap);
+                const data = await res.json();
+                console.log("Retailer orders loaded:", data.length);
+                setMyOrders(data);
+            } else {
+                const errText = await res.text();
+                console.error(`Failed to fetch orders: ${res.status} - ${errText}`);
             }
         } catch (error) {
-            console.error("Error fetching my bids:", error);
+            console.error("Error fetching orders:", error);
         }
     };
 
@@ -536,15 +534,22 @@ const RetailerDashboard = () => {
         }
     };
 
-    const fetchMyOrders = async () => {
+    const fetchMyBids = async () => {
         try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/bids/my-bids`, { credentials: 'include' });
             if (res.ok) {
-                const data = await res.json();
-                setMyOrders(data);
+                const bids = await res.json();
+                const bidMap = {};
+                bids.forEach(b => {
+                    const pid = b.product.id;
+                    if (!bidMap[pid] || b.amount > bidMap[pid]) {
+                        bidMap[pid] = b.amount;
+                    }
+                });
+                setMyBids(bidMap);
             }
         } catch (error) {
-            console.error("Error fetching orders:", error);
+            console.error("Error fetching my bids:", error);
         }
     };
 
@@ -632,6 +637,28 @@ const RetailerDashboard = () => {
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`Invoice_Order_${selectedInvoiceOrder.id}.pdf`);
         });
+    };
+
+    const handleConfirmReceipt = async (orderId) => {
+        if (!window.confirm("Are you sure you have received the goods? This will notify the farmer and finalize the transaction.")) return;
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}/confirm-receipt`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                alert("Receipt confirmed! Thank you for verifying the delivery.");
+                fetchMyOrders();
+                fetchStats();
+                fetchNotifications();
+            } else {
+                const msg = await res.text();
+                alert("Failed: " + msg);
+            }
+        } catch (error) {
+            console.error("Error confirming receipt:", error);
+            alert("Error confirming receipt.");
+        }
     };
 
     const handleTrackOrder = async (orderId) => {
@@ -1093,6 +1120,7 @@ const RetailerDashboard = () => {
                             </div>
                         )}
 
+                        )}
                         {activeTab === 'Orders' && (
                             <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -1153,7 +1181,7 @@ const RetailerDashboard = () => {
                                                                 {/* PRODUCT PAYMENT SECTION */}
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
                                                                     <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>📦 Product</span>
-                                                                    {order.isPaid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' ? (
+                                                                    {order.isPaid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' || order.status === 'RECEIVED' ? (
                                                                         <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
                                                                     ) : (
                                                                         <button onClick={() => handlePayment(order, 'PRODUCT')} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
@@ -1172,6 +1200,20 @@ const RetailerDashboard = () => {
                                                                     </div>
                                                                 ) : (
                                                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontStyle: 'italic', padding: '0 10px' }}>Waiting for Logistics...</div>
+                                                                )}
+
+                                                                {/* RECEIPT CONFIRMATION SECTION */}
+                                                                {order.status === 'DELIVERED' && (
+                                                                    <button 
+                                                                        onClick={() => handleConfirmReceipt(order.id)}
+                                                                        style={{ backgroundColor: '#047857', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                                                                        📥 Confirm Receipt
+                                                                    </button>
+                                                                )}
+                                                                {order.status === 'RECEIVED' && (
+                                                                    <div style={{ backgroundColor: '#DCFCE7', color: '#166534', textAlign: 'center', padding: '4px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid #BBF7D0' }}>
+                                                                        🤝 Received & Verified
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </td>

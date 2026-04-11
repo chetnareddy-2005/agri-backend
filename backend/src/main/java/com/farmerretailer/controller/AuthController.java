@@ -160,10 +160,12 @@ public class AuthController {
                 user.setDocumentName(registrationDTO.getDocumentName());
             }
 
-            // Default to FARMER if not specified or invalid, but handle string to enum
+            // Robust Role Assignment
+            String roleStr = (registrationDTO.getRole() != null) ? registrationDTO.getRole().toUpperCase().trim() : "FARMER";
             try {
-                user.setRole(com.farmerretailer.model.Role.valueOf(registrationDTO.getRole()));
-            } catch (IllegalArgumentException | NullPointerException e) {
+                user.setRole(com.farmerretailer.model.Role.valueOf(roleStr));
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid role received: " + roleStr + ". Defaulting to FARMER.");
                 user.setRole(com.farmerretailer.model.Role.FARMER);
             }
 

@@ -55,11 +55,35 @@ public class AllocationService {
         List<Driver> allDrivers = transportService.getAllTransporters().stream()
                 .filter(Driver::isAvailable)
                 .collect(Collectors.toList());
-                
-        return allDrivers.stream()
+        
+        List<Map<String, Object>> assignments = allDrivers.stream()
                 .map(d -> calculateAllocationScore(d, "Current Location", destination, "Clear"))
+                .collect(Collectors.toList());
+
+        // Presentation Mode: Add mock drivers if database is empty
+        if (assignments.isEmpty()) {
+            assignments.add(createMockAssignment(101L, "Rahul Sharma", 88, 92, 75, "Auto-Rickshaw", "SAFE", "🥇 Efficiency Leader"));
+            assignments.add(createMockAssignment(102L, "Suresh Kumar", 72, 65, 88, "Tata Ace (Truck)", "SAFE", "⚖️ Fairness Pick"));
+        }
+                
+        return assignments.stream()
                 .sorted((a, b) -> Double.compare(Double.valueOf(b.get("score").toString()), Double.valueOf(a.get("score").toString())))
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> createMockAssignment(Long id, String name, int score, int eff, int fair, String vehicle, String risk, String badge) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("driverId", id);
+        m.put("driverName", name + " (AI Partner)");
+        m.put("score", score);
+        m.put("efficiency", eff);
+        m.put("fairness", fair);
+        m.put("risk", risk);
+        m.put("vehicle", vehicle);
+        m.put("badge", badge);
+        m.put("isRecommended", score > 80);
+        m.put("explanation", "Simulated driver for marketplace demonstration.");
+        return m;
     }
 
     private String generateFairnessExplanation(double eff, double fair) {

@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.farmerretailer.entity.User;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,6 +38,9 @@ public class PaymentService {
 
     @org.springframework.beans.factory.annotation.Autowired
     private EmailService emailService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.farmerretailer.repository.UserRepository userRepository;
 
     public java.util.Map<String, String> createOrder(Double amount, String customerId, String customerPhone,
             String customerName, String existingOrderId)
@@ -155,7 +159,10 @@ public class PaymentService {
                                     "success");
 
                             if (order.getProduct().getFarmer() != null) {
-                                emailService.sendPaymentSuccessFarmer(order.getProduct().getFarmer().getEmail(), order);
+                                User farmer = order.getProduct().getFarmer();
+                                farmer.setEscrowBalance(farmer.getEscrowBalance() + order.getTotalPrice());
+                                userRepository.save(farmer);
+                                emailService.sendPaymentSuccessFarmer(farmer.getEmail(), order);
                             }
                         }
                     } else if ("LOGISTICS".equalsIgnoreCase(paymentType)) {
@@ -172,10 +179,14 @@ public class PaymentService {
                                     "success");
                            
                             if (transport.getDriver() != null && transport.getDriver().getUser() != null) {
+                                User driverUser = transport.getDriver().getUser();
+                                driverUser.setEscrowBalance(driverUser.getEscrowBalance() + transport.getUpdatedPrice());
+                                userRepository.save(driverUser);
+
                                 notificationService.createNotification(
-                                    transport.getDriver().getUser(),
+                                    driverUser,
                                     "Payment Received",
-                                    "Retailer has paid for delivery of Order #" + dbId + ".",
+                                    "Retailer has paid for delivery of Order #" + dbId + ". Funds added to escrow.",
                                     "info"
                                 );
                             }

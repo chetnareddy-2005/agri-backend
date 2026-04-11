@@ -12,7 +12,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}, allowCredentials = "true")
+@CrossOrigin(origins = {
+        "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176",
+        "http://127.0.0.1:5173", "http://127.0.0.1:5174",
+        "https://matcher-sculpture-delay.ngrok-free.app"
+}, allowCredentials = "true")
 public class OrderController {
 
     @Autowired
@@ -34,17 +38,41 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders") // For Retailer
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Order>> getMyOrders(Principal principal) {
-        if (principal == null)
+        if (principal == null) {
+            System.err.println("DEBUG: getMyOrders - Principal is NULL!");
             return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(orderService.getRetailerOrders(principal.getName()));
+        }
+        System.out.println("DEBUG: getMyOrders called for: " + principal.getName());
+        try {
+            List<Order> orders = orderService.getRetailerOrders(principal.getName());
+            System.out.println("DEBUG: Found " + (orders != null ? orders.size() : 0) + " orders for retailer");
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error in getMyOrders: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/received-orders") // For Farmer
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Order>> getReceivedOrders(Principal principal) {
-        if (principal == null)
+        if (principal == null) {
+            System.err.println("DEBUG: getReceivedOrders - Principal is NULL!");
             return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(orderService.getFarmerOrders(principal.getName()));
+        }
+        System.out.println("DEBUG: getReceivedOrders called for: " + principal.getName());
+        try {
+            List<Order> orders = orderService.getFarmerOrders(principal.getName());
+            System.out.println("DEBUG: Found " + (orders != null ? orders.size() : 0) + " orders");
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error in getReceivedOrders: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PutMapping("/modify/{id}")
@@ -69,10 +97,19 @@ public class OrderController {
             return ResponseEntity.status(401).build();
         try {
             String newStatus = payload.get("status");
-            // Security check should be in service, but for now assuming Farmer is
-            // authorized
-            // if they own the product. Service handles logic.
             Order order = orderService.updateOrderStatus(id, newStatus);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/confirm-receipt")
+    public ResponseEntity<?> confirmReceipt(@PathVariable Long id, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+        try {
+            Order order = orderService.confirmOrderReceipt(id, principal.getName());
             return ResponseEntity.ok(order);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

@@ -105,6 +105,7 @@ public class ContinuousAuthController {
                 
                 Map<String, String> mediumRiskBody = new HashMap<>();
                 mediumRiskBody.put("challenge", "OTP_REQUIRED");
+                mediumRiskBody.put("otp", otp); // Added for on-screen display during demo/presentation
                 mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
                 

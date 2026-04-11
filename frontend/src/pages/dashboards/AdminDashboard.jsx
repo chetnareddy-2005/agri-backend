@@ -493,9 +493,9 @@ const AdminDashboard = () => {
                     />
                     <NavItem
                         icon={<Users size={20} />}
-                        label="Approvals"
-                        active={activeTab === 'Approvals'}
-                        onClick={() => setActiveTab('Approvals')}
+                        label="KYC Verification"
+                        active={activeTab === 'KYC Verification'}
+                        onClick={() => setActiveTab('KYC Verification')}
                     />
                     <NavItem
                         icon={<MessageSquare size={20} />}
@@ -587,7 +587,7 @@ const AdminDashboard = () => {
                                     <h3 style={{ color: '#f59e0b', fontSize: '2rem', fontWeight: 'bold' }}>{stats.transportersCount || 0}</h3>
                                     <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Transporters</p>
                                 </div>
-                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', borderLeft: '5px solid #db2777', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }} onClick={() => setActiveTab('Approvals')}>
+                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', borderLeft: '5px solid #db2777', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }} onClick={() => setActiveTab('KYC Verification')}>
                                     <h3 style={{ color: '#db2777', fontSize: '2rem', fontWeight: 'bold' }}>{pendingUsers.length}</h3>
                                     <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Pending Verifications</p>
                                     <p style={{ fontSize: '0.75rem', color: '#db2777', marginTop: '0.25rem' }}>Click to review</p>
@@ -673,8 +673,8 @@ const AdminDashboard = () => {
                                                     <td style={{ padding: '1rem' }}>
                                                         <span style={{
                                                             padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600',
-                                                            backgroundColor: txn.status === 'DELIVERED' ? '#DCFCE7' : txn.status === 'SHIPPED' ? '#DBEAFE' : '#FEE2E2',
-                                                            color: txn.status === 'DELIVERED' ? '#166534' : txn.status === 'SHIPPED' ? '#1E40AF' : '#991B1B'
+                                                            backgroundColor: (txn.status === 'DELIVERED' || txn.status === 'RECEIVED') ? '#DCFCE7' : txn.status === 'SHIPPED' ? '#DBEAFE' : '#FEE2E2',
+                                                            color: (txn.status === 'DELIVERED' || txn.status === 'RECEIVED') ? '#166534' : txn.status === 'SHIPPED' ? '#1E40AF' : '#991B1B'
                                                         }}>
                                                             {txn.status}
                                                         </span>
@@ -809,8 +809,8 @@ const AdminDashboard = () => {
                         </div>
                     )}
 
-                    {/* APPROVALS TAB */}
-                    {activeTab === 'Approvals' && (
+                    {/* KYC VERIFICATION TAB */}
+                    {activeTab === 'KYC Verification' && (
                         <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)' }}>
                             <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 'bold' }}>Pending Approvals</h3>
                             {isLoading ? (

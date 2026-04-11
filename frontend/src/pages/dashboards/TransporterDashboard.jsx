@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Truck, DollarSign, CheckCircle, Navigation, MapPin, Edit3, XCircle, Trophy, BarChart2, Star, ShieldCheck, Camera, PenTool, Menu, LayoutDashboard, ChevronRight, LogOut } from 'lucide-react';
+import { Truck, DollarSign, CheckCircle, Navigation, MapPin, Edit3, XCircle, Trophy, BarChart2, Star, ShieldCheck, Camera, PenTool, Menu, LayoutDashboard, ChevronRight, LogOut, Wallet } from 'lucide-react';
 import L from 'leaflet';
 import '../../styles/global.css';
 import AlertBanner from '../../components/AlertBanner';
@@ -30,7 +30,9 @@ const TransporterDashboard = () => {
     const [negotiatedPrice, setNegotiatedPrice] = useState(0);
     const [currentProofOrder, setCurrentProofOrder] = useState(null);
     const [showProofModal, setShowProofModal] = useState(false);
+    const [deliveredDeliveries, setDeliveredDeliveries] = useState([]);
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
+    const [wallet, setWallet] = useState({ availableBalance: 0, escrowBalance: 0 });
 
     const fetchWithAuth = async (url, options = {}) => {
         const authToken = localStorage.getItem('auth_token');
@@ -60,9 +62,13 @@ const TransporterDashboard = () => {
         }
         setUser(parsedUser);
         fetchDashboardData();
+        fetchWallet();
 
         const locInterval = setInterval(updateLocation, 30000); // 30s
-        const fetchInterval = setInterval(fetchDashboardData, 10000); // 10s
+        const fetchInterval = setInterval(() => {
+            fetchDashboardData();
+            fetchWallet();
+        }, 10000); // 10s
 
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
@@ -84,15 +90,33 @@ const TransporterDashboard = () => {
 
             if (res.ok) {
                 const data = await res.json();
+                console.log("Transporter Deliveries loaded:", data.length);
                 setAvailableRequests(data.filter(d => d.status === 'PENDING' || d.status === 'PRICE_UPDATED' || d.status === 'SCHEDULED'));
                 setActiveDeliveries(data.filter(d => d.status === 'ACCEPTED' || d.status === 'ON_THE_WAY'));
+                const delivered = data.filter(d => d.status === 'DELIVERED' || d.status === 'Delivered');
+                console.log("Delivered items found:", delivered.length);
+                setDeliveredDeliveries(delivered);
             }
-            if (dRes.ok) setDriverInfo(await dRes.json());
+            if (dRes.ok) {
+                const info = await dRes.json();
+                console.log("Driver Info loaded:", info);
+                setDriverInfo(info);
+            }
         } catch (err) {
-            console.error(err);
+            console.error("Dashboard Fetch Error:", err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchWallet = async () => {
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/wallet/balance`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setWallet(data);
+            }
+        } catch (err) { console.error(err); }
     };
 
     const updateLocation = () => {
@@ -218,6 +242,7 @@ const TransporterDashboard = () => {
                     <NavItem icon={<Navigation size={20} />} label="Live Tracking" active={activeTab === 'Tracking'} onClick={() => setActiveTab('Tracking')} />
                     <NavItem icon={<DollarSign size={20} />} label="Bidding Hub" active={activeTab === 'Bidding'} onClick={() => setActiveTab('Bidding')} />
                     <NavItem icon={<ShieldCheck size={20} />} label="My Rewards" active={activeTab === 'Rewards'} onClick={() => setActiveTab('Rewards')} />
+                    <NavItem icon={<Wallet size={20} />} label="Wallet" active={activeTab === 'Wallet'} onClick={() => setActiveTab('Wallet')} />
                 </nav>
 
                 <div style={{ padding: '2rem 1.5rem', borderTop: '1px solid var(--border-color)' }}>
@@ -360,6 +385,75 @@ const TransporterDashboard = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {activeTab === 'Rewards' && (
+                        <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>My Rewards Hub</h3>
+                                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginTop: '4px' }}>Track your delivery success and earned incentives.</p>
+                                </div>
+                                <div style={{ backgroundColor: '#DBEAFE', color: '#1E40AF', padding: '0.75rem 1.5rem', borderRadius: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Trophy size={20} color="#F59E0B" fill="#F59E0B" /> {driverInfo.points} Points
+                                </div>
+                            </div>
+
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                    <thead>
+                                        <tr style={{ color: 'var(--text-tertiary)', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
+                                            <th style={{ padding: '1rem' }}>Delivery #</th>
+                                            <th style={{ padding: '1rem' }}>Destination</th>
+                                            <th style={{ padding: '1rem' }}>Distance</th>
+                                            <th style={{ padding: '1rem' }}>Payout</th>
+                                            <th style={{ padding: '1rem' }}>Payment Status</th>
+                                            <th style={{ padding: '1rem' }}>Reward</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {deliveredDeliveries.length === 0 ? (
+                                            <tr><td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>No completed deliveries yet. Start your first trip to earn rewards!</td></tr>
+                                        ) : (
+                                            deliveredDeliveries.map(delivery => (
+                                                <tr key={delivery.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
+                                                    <td style={{ padding: '1.2rem', fontWeight: 'bold' }}>#{delivery.id}</td>
+                                                    <td style={{ padding: '1.2rem' }}>{delivery.order?.retailer?.address || 'Retail Cluster'}</td>
+                                                    <td style={{ padding: '1.2rem' }}>{delivery.distanceKm.toFixed(1)} km</td>
+                                                    <td style={{ padding: '1.2rem', fontWeight: 'bold', color: '#10B981' }}>₹{delivery.updatedPrice.toFixed(0)}</td>
+                                                    <td style={{ padding: '1.2rem' }}>
+                                                        {delivery.isPaid ? (
+                                                            <span style={{ color: '#059669', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Received</span>
+                                                        ) : (
+                                                            <span style={{ color: '#D97706', fontWeight: 'bold' }}>Processing...</span>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ padding: '1.2rem' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#7E22CE', fontWeight: '700' }}>
+                                                            +{(delivery.distanceKm * 5).toFixed(0)} XP
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'Wallet' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                            <div style={{ backgroundColor: '#3b82f6', color: 'white', padding: '2.5rem', borderRadius: '24px', boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)' }}>
+                                <div style={{ fontSize: '1rem', opacity: 0.9 }}>Available Balance</div>
+                                <div style={{ fontSize: '3rem', fontWeight: 'bold', marginTop: '0.5rem' }}>₹{wallet.availableBalance.toLocaleString()}</div>
+                                <p style={{ fontSize: '0.85rem', marginTop: '1rem', opacity: 0.8 }}>Ready for withdrawal</p>
+                            </div>
+                            <div style={{ backgroundColor: '#6366f1', color: 'white', padding: '2.5rem', borderRadius: '24px', boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)' }}>
+                                <div style={{ fontSize: '1rem', opacity: 0.9 }}>Escrow Balance</div>
+                                <div style={{ fontSize: '3rem', fontWeight: 'bold', marginTop: '0.5rem' }}>₹{wallet.escrowBalance.toLocaleString()}</div>
+                                <p style={{ fontSize: '0.85rem', marginTop: '1rem', opacity: 0.8 }}>Waiting for retailer confirmation</p>
+                            </div>
                         </div>
                     )}
                 </main>

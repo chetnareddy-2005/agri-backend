@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { LayoutDashboard, ShoppingBag, List, User, LogOut, Plus, ChevronRight, Bell, HelpCircle, Star } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, List, User, LogOut, Plus, ChevronRight, Bell, HelpCircle, Star, Wallet } from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ProductImage from '../../components/ProductImage';
@@ -41,11 +41,37 @@ const FarmerDashboard = () => {
     // productBids removed as highestBid is now in product object
     const [stats, setStats] = useState({ listings: 0, totalSales: 0, pendingOrders: 0 });
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
+    const [wallet, setWallet] = useState({ availableBalance: 0, escrowBalance: 0 });
 
     const handleUnauthorized = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('auth_risk_level');
         navigate('/');
+    };
+
+    const fetchUserProfile = async () => {
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/users/profile`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data);
+                localStorage.setItem('user', JSON.stringify(data));
+            }
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+        }
+    };
+
+    const fetchWallet = async () => {
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/wallet/balance`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setWallet(data);
+            }
+        } catch (error) {
+            console.error("Error fetching wallet:", error);
+        }
     };
 
     useEffect(() => {
@@ -55,6 +81,8 @@ const FarmerDashboard = () => {
         }
         // fetchStats(); // Removed as stats are now calculated dynamically
         fetchReceivedOrders();
+        fetchUserProfile();
+        fetchWallet();
 
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
@@ -65,7 +93,16 @@ const FarmerDashboard = () => {
     // Polling for real-time updates
     useEffect(() => {
         fetchMyListings(); // Initial fetch
-        const intervalId = setInterval(fetchMyListings, 5000); // Poll every 5 seconds
+        fetchUserProfile();
+        fetchReceivedOrders();
+        fetchWallet();
+        
+        const intervalId = setInterval(() => {
+            fetchMyListings();
+            fetchUserProfile();
+            fetchReceivedOrders();
+            fetchWallet();
+        }, 5000); 
 
         return () => clearInterval(intervalId); // Cleanup on unmount
     }, []);
@@ -618,11 +655,32 @@ const FarmerDashboard = () => {
         });
     };
 
+    const NavItem = ({ icon, label, active, onClick }) => (
+        <div onClick={onClick} style={{
+            display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem',
+            borderRadius: '8px', cursor: 'pointer', marginBottom: '0.5rem',
+            backgroundColor: active ? '#DCFCE7' : 'transparent',
+            color: active ? '#166534' : 'var(--text-secondary)',
+            fontWeight: active ? '600' : '500'
+        }}>
+            {icon} {label}
+        </div>
+    );
+
+    const KPICard = ({ title, value, subtext, icon }) => (
+        <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ padding: '1rem', backgroundColor: '#F3F4F6', borderRadius: '12px' }}>{icon}</div>
+            <div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>{title}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{value}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{subtext}</div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="farmer-dashboard-root" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)', fontFamily: '"Inter", sans-serif', color: 'var(--text-secondary)' }}>
-            {/* Sidebar code remains matching ... */}
             <aside style={{ width: '250px', backgroundColor: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
-                {/* ... Sidebar content ... */}
                 <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#16a34a', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ backgroundColor: '#16a34a', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '1.2rem' }}>F</span>
@@ -633,9 +691,9 @@ const FarmerDashboard = () => {
                 </div>
 
                 <nav style={{ flex: 1, padding: '1rem' }}>
-                    <div onClick={() => setActiveTab('Dashboard')}><NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === 'Dashboard'} /></div>
-                    <div onClick={() => setActiveTab('My Listings')}><NavItem icon={<List size={20} />} label="My Listings" active={activeTab === 'My Listings'} /></div>
-                    <div onClick={() => {
+                    <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
+                    <NavItem icon={<List size={20} />} label="My Listings" active={activeTab === 'My Listings'} onClick={() => setActiveTab('My Listings')} />
+                    <NavItem icon={<Plus size={20} />} label="Add Listing" active={activeTab === 'AddProduct'} onClick={() => {
                         setEditingProductId(null);
                         setFormData({
                             name: '', category: 'Vegetables', quantity: '', unit: 'kg', price: '',
@@ -643,9 +701,10 @@ const FarmerDashboard = () => {
                             biddingStartTime: null, biddingEndTime: null, imageUrls: [], listingType: 'AUCTION'
                         });
                         setActiveTab('AddProduct');
-                    }}><NavItem icon={<Plus size={20} />} label="Add Listing" active={activeTab === 'AddProduct'} /></div>
-                    <div onClick={() => setActiveTab('Orders')}><NavItem icon={<ShoppingBag size={20} />} label="Received Orders" active={activeTab === 'Orders'} /></div>
-                    <div onClick={() => { setActiveTab('Feedbacks'); fetchMyFeedbacks(); }}><NavItem icon={<Star size={20} />} label="Feedbacks" active={activeTab === 'Feedbacks'} /></div>
+                    }} />
+                    <NavItem icon={<ShoppingBag size={20} />} label="Received Orders" active={activeTab === 'Orders'} onClick={() => setActiveTab('Orders')} />
+                    <NavItem icon={<Wallet size={20} />} label="Wallet" active={activeTab === 'Wallet'} onClick={() => setActiveTab('Wallet')} />
+                    <NavItem icon={<Star size={20} />} label="Feedbacks" active={activeTab === 'Feedbacks'} onClick={() => { setActiveTab('Feedbacks'); fetchMyFeedbacks(); }} />
 
                     <div onClick={() => setActiveTab('Notifications')}>
                         <div style={{ position: 'relative' }}>
@@ -662,8 +721,8 @@ const FarmerDashboard = () => {
                         </div>
                     </div>
 
-                    <div onClick={() => setActiveTab('Profile')}><NavItem icon={<User size={20} />} label="Profile" active={activeTab === 'Profile'} /></div>
-                    <div onClick={() => { setActiveTab('Help'); fetchMyComplaints(); }}><NavItem icon={<HelpCircle size={20} />} label="Help / Messages" active={activeTab === 'Help'} /></div>
+                    <NavItem icon={<User size={20} />} label="Profile" active={activeTab === 'Profile'} onClick={() => setActiveTab('Profile')} />
+                    <NavItem icon={<HelpCircle size={20} />} label="Help / Messages" active={activeTab === 'Help'} onClick={() => { setActiveTab('Help'); fetchMyComplaints(); }} />
                 </nav>
 
                 <div style={{ padding: '2rem' }}>
@@ -682,11 +741,7 @@ const FarmerDashboard = () => {
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-                {/* ... Header and other tabs ... */}
-
-                {/* Header */}
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                     <div>
                         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
@@ -703,7 +758,18 @@ const FarmerDashboard = () => {
                     </div>
                 </header>
 
-
+                {activeTab === 'Wallet' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div style={{ backgroundColor: '#16a34a', color: 'white', padding: '2rem', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(22, 163, 74, 0.3)' }}>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Available Balance</div>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginTop: '0.5rem' }}>₹{wallet.availableBalance.toLocaleString()}</div>
+                        </div>
+                        <div style={{ backgroundColor: '#2563eb', color: 'white', padding: '2rem', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)' }}>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Escrow Balance</div>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginTop: '0.5rem' }}>₹{wallet.escrowBalance.toLocaleString()}</div>
+                        </div>
+                    </div>
+                )}
 
                 {activeTab === 'Feedbacks' && (
                     <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)' }}>
@@ -740,14 +806,11 @@ const FarmerDashboard = () => {
                             <KPICard title="Pending Orders" value={stats.pendingOrders} subtext="Awaiting your action" icon={<Bell size={24} color="#db2777" />} />
                         </div>
 
-                        {/* Weather Intelligence Hub */}
                         <div style={{ marginBottom: '2.5rem' }}>
                             <WeatherIntelligence role="FARMER" location={user?.city || user?.address || "Hyderabad"} />
                         </div>
 
-                        {/* Charts Row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '2rem' }}>
-                            {/* Pie Chart */}
                             <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)' }}>
                                 <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '1rem' }}>Produce mix</h3>
                                 <div style={{ height: '200px' }}>
@@ -772,7 +835,6 @@ const FarmerDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Bar Chart */}
                             <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)' }}>
                                 <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '1rem' }}>Monthly sales (recent)</h3>
                                 <div style={{ height: '200px' }}>
@@ -789,7 +851,6 @@ const FarmerDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Recent Orders */}
                         <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>Recent orders</h3>
@@ -813,15 +874,18 @@ const FarmerDashboard = () => {
                                             <td style={{ padding: '1rem 0', color: 'var(--text-secondary)' }}>{order.quantity}</td>
                                             <td style={{ padding: '1rem 0', color: 'var(--text-secondary)' }}>₹{order.totalPrice}</td>
                                             <td style={{ padding: '1rem 0' }}>
-                                                <select
-                                                    value={order.status}
-                                                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                                    style={{ padding: '0.25rem', borderRadius: '4px', border: '1px solid #D1D5DB', fontSize: '0.75rem' }}
-                                                >
-                                                    <option value="PENDING">Pending</option>
-                                                    <option value="SHIPPED">Shipped</option>
-                                                    <option value="DELIVERED">Delivered</option>
-                                                </select>
+                                                {order.status === 'DELIVERED' ? (
+                                                    <span style={{ backgroundColor: '#DCFCE7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>Delivered</span>
+                                                ) : (
+                                                    <select
+                                                        value={order.status}
+                                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                                        style={{ padding: '0.25rem', borderRadius: '4px', border: '1px solid #D1D5DB', fontSize: '0.75rem' }}
+                                                    >
+                                                        <option value="PENDING">Pending</option>
+                                                        <option value="SHIPPED">Shipped</option>
+                                                    </select>
+                                                )}
                                             </td>
                                             <td style={{ padding: '1rem 0', color: 'var(--text-tertiary)' }}>
                                                 {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
@@ -1157,15 +1221,20 @@ const FarmerDashboard = () => {
                                             <td style={{ padding: '1rem 0' }}>{order.quantity}</td>
                                             <td style={{ padding: '1rem 0' }}>₹{order.totalPrice}</td>
                                             <td style={{ padding: '1rem 0' }}>
-                                                <select
-                                                    value={order.status}
-                                                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                                    style={{ padding: '0.25rem', borderRadius: '4px', border: '1px solid #D1D5DB' }}
-                                                >
-                                                    <option value="PENDING">Pending</option>
-                                                    <option value="SHIPPED">Shipped</option>
-                                                    <option value="DELIVERED">Delivered</option>
-                                                </select>
+                                                {order.status === 'RECEIVED' ? (
+                                                    <span style={{ backgroundColor: '#DCFCE7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Received</span>
+                                                ) : order.status === 'DELIVERED' ? (
+                                                    <span style={{ backgroundColor: '#FEF9C3', color: '#854D0E', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>🚚 Delivered</span>
+                                                ) : (
+                                                    <select
+                                                        value={order.status}
+                                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                                        style={{ padding: '0.25rem', borderRadius: '4px', border: '1px solid #D1D5DB' }}
+                                                    >
+                                                        <option value="PENDING">Pending</option>
+                                                        <option value="SHIPPED">Shipped</option>
+                                                    </select>
+                                                )}
                                             </td>
                                             <td style={{ padding: '1rem 0' }}>
                                                 {(order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'SHIPPED') ? (

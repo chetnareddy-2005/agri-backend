@@ -15,9 +15,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByProductId(Long productId);
 
-    List<Order> findByRetailerId(Long retailerId);
-
     List<Order> findByProductFarmerId(Long farmerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT o FROM Order o JOIN FETCH o.product p JOIN FETCH p.farmer f LEFT JOIN FETCH o.transport t WHERE o.retailer.id = :retailerId ORDER BY o.orderDate DESC")
+    List<Order> findAllByRetailerIdWithDetails(@Param("retailerId") Long retailerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT o FROM Order o JOIN FETCH o.product p JOIN FETCH p.farmer f LEFT JOIN FETCH o.transport t WHERE f.id = :farmerId ORDER BY o.orderDate DESC")
+    List<Order> findAllByFarmerIdWithDetails(@Param("farmerId") Long farmerId);
+
+    List<Order> findByRetailerId(Long retailerId);
 
     long countByRetailerId(Long retailerId);
 

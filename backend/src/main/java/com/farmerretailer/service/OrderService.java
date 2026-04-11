@@ -1,8 +1,8 @@
 package com.farmerretailer.service;
 
 import com.farmerretailer.entity.Order;
-import com.farmerretailer.entity.Product;
 import com.farmerretailer.entity.User;
+import com.farmerretailer.entity.Product;
 import com.farmerretailer.repository.OrderRepository;
 import com.farmerretailer.repository.ProductRepository;
 import com.farmerretailer.repository.UserRepository;
@@ -16,13 +16,13 @@ import java.util.List;
 public class OrderService {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
     private ProductRepository productRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private EmailService emailService;
@@ -79,14 +79,22 @@ public class OrderService {
         return savedOrder;
     }
 
+    @Transactional(readOnly = true)
     public List<Order> getRetailerOrders(String email) {
-        User retailer = userRepository.findByEmail(email).orElseThrow();
-        return orderRepository.findByRetailerId(retailer.getId());
+        User retailer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Retailer not found for email: " + email));
+        return orderRepository.findAllByRetailerIdWithDetails(retailer.getId());
     }
 
+    @Transactional(readOnly = true)
     public List<Order> getFarmerOrders(String email) {
-        User farmer = userRepository.findByEmail(email).orElseThrow();
-        return orderRepository.findByProductFarmerId(farmer.getId());
+        System.out.println("OrderService: getFarmerOrders for email: " + email);
+        User farmer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Farmer not found for email: " + email));
+        System.out.println("OrderService: Farmer found with ID: " + farmer.getId());
+        List<Order> orders = orderRepository.findAllByFarmerIdWithDetails(farmer.getId());
+        System.out.println("OrderService: Repository returned " + (orders != null ? orders.size() : 0) + " orders");
+        return orders;
     }
 
     @Transactional
@@ -151,12 +159,79 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Notify Retailer about status change
-        notificationService.createNotification(
-                order.getRetailer(),
-                "Order Status Updated",
-                "Your order #" + orderId + " is now " + newStatus + ".",
-                "info");
+        // Notify Retailer about status change (if not already confirmed by them)
+        if (!"RECEIVED".equalsIgnoreCase(newStatus)) {
+            notificationService.createNotification(
+                    order.getRetailer(),
+                    "Order Status Updated",
+                    "Your order #" + orderId + " is now " + newStatus + ".",
+                    "info");
+        }
+
+        return savedOrder;
+    }
+
+    @Transactional
+    public Order confirmOrderReceipt(Long orderId, String retailerEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getRetailer().getEmail().equals(retailerEmail)) {
+            throw new RuntimeException("Unauthorized: Only the assigned retailer can confirm receipt.");
+        }
+
+        if (!"DELIVERED".equalsIgnoreCase(order.getStatus())) {
+            throw new RuntimeException("Cannot confirm receipt: Order has not been delivered by the transporter yet.");
+        }
+
+        order.setStatus("RECEIVED");
+        Order savedOrder = orderRepository.save(order);
+
+        // Financial Settlement: Handshake complete, release funds from escrow to available balance
+        try {
+            // RELEASE FARMER FUNDS
+            if (order.getProduct() != null && order.getProduct().getFarmer() != null) {
+                User farmer = order.getProduct().getFarmer();
+                double amount = order.getTotalPrice();
+                if (farmer.getEscrowBalance() >= amount) {
+                    farmer.setEscrowBalance(farmer.getEscrowBalance() - amount);
+                    farmer.setAvailableBalance(farmer.getAvailableBalance() + amount);
+                    userRepository.save(farmer);
+                }
+            }
+
+            // RELEASE TRANSPORTER FUNDS
+            if (order.getTransport() != null && order.getTransport().getDriver() != null) {
+                User driverUser = order.getTransport().getDriver().getUser();
+                double transportAmount = order.getTransport().getUpdatedPrice();
+                if (driverUser != null && driverUser.getEscrowBalance() >= transportAmount) {
+                    driverUser.setEscrowBalance(driverUser.getEscrowBalance() - transportAmount);
+                    driverUser.setAvailableBalance(driverUser.getAvailableBalance() + transportAmount);
+                    userRepository.save(driverUser);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Settlement Error for Order #" + orderId + ": " + e.getMessage());
+        }
+
+        // Notify Farmer
+        if (order.getProduct() != null && order.getProduct().getFarmer() != null) {
+            notificationService.createNotification(
+                    order.getProduct().getFarmer(),
+                    "📦 Delivery Confirmed by Retailer",
+                    "Retailer " + order.getRetailer().getFullName() + " has confirmed receipt of Order #" + orderId + ". Funds can now be settled.",
+                    "success");
+        }
+
+        // Notify Transporter
+        if (order.getTransport() != null && order.getTransport().getDriver() != null) {
+            notificationService.createNotification(
+                order.getTransport().getDriver().getUser(),
+                "Delivery Confirmed & Verified",
+                "Retailer confirmed receipt of Order #" + order.getId() + ". Funds released to your wallet.",
+                "success"
+            );
+        }
 
         return savedOrder;
     }

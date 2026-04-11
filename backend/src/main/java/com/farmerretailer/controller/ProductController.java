@@ -11,7 +11,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}, allowCredentials = "true")
+@CrossOrigin(origins = {
+        "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176",
+        "http://127.0.0.1:5173", "http://127.0.0.1:5174",
+        "https://matcher-sculpture-delay.ngrok-free.app"
+}, allowCredentials = "true")
 public class ProductController {
 
     @Autowired
@@ -37,9 +41,21 @@ public class ProductController {
 
     @GetMapping("/my-products")
     public ResponseEntity<?> getMyProducts(Principal principal) {
-        if (principal == null)
+        if (principal == null) {
+            System.err.println("DEBUG: getMyProducts - Principal is NULL!");
             return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(productService.getFarmerProducts(principal.getName()));
+        }
+        String email = principal.getName();
+        System.out.println("DEBUG: Fetching products for farmer email: " + email);
+        try {
+            List<Product> products = productService.getFarmerProducts(email);
+            System.out.println("DEBUG: Successfully fetched " + products.size() + " products for email: " + email);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error in getMyProducts for " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")

@@ -60,4 +60,10 @@ public class User {
     private byte[] documentContent;
 
     private String documentContentType;
+
+    @Column(nullable = false)
+    private Double availableBalance = 0.0;
+
+    @Column(nullable = false)
+    private Double escrowBalance = 0.0;
 }

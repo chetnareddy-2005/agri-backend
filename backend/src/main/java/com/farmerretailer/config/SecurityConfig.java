@@ -40,9 +40,12 @@ public class SecurityConfig {
                     config.setAllowedOrigins(java.util.Arrays.asList(
                             "http://localhost:5173", 
                             "http://localhost:5174",
+                            "http://localhost:5175",
+                            "http://localhost:5176",
                             "http://127.0.0.1:5173",
                             "http://127.0.0.1:5174",
-                            "https://chetnareddy-2005.github.io"
+                            "https://chetnareddy-2005.github.io",
+                            "https://matcher-sculpture-delay.ngrok-free.app"
                     )); // Frontend URLs
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     config.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "X-Auth-Token", "Accept"));

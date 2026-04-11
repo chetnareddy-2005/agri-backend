@@ -33,14 +33,12 @@ public class ProductService {
 
     @Transactional
     public Product createProduct(ProductDTO productDTO, String farmerEmail) {
+        System.out.println("DEBUG: Creating product for farmer email: " + farmerEmail);
         User farmer = userRepository.findByEmail(farmerEmail)
                 .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
         if (!farmer.getRole().equals(Role.FARMER)) {
-            System.out.println("DEBUG: Role Mismatch!");
-            System.out.println("User Email: " + farmer.getEmail());
-            System.out.println("User Role: " + farmer.getRole());
-            System.out.println("Expected Role: " + Role.FARMER);
+            System.out.println("DEBUG: Role Mismatch! Found: " + farmer.getRole());
             throw new RuntimeException("Only farmers can list products. Current role: " + farmer.getRole());
         }
 
@@ -60,6 +58,7 @@ public class ProductService {
         product.setListingType(productDTO.getListingType());
 
         Product savedProduct = productRepository.save(product);
+        System.out.println("DEBUG: Product saved successfully with ID: " + savedProduct.getId() + " Linked to Farmer ID: " + farmer.getId());
 
         // Notify all retailers
         try {
@@ -160,20 +159,52 @@ public class ProductService {
     @Autowired
     private com.farmerretailer.repository.BidRepository bidRepository;
 
+    @Transactional(readOnly = true)
     public List<Product> getFarmerProducts(String email) {
-        User farmer = userRepository.findByEmail(email).orElseThrow();
+        System.out.println("DEBUG: getFarmerProducts called for email: " + email);
+        User farmer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Farmer not found for email: " + email));
+        
+        System.out.println("DEBUG: Found farmer with ID: " + farmer.getId());
         List<Product> products = productRepository.findByFarmerId(farmer.getId());
-        for (Product product : products) {
-            Double maxBid = bidRepository.findHighestBidAmountByProductId(product.getId());
-            product.setHighestBid(maxBid != null ? maxBid : 0.0);
-            if (product.getOrders() != null && !product.getOrders().isEmpty()) {
-                product.setWinnerName(product.getOrders().get(0).getRetailer().getFullName());
+        System.out.println("DEBUG: Found " + products.size() + " products for farmer ID: " + farmer.getId());
 
-                java.util.List<Product.BuyerInfo> buyerList = new java.util.ArrayList<>();
-                for (Order order : product.getOrders()) {
-                    buyerList.add(new Product.BuyerInfo(order.getRetailer().getFullName(), order.getQuantity()));
+        for (Product product : products) {
+            try {
+                // Initialize highest bid
+                Double maxBid = bidRepository.findHighestBidAmountByProductId(product.getId());
+                product.setHighestBid(maxBid != null ? maxBid : 0.0);
+                
+                double totalSold = 0.0;
+                // Initialize orders and buyers info
+                if (product.getOrders() != null && !product.getOrders().isEmpty()) {
+                    // Safe access to first order's retailer
+                    Order firstOrder = product.getOrders().get(0);
+                    if (firstOrder.getRetailer() != null) {
+                        product.setWinnerName(firstOrder.getRetailer().getFullName());
+                    }
+
+                    java.util.List<Product.BuyerInfo> buyerList = new java.util.ArrayList<>();
+                    for (Order order : product.getOrders()) {
+                        if (order.getRetailer() != null) {
+                            buyerList.add(new Product.BuyerInfo(order.getRetailer().getFullName(), order.getQuantity()));
+                        }
+                        totalSold += (order.getQuantity() != null ? order.getQuantity() : 0.0);
+                    }
+                    product.setBuyers(buyerList);
                 }
-                product.setBuyers(buyerList);
+                
+                // Dynamic check for availability
+                if (product.getQuantity() != null && product.getQuantity() <= 0 && product.isAvailable()) {
+                    product.setAvailable(false);
+                    // We don't save here in readOnly transaction, but JpaRepository might handle it if we remove readOnly
+                    // Actually, let's remove readOnly=true because we might update availability
+                }
+                
+                System.out.println("DEBUG: Processed product " + product.getName() + " (ID: " + product.getId() + ") - Left: " + product.getQuantity() + ", Sold: " + totalSold);
+            } catch (Exception e) {
+                System.err.println("DEBUG: Error processing product ID " + product.getId() + ": " + e.getMessage());
+                e.printStackTrace();
             }
         }
         return products;

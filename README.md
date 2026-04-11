@@ -1,61 +1,58 @@
-# 🌾 Farm2Trade: Premium Agri-Logistics & Supply Chain Intelligence
+# 🌾 Farm2Trade: Premium Agri-Logistics & B2B Intelligence
+
+![Platform Banner](https://via.placeholder.com/1200x400/16a34a/ffffff?text=Farm2Trade+Supply+Chain+Intelligence)
 
 ### 🚀 Key Highlights:
-- **AI-Driven Continuous Authentication**: Seamless behavior-based security.
-- **Risk-Based Step-Up Auth**: Automated OTP challenges for anomalous sessions.
-- **Real-Time Security Observability**: High-fidelity gauge visualization and audit logging.
-- **Agricultural Marketplace**: Secure crop auctioning and logistics orchestration.
+- **Zero-Trust Security Infrastructure**: Continuous AI-driven authentication.
+- **B2B Double-Handshake Transaction**: Secure receipt confirmation for verified arrivals.
+- **Automated Escrow & Wallet System**: Real-time financial settlement and transparency.
+- **Weather Intelligence Hub**: Hyper-local climate tracking + AI-powered crop advisory.
+- **Integrated Precision Logistics**: Real-time fleet tracking and multi-party negotiation.
 
 ---
 
-**Farm2Trade** is a professional, full-stack intelligence platform built to bridge the gap between farmers, retailers, and transporters. It combines a state-of-the-art marketplace with real-time **AI-driven Weather Intelligence** and a **Zero-Trust Security Infrastructure**.
+**Farm2Trade** is a high-fidelity, production-ready B2B platform designed to revolutionize the agricultural supply chain. By bridging the gap between Farmers, Retailers, and Transporters within a secure, zero-trust ecosystem, we ensure fairness, transparency, and operational excellence from farm to fork.
 
 ---
 
-## 🚀 Live Demo
+## 🛡️ Zero-Trust & Continuous Authentication
+Our security posture is built on the principle of **Never Trust, Always Verify**.
 
-🔗 **Frontend:** [https://chetnareddy-2005.github.io/agri-backend/](https://chetnareddy-2005.github.io/agri-backend/)
-
-🔗 **Backend API:** [https://agri-backend-xz72.onrender.com](https://agri-backend-xz72.onrender.com)
-
-⚠️ *Note: Backend is hosted on free tier (Render), first load may take ~30-50 seconds.*
-
----
-
-## 🛡️ Zero-Trust Security Architecture
-
-![Zero-Trust Flow](./architecture.png)
-
-`User -> Frontend -> Backend (Spring Boot) -> ML Service (Flask) -> Risk Engine (Isolation Forest) -> OTP/Auth`
-
-**Core API Architecture:**
-1.  `POST /api/auth/login` → Authenticate user and initiate JSESSIONID.
-2.  `POST /api/auth/risk-check` → ML Model evaluates behavioral telemetry (mouse/typing).
-3.  `POST /api/auth/verify-otp` → Conditional step-up challenge for anomalous sessions.
-4.  `GET /api/admin/audit-logs` → Real-time observability for administrators.
-
-### 🔐 Key Security Features
-*   **Behavioral Telemetry**: Tracks micro-interactions like typing cadence and mouse velocity.
-*   **Dynamic Risk Engine**: Evaluates risk levels (LOW/MEDIUM/HIGH) in real-time.
-*   **Hardened Guardrails**: 5-minute OTP expiry and strict 3-attempt retry limits.
-*   **Instant Termination**: Automatically kills hijacked sessions on High-Risk detection.
+*   **Behavioral Biometrics**: We track micro-interactions (mouse velocity, typing cadence) to detect session hijacking.
+*   **Dynamic Risk Scoring**: Real-time risk assessment (LOW/MEDIUM/HIGH) determines adaptive security challenges.
+*   **Instant Termination**: Automatic session termination and identity isolation upon high-risk detection.
+*   **Compact Risk Gauges**: Persistent visual indicators across all dashboards provide real-time security observability.
 
 ---
 
-## 🚀 Dashboard Breakdown & Components
+## 💳 Financial Integrity & Settlement
+We've implemented a robust "Double-Handshake" mechanism to eliminate transaction friction.
+
+1.  **Escrow Management**: When a Retailer pays, funds are locked in a secure **Escrow Balance**.
+2.  **Verified Handshake**: The Retailer confirms receipt via the "Confirm Receipt" protocol upon successful delivery.
+3.  **Automated Release**: Confirmation triggers an immediate transfer of funds from Escrow to the Farmer's and Transporter's **Available Balance**.
+4.  **Full Transparency**: Participants track their earnings through a dedicated **Financial Wallet Hub**.
+
+---
+
+## 🚀 Dashboard Breakdown
 
 ### 👨‍🌾 1. Farmer Hub (Operational Intelligence)
-*   **SmallRiskGauge**: Real-time animated gauge showing session security status.
-*   **Weather Intelligence**: Real-time localized climate data + AI crop advice.
-*   **Invoice Engine**: jsPDF-powered automated invoice generation for every sale.
+*   **Marketplace Control**: List products for auction or fixed-price sales.
+*   **Weather Node Monitor**: Real-time localized weather data integrated with Gemini AI for cultivation advice.
+*   **Financial Hub**: Dedicated wallet showing locked vs. available funds.
+*   **Automated Invoicing**: Instant PDF generation for every verified transaction.
 
 ### 🏪 2. Retailer Hub (Procurement Foresight)
-*   **Smart Marketplace**: Grid-view of products with filtering and dynamic bidding.
-*   **Procurement Trends**: Area charts showing procurement value fluctuations.
+*   **Smart Procurement**: Multi-criteria filtering, bidding engine, and dynamic negotiation.
+*   **Verification Protocol**: Formal receipt verification to finalize logistics and financial cycles.
+*   **Fleet Tracking**: Real-time Leaflet-powered map tracking of inbound shipments.
 
 ### 🚛 3. Transporter Hub (Precision Logistics)
-*   **Fleet Map**: Leaflet interactive map showing live GPS coordinates.
-*   **Bidding Hub**: Real-time negotiation for delivery prices.
+*   **Fleet Orchestration**: Interactive GPS map tracking and route optimization.
+*   **Bidding Hub**: Dynamic price negotiation with retailers for delivery contracts.
+*   **Proof of Delivery**: Digital signature and photo evidence submission.
+*   **Earnings Tracker**: Real-time payout tracking for every kilometer traveled.
 
 ---
 
@@ -63,41 +60,50 @@
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, Lucide Icons, react-gauge-chart |
-| **Main Backend**| Spring Boot 3.x, Java 17, JPA/Hibernate, MySql |
-| **ML/Auth Service** | Flask, Python 3.9, Scikit-Learn (Isolation Forest) |
-| **Logistics** | Leaflet Maps, Real-Time GPS Tracking |
+| **Frontend** | React 19, Vite, TailwindCSS (for base), Lucide Icons, Leaflet.js |
+| **Backend** | Spring Boot 3.x, Java 17, JPA/Hibernate, MySQL 8.x |
+| **Security Service** | Flask, Python 3.9, Scikit-Learn (Isolation Forest ML) |
+| **Intelligence** | Gemini AI (Crop Advisory), OpenWeather API |
+| **Financials** | Cashfree PG Integration, Custom Escrow Ledger |
 
 ---
 
 ## 🛠️ Setup & Installation
 
 ### 📋 Prerequisites
-*   **Java**: 17+ | **Node.js**: 18+ | **Python**: 3.9+ | **MySQL**: 8.x
+*   **Java**: 17+ | **Node.js**: 20+ | **Python**: 3.9+ | **MySQL**: 8.x
 
 ### 💻 Execution Commands
 
-#### 1. Backend (Java)
+#### 1. Backend (Spring Boot)
 ```bash
-cd backend
+cd Farmer-Retailer/backend
 mvn clean install
 mvn spring-boot:run
 ```
 
-#### 2. ML Security Service (Python)
+#### 2. ML Security Node (Flask)
 ```bash
-cd continuous-auth
+cd Farmer-Retailer/continuous-auth
 pip install -r requirements.txt
 python app.py
 ```
 
 #### 3. Frontend (React)
 ```bash
-cd frontend
+cd Farmer-Retailer/frontend
 npm install --legacy-peer-deps
 npm run dev
 ```
 
 ---
 
-Developed with ❤️ for the future of Indian Agriculture.
+## 🏛️ Governance & KYC
+The platform includes a dedicated **Admin Oversight Center**:
+*   **KYC Verification**: Document-based verification system for new Farmers and Transporters.
+*   **Audit Logs**: Infinite audit trail of all security events and authentication challenges.
+*   **Crisis Management**: Ability to broadcast emergency alerts (roadblocks, extreme weather) to specific regions.
+
+---
+
+Developed with ❤️ for the future of Digital Agriculture.
