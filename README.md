@@ -11,6 +11,16 @@
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **Frontend:** [https://chetnareddy-2005.github.io/agri-backend/](https://chetnareddy-2005.github.io/agri-backend/)
+
+🔗 **Backend API:** [https://agri-backend-xz72.onrender.com](https://agri-backend-xz72.onrender.com)
+
+⚠️ *Note: Backend is hosted on free tier (Render), first load may take ~30-50 seconds.*
+
+---
+
 **Farm2Trade** is a high-fidelity, production-ready B2B platform designed to revolutionize the agricultural supply chain. By bridging the gap between Farmers, Retailers, and Transporters within a secure, zero-trust ecosystem, we ensure fairness, transparency, and operational excellence from farm to fork.
 
 ---
