@@ -134,55 +134,55 @@ public class ContinuousAuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> req) {
         try {
-            String userId = req.get("userId");
+            String userId = (req != null) ? req.get("userId") : null;
             if (userId == null) userId = "anonymous";
             
-            String enteredOtp = req.get("otp");
+            String enteredOtp = (req != null) ? req.get("otp") : "";
 
             OtpData data = otpStorage.get(userId);
 
             if (data == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No active security challenge found for this user."));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No active security challenge found. Please refresh."));
             }
 
             // Expiry check (5 minutes)
             if (System.currentTimeMillis() > data.getExpiryTime()) {
                 otpStorage.remove(userId);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "The OTP code has expired. Please refresh and try again."));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Security code has expired."));
             }
 
             // Retry limit protection
             if (data.getAttempts() >= 5) {
                 otpStorage.remove(userId);
                 try { auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED_MAX_RETRIES")); } catch(Exception e) {}
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Too many incorrect attempts. Your session has been locked for security."));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Too many attempts. Session locked."));
             }
 
             // Validate OTP
             if (!data.getOtp().equals(enteredOtp)) {
                 data.incrementAttempts();
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid security code. Please try the code displayed on your screen."));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid security code. Please check the code on your screen."));
             }
 
             // Success flow
-            try { auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_VERIFIED")); } catch(Exception e) {}
             otpStorage.remove(userId);
+            try { auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_VERIFIED")); } catch(Exception e) {}
             
             ContinuousAuthRequestDTO lastReq = lastTelemetryCache.remove(userId);
+            String explanation = "Identity verified successfully. Behavioral pattern matching confirmed.";
             
-            String explanation = "Your identity has been successfully verified through our secure multi-factor behavior analysis. Session restored.";
             if (lastReq != null && lastReq.getTelemetry() != null) {
                 try {
                     SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
                     sr.setTypingSpeedWpm(lastReq.getTelemetry().getTypingSpeedWpm());
                     sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
                     sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
-                    sr.setIpAddress("Authenticated Client");
+                    sr.setIpAddress("Authenticated User");
                     sr.setRiskScore(-0.05); 
                     
                     explanation = geminiAIService.analyzeSecurity(sr);
                 } catch (Exception e) {
-                    System.err.println("Gemini Analysis failed: " + e.getMessage());
+                    System.err.println("Gemini Analysis during verification failed: " + e.getMessage());
                 }
             }
             
@@ -191,9 +191,8 @@ public class ContinuousAuthController {
             successResponse.put("geminiExplanation", explanation);
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
-            System.err.println("CRITICAL ERROR IN OTP VERIFICATION: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Internal security system error. Please refresh the page and try again."));
+            System.err.println("FAIL-SAFE TRIGGERED IN VERIFY-OTP: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Security verification failed. Please try again."));
         }
     }
 }
