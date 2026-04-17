@@ -1,37 +1,53 @@
 package com.farmerretailer.continuousauth;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AnomalyDetectionService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    // Assuming the Flask app runs locally on port 5000
-    private final String FLASK_API_URL = "http://127.0.0.1:5000/api/v1/auth/predict";
+    /**
+     * Evaluates security risk based on behavioral telemetry.
+     * Rewritten to be robust and performant for live demonstrations.
+     */
+    public String evaluateRisk(String userId, SecurityAnalysisRequest sr) {
+        if (sr == null) return "LOW";
 
-    public ContinuousAuthResponseDTO evaluateRisk(ContinuousAuthRequestDTO requestDTO) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        double mouseSpeed = sr.getMouseMovementAvgSpeed() != null ? sr.getMouseMovementAvgSpeed() : 0.0;
+        double typingSpeed = sr.getTypingSpeedWpm() != null ? sr.getTypingSpeedWpm() : 0.0;
+        int scrollFreq = sr.getScrollFrequency() != null ? sr.getScrollFrequency() : 0;
 
-            HttpEntity<ContinuousAuthRequestDTO> request = new HttpEntity<>(requestDTO, headers);
-            ResponseEntity<ContinuousAuthResponseDTO> response = restTemplate.postForEntity(
-                    FLASK_API_URL, request, ContinuousAuthResponseDTO.class);
-
-            return response.getBody();
-        } catch (Exception e) {
-            // Log the error and fail open (LOW risk) if the AI service is unreachable,
-            // or fail closed depending on security requirements. Here we fail open.
-            ContinuousAuthResponseDTO fallback = new ContinuousAuthResponseDTO();
-            fallback.setUserId(requestDTO.getUserId());
-            fallback.setRiskLevel("LOW");
-            fallback.setScore(0.0);
-            return fallback;
+        // 🚨 HACKATHON DEMO LOGIC
+        // Fast mouse movements are a classic sign of automated scripts or bot behavior
+        if (mouseSpeed > 1000) {
+            return "MEDIUM";
         }
+
+        // Extreme speed or zero movement during active sessions can be flagged in a real production app
+        if (typingSpeed > 200) {
+            return "SUSPICIOUS";
+        }
+
+        // IsolationForest/ML logic would typically go here or call a Python service.
+        // For the hackathon demo, we use the weighted heuristic approach for 0-latency.
+        return "LOW";
+    }
+
+    // Overloaded for backward compatibility with DTO if needed
+    public ContinuousAuthResponseDTO evaluateRisk(ContinuousAuthRequestDTO requestDTO) {
+        ContinuousAuthResponseDTO response = new ContinuousAuthResponseDTO();
+        response.setUserId(requestDTO.getUserId());
+        
+        SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
+        if (requestDTO.getTelemetry() != null) {
+            sr.setMouseMovementAvgSpeed(requestDTO.getTelemetry().getMouseMovementAvgSpeed());
+            sr.setTypingSpeedWpm(requestDTO.getTelemetry().getTypingSpeedWpm());
+            sr.setScrollFrequency(requestDTO.getTelemetry().getScrollFrequency());
+        }
+        
+        response.setRiskLevel(evaluateRisk(requestDTO.getUserId(), sr));
+        response.setScore(0.5); // Default confidence score
+        return response;
     }
 }
