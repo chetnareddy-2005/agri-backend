@@ -304,12 +304,13 @@ public class SmtpEmailService implements EmailService {
         }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@farm2trade.com");
+            message.setFrom("chetnareddy2520@gmail.com");
             message.setTo(toEmail);
             message.setSubject("Farm2Trade Security: Your OTP");
             message.setText("Hello,\n\n" +
                     "We detected some unusual activity on your account.\n" +
                     "Please use the following OTP to verify your identity: " + otp + "\n\n" +
+                    "This code will expire in 5 minutes.\n\n" +
                     "Best regards,\nFarmTrade Security Team");
             emailSender.send(message);
         } catch (Exception e) {
