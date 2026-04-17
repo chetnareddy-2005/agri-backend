@@ -89,7 +89,8 @@ const LandingPage = () => {
               height: '300px',
               animation: introGreeting ? 'none' : 'bounceWalk 0.8s ease-in-out infinite alternate',
               transformOrigin: 'bottom center',
-              mixBlendMode: 'multiply' // Perfectly blends the white background into the light green scene
+              filter: 'contrast(1.05) brightness(1.05)', // Ensures near-white backgrounds become pure white for multiply
+              mixBlendMode: 'multiply' 
             }}
           />
         </div>
@@ -334,28 +335,6 @@ const LandingPage = () => {
                 <li>Careers</li>
                 <li>Contact</li>
               </ul>
-            </div>
-          </div>
-
-          <div style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
-            <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: '#4ade80' }}>Tech Stack</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Frontend</div>
-                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>React 19, Vite, Lucide, Recharts</div>
-              </div>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Backend</div>
-                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Spring Boot 3.x, Java 17, JPA</div>
-              </div>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Security/ML</div>
-                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Flask, Python, Scikit-Learn</div>
-              </div>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Database</div>
-                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>MySQL, Hibernate</div>
-              </div>
             </div>
           </div>
         </div>
