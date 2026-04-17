@@ -82,47 +82,51 @@ public class ContinuousAuthController {
             if (response == null) {
                 response = new ContinuousAuthResponseDTO();
                 response.setUserId(userId);
-                response.setRiskLevel("LOW");
-                response.setScore(0.0);
-            }
+            SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
+            sr.setTypingSpeedWpm(requestDTO.getTelemetry().getTypingSpeedWpm());
+            sr.setMouseMovementAvgSpeed(requestDTO.getTelemetry().getMouseMovementAvgSpeed());
+            sr.setScrollFrequency(requestDTO.getTelemetry().getScrollFrequency());
+            sr.setIpAddress("User");
 
-            // Hackathon Logic: Trigger if mouse moves too fast
-            Double mouseSpeed = requestDTO.getTelemetry().getMouseMovementAvgSpeed();
-            if (mouseSpeed != null && mouseSpeed > 1000) {
-                response.setRiskLevel("MEDIUM");
-            }
-
-            String currentRisk = (response.getRiskLevel() != null) ? response.getRiskLevel() : "LOW";
+            // STEP 1: Fast Anomaly Detection (IsolationForest - Local/Fast)
+            String currentRisk = anomalyDetectionService.evaluateRisk(userId, sr);
             
+            // STEP 2: Conditional AI Analysis (ONLY for potential threats to save performance)
+            String geminiInsight = "Behavioral patterns within normal parameters.";
+            if (!"LOW".equals(currentRisk)) {
+                try {
+                    geminiInsight = geminiAIService.analyzeSecurity(sr);
+                } catch (Exception e) {
+                    geminiInsight = "Anomaly detected. Investigation recommended.";
+                }
+            }
+
             if ("HIGH".equals(currentRisk)) {
                 try { auditLogRepository.save(new AuditLog(userId, "HIGH", "PROTECTED_TERMINATED")); } catch(Exception e) {}
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Security threshold exceeded."));
             } 
-            
-            if ("MEDIUM".equals(currentRisk)) {
-                // Generate and store OTP
-                String otp = generateOtp();
+
+            if ("MEDIUM".equals(currentRisk) || "OTP_REQUIRED".equals(currentRisk)) {
+                String otp = String.format("%06d", new java.util.Random().nextInt(999999));
                 long expiry = System.currentTimeMillis() + (5 * 60 * 1000);
                 otpStorage.put(userId, new OtpData(otp, expiry));
                 lastTelemetryCache.put(userId, requestDTO);
                 
-                String targetEmail = userId.contains("@") ? userId : "chetnareddy2520@gmail.com";
-                
-                // Safe email send
                 try {
-                    emailService.sendOtpEmail(targetEmail, otp);
-                } catch (Exception e) {
-                    System.err.println("Email failed: " + e.getMessage());
+                    emailService.sendOtpEmail(userId, otp);
+                    auditLogRepository.save(new AuditLog(userId, "SUSPICIOUS", "OTP_CHALLENGE_ISSUED"));
+                } catch(Exception e) {
+                    System.err.println("Non-critical notification failure: " + e.getMessage());
                 }
 
-                Map<String, String> challengeBody = new HashMap<>();
+                Map<String, Object> challengeBody = new HashMap<>();
                 challengeBody.put("challenge", "OTP_REQUIRED");
                 challengeBody.put("otp", otp); 
-                challengeBody.put("message", "Security code sent to your email.");
+                challengeBody.put("insight", geminiInsight);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(challengeBody);
             }
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("status", "SECURE", "risk", currentRisk));
         } catch (Exception e) {
             System.err.println("FINAL FAIL-SAFE TRIGGERED: " + e.getMessage());
             return ResponseEntity.ok(Map.of("riskLevel", "LOW", "score", 0.0));

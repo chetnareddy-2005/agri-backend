@@ -47,69 +47,50 @@ public class AuthController {
         String password = loginData.get("password");
 
         try {
-            com.farmerretailer.entity.User user = userRepository.findByEmail(email).orElse(null);
+            // STEP 1: AUTHENTICATE FIRST (Common logic handles the DB lookup once)
+            org.springframework.security.core.Authentication authentication = authenticationManager.authenticate(
+                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(email, password));
 
-            if (user == null) {
-                return ResponseEntity.status(401).body("User not found");
-            }
+            // STEP 2: IF SUCCESSFUL, GET USER (Only 1 query here)
+            com.farmerretailer.entity.User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
 
-            // BYPASS check if mustChangePassword is true (First login after approval)
-            org.springframework.security.core.Authentication authentication = null;
-
-            if (user.isMustChangePassword()) {
-                // Manually create authentication for first-time login
-                // We use a special authority/logic or just standard roles? Standards roles are
-                // fine, but frontend will restrict.
-                java.util.List<org.springframework.security.core.GrantedAuthority> authorities = java.util.Collections
-                        .singletonList(
-                                new org.springframework.security.core.authority.SimpleGrantedAuthority(
-                                        user.getRole().name()));
-                authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        email, null, authorities);
-            } else {
-                authentication = authenticationManager.authenticate(
-                        new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(email,
-                                password));
-            }
-
-            // Persist the security context for the session
-            org.springframework.security.core.context.SecurityContext context = org.springframework.security.core.context.SecurityContextHolder
-                    .createEmptyContext();
+            // STEP 3: SECURITY CONTEXT PERSISTENCE
+            org.springframework.security.core.context.SecurityContext context = org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             org.springframework.security.core.context.SecurityContextHolder.setContext(context);
             securityContextRepository.saveContext(context, request, response);
 
-            if (!user.isActive()) {
-                return ResponseEntity.status(403).body("Account is inactive.");
-            }
-            if (!user.isVerified()) { // Note: verified field maps to 'isVerified' column logic
-                return ResponseEntity.status(403).body("Account is pending approval.");
-            }
+            // STEP 4: CHECKS
+            if (!user.isActive()) return ResponseEntity.status(403).body("Account is inactive.");
+            if (!user.isVerified()) return ResponseEntity.status(403).body("Account is pending approval.");
 
-            // Generate token for header-based auth fallback
+            // STEP 5: TOKEN GENERATION
             String token = java.util.UUID.randomUUID().toString();
             tokenRegistry.registerToken(token, authentication);
 
+            // STEP 6: FAST RESPONSE MAPPING
             java.util.Map<String, Object> responseMap = new java.util.HashMap<>();
             responseMap.put("message", "Login successful");
             responseMap.put("role", user.getRole());
             responseMap.put("fullName", user.getFullName());
             responseMap.put("email", user.getEmail());
-            responseMap.put("mobileNumber", user.getMobileNumber());
+            responseMap.put("token", token);
+            responseMap.put("mustChangePassword", user.isMustChangePassword());
+            
+            // Add other fields only if needed for standard dashboard view
             responseMap.put("businessName", user.getBusinessName());
-            responseMap.put("address", user.getAddress());
-            responseMap.put("city", user.getCity());
-            responseMap.put("state", user.getState());
-            responseMap.put("description", user.getDescription());
-            responseMap.put("documentName", user.getDocumentName());
             responseMap.put("verified", user.isVerified());
-            responseMap.put("active", user.isActive());
-            responseMap.put("mustChangePassword", user.isMustChangePassword()); // Flag for frontend
-            responseMap.put("token", token); // Return the token to the frontend
 
             return ResponseEntity.ok(responseMap);
 
         } catch (org.springframework.security.core.AuthenticationException e) {
+            // Handle the "Must Change Password" edge case if standard auth fails due to null password in DB
+            com.farmerretailer.entity.User user = userRepository.findByEmail(email).orElse(null);
+            if (user != null && user.isMustChangePassword()) {
+                // Return must-change flag even if password auth fails (since it's likely not set yet)
+                return ResponseEntity.ok(Map.of("mustChangePassword", true, "email", email));
+            }
             return ResponseEntity.status(401).body("Invalid email or password");
         }
     }
