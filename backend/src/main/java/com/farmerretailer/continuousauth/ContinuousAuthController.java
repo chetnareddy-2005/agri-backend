@@ -95,22 +95,28 @@ public class ContinuousAuthController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Session terminated due to high risk behavior."));
                     
                 case "MEDIUM":
-                    try { auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_REQUIRED")); } catch(Exception e) {}
+                    String safeUserId = (userId != null) ? userId : "anonymous";
+                    try { auditLogRepository.save(new AuditLog(safeUserId, "MEDIUM", "OTP_REQUIRED")); } catch(Exception e) {}
+                    
                     String otp = generateOtp();
                     long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000);
                     
-                    otpStorage.put(userId != null ? userId : "anonymous", new OtpData(otp, expiryTime));
-                    lastTelemetryCache.put(userId != null ? userId : "anonymous", requestDTO);
+                    otpStorage.put(safeUserId, new OtpData(otp, expiryTime));
+                    lastTelemetryCache.put(safeUserId, requestDTO);
                     
-                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
-                    try { emailService.sendOtpEmail(targetEmail, otp); } catch(Exception e) {}
+                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                    try { 
+                        emailService.sendOtpEmail(targetEmail, otp); 
+                    } catch (Exception e) {
+                        System.err.println("Email failed, but OTP will still show on screen: " + e.getMessage());
+                    }
                     
-                    System.out.println("🚨 OTP REQUIRED FOR: " + targetEmail + " -> " + otp);
+                    System.out.println("🚨 SECURITY CHALLENGE: " + targetEmail + " -> " + otp);
                     
                     Map<String, String> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
                     mediumRiskBody.put("otp", otp); 
-                    mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
+                    mediumRiskBody.put("message", "Suspicious behavior detected. Safety code required.");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
                     
                 case "LOW":
@@ -118,10 +124,10 @@ public class ContinuousAuthController {
                     return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
-            System.err.println("CRITICAL ERROR IN TELEMETRY EVALUATION: " + e.getMessage());
+            System.err.println("RECOVERED FROM CRITICAL EVALUATION ERROR: " + e.getMessage());
             e.printStackTrace();
-            // Return a safe but restricted response instead of 500
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of("riskLevel", "LOW", "score", 0.0, "note", "System degraded"));
+            // Return 200 OK so the frontend doesn't crash, but fail open for user convenience
+            return ResponseEntity.ok(Map.of("riskLevel", "LOW", "score", 0.0));
         }
     }
 
