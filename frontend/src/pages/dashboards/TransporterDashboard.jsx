@@ -84,8 +84,8 @@ const TransporterDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             const [res, dRes] = await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL}/api/transport/my-deliveries`, { credentials: 'include' }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/transport/driver-info`, { credentials: 'include' })
+                fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/my-deliveries`, { credentials: 'include' }),
+                fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/driver-info`, { credentials: 'include' })
             ]);
 
             if (res.ok) {

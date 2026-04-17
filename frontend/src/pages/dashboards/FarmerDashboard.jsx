@@ -51,7 +51,7 @@ const FarmerDashboard = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/users/profile`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/users/profile`);
             if (res.ok) {
                 const data = await res.json();
                 setUser(data);
