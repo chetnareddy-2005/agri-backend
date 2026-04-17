@@ -188,8 +188,10 @@ const ContinuousAuthWrapper = ({ children }) => {
             window.location.hash = "#/login"; // Use hash for consistency
             return;
         }
+
         const user = JSON.parse(userString);
         const authToken = localStorage.getItem('auth_token');
+        
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/verify-otp`, {
                 method: "POST",
@@ -200,33 +202,22 @@ const ContinuousAuthWrapper = ({ children }) => {
                 credentials: 'include',
                 body: JSON.stringify({ userId: user.email, otp: otpInput.trim() })
             });
-            if (res.status === 403 || res.status === 401) {
-                const data = await res.json();
-                if (res.status === 403 || data.error === "Too many attempts") {
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('auth_risk_level');
-                    window.location.hash = "#/";
-                    return;
-                }
-                alert(data.error || "Invalid OTP");
-                return;
-            }
 
             if (res.ok) {
                 const data = await res.json();
                 localStorage.setItem('auth_risk_level', 'LOW');
                 setCurrentRisk('LOW');
-                setGeminiInsight(data.geminiExplanation);
-                setAlertMessage(null); // Successfully verified, hide the overlay
-                setReceivedOtp(null); // Clear the OTP display
-                isTracking.current = true; // Resume tracking
+                setGeminiInsight(data.geminiExplanation || "Verification and activity patterns analysis successful. Session restored.");
+                setAlertMessage(null); 
+                setReceivedOtp(null); 
+                isTracking.current = true; 
             } else {
-                const data = await res.json();
-                alert(data.error || "Verification failed. Please try again.");
+                const data = await res.json().catch(() => ({ error: "The entered OTP is incorrect or has expired. Please try the code shown on your screen." }));
+                alert(data.error || "Verification failed.");
             }
         } catch (e) {
             console.error("Verification Failed:", e);
-            alert("An error occurred during verification. Please check the console.");
+            alert("Security System Error: Unable to verify against the secure server. Please try again.");
         }
     };
 
