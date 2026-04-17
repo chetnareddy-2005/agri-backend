@@ -91,6 +91,11 @@ public class ContinuousAuthController {
             // STEP 1: Fast Anomaly Detection (IsolationForest - Local/Fast)
             String currentRisk = anomalyDetectionService.evaluateRisk(userId, sr);
             
+            // ✅ HACKATHON OVERRIDE: Trigger if mouse moves too fast (Speed > 1000)
+            if (sr.getMouseMovementAvgSpeed() != null && sr.getMouseMovementAvgSpeed() > 1000) {
+                currentRisk = "MEDIUM";
+            }
+
             // STEP 2: Conditional AI Analysis (ONLY for potential threats to save performance)
             String geminiInsight = "Behavioral patterns within normal parameters.";
             if (!"LOW".equals(currentRisk)) {
