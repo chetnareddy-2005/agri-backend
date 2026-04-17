@@ -226,65 +226,114 @@ const ContinuousAuthWrapper = ({ children }) => {
             <div style={{
                 position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
                 backgroundColor: 'rgba(0, 0, 0, 0.95)', color: 'white', zIndex: 999999,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center'
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px'
             }}>
-                <h1 style={{ fontSize: '2.5rem', color: '#4ade80', marginBottom: '20px' }}>✅ Security Verified</h1>
-                <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '15px', maxWidth: '600px', lineHeight: '1.6' }}>
-                    <h3 style={{ color: '#fbbf24', marginBottom: '15px' }}>🤖 Gemini AI Security Insight</h3>
-                    <p style={{ fontSize: '1.1rem', whiteSpace: 'pre-wrap' }}>{geminiInsight}</p>
+                <div style={{ 
+                    backgroundColor: '#111827', padding: '3rem', borderRadius: '32px', maxWidth: '600px', 
+                    width: '100%', border: '2px solid #10b981', textAlign: 'center',
+                    boxShadow: '0 25px 50px -12px rgba(16, 185, 129, 0.25)'
+                }}>
+                    <div style={{ backgroundColor: '#10b981', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                        <span style={{ fontSize: '3rem' }}>✓</span>
+                    </div>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '1.5rem', color: '#10b981' }}>Identity Verified</h1>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '2rem', textAlign: 'left' }}>
+                        <h3 style={{ color: '#fbbf24', fontSize: '0.8rem', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px' }}>🤖 Gemini AI Security Insight</h3>
+                        <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#e5e7eb' }}>{geminiInsight}</p>
+                    </div>
+                    <button onClick={() => window.location.reload()} style={{ width: '100%', padding: '15px', fontSize: '1.1rem', fontWeight: '700', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer' }}>
+                        Return to Dashboard
+                    </button>
                 </div>
-                <button onClick={() => window.location.reload()} style={{ marginTop: '30px', padding: '12px 24px', fontSize: '1.2rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-                    Return to Dashboard
-                </button>
             </div>
         );
     }
 
     if (alertMessage) {
         const isOtp = alertMessage === "OTP_REQUIRED";
-        
         return (
             <div style={{
                 position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                backgroundColor: 'rgba(220, 38, 38, 0.95)', color: 'white', zIndex: 999999,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                backgroundColor: '#d32f2f', color: 'white', zIndex: 999999,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                fontFamily: '"Inter", sans-serif'
             }}>
-                <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>🚨 ACCESS DENIED</h1>
-                
-                {isOtp ? (
-                    <div style={{ marginTop: '20px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '30px', borderRadius: '15px' }}>
-                        <h2 style={{ marginBottom: '15px' }}>Suspicious Behavior Detected</h2>
-                        <p style={{ marginBottom: '20px' }}>A Step-Up Authentication OTP has been sent to your registered email.</p>
-                        {receivedOtp && (
-                            <div style={{ backgroundColor: 'white', color: '#dc2626', padding: '10px 20px', borderRadius: '8px', display: 'inline-block', fontSize: '1.5rem', fontWeight: '900', letterSpacing: '8px', marginBottom: '20px', border: '2px dashed #dc2626' }}>
-                                {receivedOtp}
-                            </div>
-                        )}
-                        <br />
-                        <input 
-                            type="text" 
-                            placeholder="Enter 6-digit OTP" 
-                            value={otpInput}
-                            onChange={(e) => setOtpInput(e.target.value)}
-                            style={{ padding: '12px', fontSize: '1.2rem', textAlign: 'center', borderRadius: '8px', border: 'none', marginBottom: '20px', width: '200px', color: 'black' }}
-                        />
-                        <br />
-                        <button onClick={handleVerifyOtp} style={{ padding: '12px 30px', fontSize: '1.2rem', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                            Verify OTP
-                        </button>
-                    </div>
-                ) : (
-                    <p style={{ fontSize: '1.5rem', marginTop: '20px' }}>SECURITY LOCKOUT: {alertMessage}</p>
-                )}
+                <div style={{ 
+                    fontSize: 'clamp(2rem, 8vw, 4rem)', fontWeight: '900', marginBottom: '2.5rem', 
+                    display: 'flex', alignItems: 'center', gap: '20px', textTransform: 'uppercase',
+                    letterSpacing: '-2px', textShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                }}>
+                    🚨 ACCESS DENIED
+                </div>
 
-                <button 
+                <div style={{
+                    backgroundColor: 'rgba(40, 0, 0, 0.95)', padding: '3.5rem 3rem', borderRadius: '32px', 
+                    width: '90%', maxWidth: '440px', textAlign: 'center', 
+                    boxShadow: '0 30px 60px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    <h2 style={{ fontSize: '1.6rem', fontWeight: '800', marginBottom: '0.75rem', color: '#ffcdd2' }}>
+                        {isOtp ? "Suspicious Behavior Detected" : "Security Lockout"}
+                    </h2>
+                    <p style={{ fontSize: '0.95rem', opacity: 0.8, marginBottom: '2rem', lineHeight: '1.6', color: '#ffab91' }}>
+                        {isOtp ? "A Step-Up Authentication OTP has been sent to your registered email." : alertMessage}
+                    </p>
+
+                    {isOtp && (
+                        <>
+                            {receivedOtp && (
+                                <div style={{ 
+                                    backgroundColor: 'rgba(255,255,255,0.05)', padding: '8px', 
+                                    borderRadius: '10px', fontSize: '0.75rem', color: '#ff8a80',
+                                    marginBottom: '1.5rem', border: '1px dashed rgba(255,255,255,0.2)'
+                                }}>
+                                    DEMO MODE: Valid Code is <strong>{receivedOtp}</strong>
+                                </div>
+                            )}
+
+                            <input
+                                type="text"
+                                placeholder="Enter 6-digit OTP"
+                                value={otpInput}
+                                onChange={(e) => setOtpInput(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '18px', borderRadius: '14px', border: 'none',
+                                    marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.5rem',
+                                    fontWeight: '700', color: '#1a1a1a', letterSpacing: '6px',
+                                    backgroundColor: 'white', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                                }}
+                            />
+
+                            <button
+                                onClick={handleVerifyOtp}
+                                style={{
+                                    width: '100%', padding: '18px', borderRadius: '14px', border: 'none',
+                                    backgroundColor: '#4caf50', color: 'white', fontWeight: '900',
+                                    fontSize: '1.2rem', cursor: 'pointer', transition: 'transform 0.1s, background 0.2s',
+                                    boxShadow: '0 8px 20px rgba(76, 175, 80, 0.4)', textTransform: 'uppercase'
+                                }}
+                                onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+                                onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                            >
+                                Verify OTP
+                            </button>
+                        </>
+                    )}
+                </div>
+
+                <button
                     onClick={() => {
-                        localStorage.removeItem('user');
-                        localStorage.removeItem('auth_risk_level');
-                        setReceivedOtp(null);
-                        window.location.href = '#/login';
-                    }} 
-                    style={{ marginTop: '40px', padding: '10px 20px', fontSize: '1.1rem', backgroundColor: 'transparent', border: '1px solid white', color: 'white', cursor: 'pointer', borderRadius: '5px' }}
+                        localStorage.clear();
+                        window.location.hash = "#/";
+                        window.location.reload();
+                    }}
+                    style={{
+                        marginTop: '3.5rem', padding: '12px 32px', borderRadius: '100px',
+                        border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'transparent',
+                        color: 'white', cursor: 'pointer', fontSize: '1rem', fontWeight: '600',
+                        transition: 'all 0.3s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                     Discard Session
                 </button>
