@@ -10,6 +10,22 @@ const ContinuousAuthWrapper = ({ children, user }) => {
     const [status, setStatus] = useState('');
     const [geminiInsight, setGeminiInsight] = useState('');
 
+    // Auto-detect user if not passed as prop (Crucial for routing consistency)
+    const [activeUser, setActiveUser] = useState(user || null);
+
+    useEffect(() => {
+        if (!activeUser) {
+            const stored = localStorage.getItem('user');
+            if (stored) {
+                try {
+                    setActiveUser(JSON.parse(stored));
+                } catch (e) {
+                    console.error("Auth sync error", e);
+                }
+            }
+        }
+    }, [user, activeUser]);
+
     const handleDiscardSession = () => {
         localStorage.clear();
         window.location.href = '/';
@@ -26,7 +42,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
 
     // Telemetry polling
     useEffect(() => {
-        if (!user) return;
+        if (!activeUser) return;
 
         const interval = setInterval(async () => {
             try {
@@ -41,7 +57,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: user.email,
+                        userId: activeUser.email,
                         telemetry
                     })
                 });
@@ -59,7 +75,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [user]);
+    }, [activeUser]);
 
     const handleVerifyOtp = async () => {
         setVerifying(true);
@@ -69,7 +85,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: user.email,
+                    userId: activeUser.email,
                     otp: otpInput
                 })
             });
