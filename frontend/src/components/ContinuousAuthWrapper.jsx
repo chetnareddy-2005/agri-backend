@@ -242,14 +242,7 @@ const ContinuousAuthWrapper = ({ children }) => {
                         <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#e5e7eb' }}>{geminiInsight}</p>
                     </div>
                     <button onClick={() => window.location.reload()} style={{ width: '100%', padding: '15px', fontSize: '1.1rem', fontWeight: '700', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer' }}>
-                        Return to Dashboard
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    if (alertMessage) {
+            if (alertMessage) {
         const isOtp = alertMessage === "OTP_REQUIRED";
         return (
             <div style={{
@@ -280,16 +273,6 @@ const ContinuousAuthWrapper = ({ children }) => {
 
                     {isOtp && (
                         <>
-                            {receivedOtp && (
-                                <div style={{ 
-                                    backgroundColor: 'rgba(255,255,255,0.05)', padding: '8px', 
-                                    borderRadius: '10px', fontSize: '0.75rem', color: '#ff8a80',
-                                    marginBottom: '1.5rem', border: '1px dashed rgba(255,255,255,0.2)'
-                                }}>
-                                    DEMO MODE: Valid Code is <strong>{receivedOtp}</strong>
-                                </div>
-                            )}
-
                             <input
                                 type="text"
                                 placeholder="Enter 6-digit OTP"
