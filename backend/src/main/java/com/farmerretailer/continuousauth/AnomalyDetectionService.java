@@ -3,6 +3,7 @@ package com.farmerretailer.continuousauth;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
+import com.farmerretailer.gemini.dto.SecurityAnalysisRequest;
 
 @Service
 public class AnomalyDetectionService {
