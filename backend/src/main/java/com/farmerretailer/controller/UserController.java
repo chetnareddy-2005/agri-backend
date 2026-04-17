@@ -41,6 +41,10 @@ public class UserController {
                     .contentType(contentType != null ? MediaType.parseMediaType(contentType)
                             : MediaType.APPLICATION_OCTET_STREAM)
                     .body(fileContent);
+        } else {
+            System.out.println("User not found: " + userId);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/profile")
