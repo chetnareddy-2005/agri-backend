@@ -295,7 +295,6 @@ public class SmtpEmailService implements EmailService {
         }
     }
 
-    @Async
     @Override
     public void sendOtpEmail(String toEmail, String otp) {
         if (emailSender == null) {
@@ -304,7 +303,7 @@ public class SmtpEmailService implements EmailService {
         }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("chetnareddy2520@gmail.com");
+            message.setFrom("noreply@farm2trade.com");
             message.setTo(toEmail);
             message.setSubject("Farm2Trade Security: Your OTP");
             message.setText("Hello,\n\n" +
@@ -312,9 +311,12 @@ public class SmtpEmailService implements EmailService {
                     "Please use the following OTP to verify your identity: " + otp + "\n\n" +
                     "This code will expire in 5 minutes.\n\n" +
                     "Best regards,\nFarmTrade Security Team");
+            
+            System.out.println("📬 [DEBUG] Sending OTP to " + toEmail + "...");
             emailSender.send(message);
+            System.out.println("✅ [DEBUG] OTP sent successfully!");
         } catch (Exception e) {
-            System.err.println("Failed to send OTP to " + toEmail + ": " + e.getMessage());
+            System.err.println("❌ [ERROR] Failed to send OTP to " + toEmail + ": " + e.getMessage());
         }
     }
 }
