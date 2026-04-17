@@ -1120,7 +1120,6 @@ const RetailerDashboard = () => {
                             </div>
                         )}
 
-                        )}
                         {activeTab === 'Orders' && (
                             <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

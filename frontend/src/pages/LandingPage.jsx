@@ -83,14 +83,13 @@ const LandingPage = () => {
           )}
 
           <img
-            src={`${import.meta.env.BASE_URL}assets/farmer_plough.png`}
+            src={`${import.meta.env.BASE_URL}assets/farmer_final.png`}
             alt="Walking Farmer"
             style={{
               height: '300px',
-              filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.3))',
               animation: introGreeting ? 'none' : 'bounceWalk 0.8s ease-in-out infinite alternate',
               transformOrigin: 'bottom center',
-              mixBlendMode: 'multiply' // Blend the white background
+              mixBlendMode: 'multiply' // Perfectly blends the white background into the light green scene
             }}
           />
         </div>
@@ -319,7 +318,7 @@ const LandingPage = () => {
             </div>
             <p style={{ color: '#9CA3AF', maxWidth: '300px' }}>Empowering the agricultural backbone of India with technology and transparency.</p>
           </div>
-          <div style={{ display: 'flex', gap: '3rem' }}>
+          <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
             <div>
               <h4 style={{ fontWeight: 'bold', marginBottom: '1rem' }}>Platform</h4>
               <ul style={{ listStyle: 'none', padding: 0, color: '#9CA3AF', lineHeight: '2' }}>
@@ -335,6 +334,28 @@ const LandingPage = () => {
                 <li>Careers</li>
                 <li>Contact</li>
               </ul>
+            </div>
+          </div>
+
+          <div style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
+            <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: '#4ade80' }}>Tech Stack</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Frontend</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>React 19, Vite, Lucide, Recharts</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Backend</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Spring Boot 3.x, Java 17, JPA</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Security/ML</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Flask, Python, Scikit-Learn</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Database</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>MySQL, Hibernate</div>
+              </div>
             </div>
           </div>
         </div>
