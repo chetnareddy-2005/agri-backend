@@ -41,9 +41,20 @@ public class UserController {
                     .contentType(contentType != null ? MediaType.parseMediaType(contentType)
                             : MediaType.APPLICATION_OCTET_STREAM)
                     .body(fileContent);
-        } else {
-            System.out.println("User not found: " + userId);
-            return ResponseEntity.notFound().build();
-        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(@org.springframework.security.core.annotation.AuthenticationPrincipal String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    java.util.Map<String, Object> profile = new java.util.HashMap<>();
+                    profile.put("id", user.getId());
+                    profile.put("fullName", user.getFullName());
+                    profile.put("email", user.getEmail());
+                    profile.put("role", user.getRole());
+                    profile.put("availableBalance", user.getAvailableBalance());
+                    return ResponseEntity.ok(profile);
+                })
+                .orElse(ResponseEntity.status(401).build());
     }
 }

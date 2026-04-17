@@ -127,55 +127,67 @@ public class ContinuousAuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> req) {
-        String userId = req.get("userId");
-        String enteredOtp = req.get("otp");
-
-        OtpData data = otpStorage.get(userId);
-
-        if (data == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No OTP found"));
-        }
-
-        // Expiry check
-        if (System.currentTimeMillis() > data.getExpiryTime()) {
-            otpStorage.remove(userId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "OTP expired"));
-        }
-
-        // Retry limit (max 3)
-        if (data.getAttempts() >= 3) {
-            otpStorage.remove(userId);
-            auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED_MAX_RETRIES"));
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Too many attempts"));
-        }
-
-        // Validate OTP
-        if (!data.getOtp().equals(enteredOtp)) {
-            data.incrementAttempts();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid OTP"));
-        }
-
-        // Success
-        auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_VERIFIED"));
-        otpStorage.remove(userId);
-        
-        ContinuousAuthRequestDTO lastReq = lastTelemetryCache.remove(userId);
-        
-        String explanation = "Verified successfully.";
-        if (lastReq != null) {
-            SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
-            sr.setTypingSpeedWpm(lastReq.getTelemetry().getTypingSpeedWpm());
-            sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
-            sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
-            sr.setIpAddress("127.0.0.1 (Frontend)");
-            sr.setRiskScore(-0.05); // It triggered MEDIUM
+        try {
+            String userId = req.get("userId");
+            if (userId == null) userId = "anonymous";
             
-            explanation = geminiAIService.analyzeSecurity(sr);
+            String enteredOtp = req.get("otp");
+
+            OtpData data = otpStorage.get(userId);
+
+            if (data == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No active security challenge found for this user."));
+            }
+
+            // Expiry check (5 minutes)
+            if (System.currentTimeMillis() > data.getExpiryTime()) {
+                otpStorage.remove(userId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "The OTP code has expired. Please refresh and try again."));
+            }
+
+            // Retry limit protection
+            if (data.getAttempts() >= 5) {
+                otpStorage.remove(userId);
+                try { auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED_MAX_RETRIES")); } catch(Exception e) {}
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Too many incorrect attempts. Your session has been locked for security."));
+            }
+
+            // Validate OTP
+            if (!data.getOtp().equals(enteredOtp)) {
+                data.incrementAttempts();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid security code. Please try the code displayed on your screen."));
+            }
+
+            // Success flow
+            try { auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_VERIFIED")); } catch(Exception e) {}
+            otpStorage.remove(userId);
+            
+            ContinuousAuthRequestDTO lastReq = lastTelemetryCache.remove(userId);
+            
+            String explanation = "Your identity has been successfully verified through our secure multi-factor behavior analysis. Session restored.";
+            if (lastReq != null && lastReq.getTelemetry() != null) {
+                try {
+                    SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
+                    sr.setTypingSpeedWpm(lastReq.getTelemetry().getTypingSpeedWpm());
+                    sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
+                    sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
+                    sr.setIpAddress("Authenticated Client");
+                    sr.setRiskScore(-0.05); 
+                    
+                    explanation = geminiAIService.analyzeSecurity(sr);
+                } catch (Exception e) {
+                    System.err.println("Gemini Analysis failed: " + e.getMessage());
+                }
+            }
+            
+            Map<String, String> successResponse = new HashMap<>();
+            successResponse.put("status", "VERIFIED");
+            successResponse.put("geminiExplanation", explanation);
+            return ResponseEntity.ok(successResponse);
+        } catch (Exception e) {
+            System.err.println("CRITICAL ERROR IN OTP VERIFICATION: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Internal security system error. Please refresh the page and try again."));
         }
-        
-        Map<String, String> successResponse = new HashMap<>();
-        successResponse.put("status", "VERIFIED");
-        successResponse.put("geminiExplanation", explanation);
-        return ResponseEntity.ok(successResponse);
     }
 }
