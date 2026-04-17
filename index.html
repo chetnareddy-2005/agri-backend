@@ -1,175 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Farm2Trade | Premium Agri-Logistics Intelligence</title>
-  <style>
-    :root {
-      --primary: #2e7d32;
-      --primary-dark: #1b5e20;
-      --accent: #f57c00;
-      --text: #333;
-      --glass: rgba(255, 255, 255, 0.9);
-    }
-    body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--text);
-      line-height: 1.6;
-    }
-    body::before {
-      content: "";
-      background: url('./app/hero-image.jpg') no-repeat center center fixed;
-      background-size: cover;
-      opacity: 0.2;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      position: fixed;
-      z-index: -1;
-    }
-    .container {
-      max-width: 800px;
-      padding: 40px;
-      background: var(--glass);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      margin: 20px;
-    }
-    h1 {
-      color: var(--primary);
-      font-size: 2.5rem;
-      margin-top: 0;
-      cursor: pointer;
-      transition: transform 0.3s ease, color 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    h1:hover {
-      color: var(--primary-dark);
-      transform: translateY(-2px);
-    }
-    h2 {
-      color: var(--primary-dark);
-      border-bottom: 2px solid var(--primary);
-      display: inline-block;
-      padding-bottom: 5px;
-      margin-top: 30px;
-      font-size: 1.5rem;
-    }
-    p {
-      font-size: 1.1rem;
-      color: #555;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin-bottom: 12px;
-      padding-left: 30px;
-      position: relative;
-      font-size: 1.05rem;
-    }
-    li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: var(--primary);
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 10px;
-    }
-    .tech-item {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 10px;
-      border-left: 4px solid var(--primary);
-    }
-    .tech-item b {
-      color: var(--primary-dark);
-      display: block;
-      margin-bottom: 5px;
-    }
-    .cta {
-      margin-top: 40px;
-      text-align: center;
-      font-weight: bold;
-      color: var(--primary);
-      font-size: 1.2rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/agri-backend/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farm2Trade</title>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script type="module" crossorigin src="/agri-backend/assets/index-CMb15kvs.js"></script>
+  <link rel="stylesheet" crossorigin href="/agri-backend/assets/index-BqEnkKqL.css">
 </head>
+
 <body>
-
-<div class="container">
-  <h1 onclick="goToApp()">🌾 Farm2Trade</h1>
-  <p><i>Premium Agri-Logistics & Supply Chain Intelligence</i></p>
-
-  <h2>📌 Overview</h2>
-  <p>
-    Farm2Trade is an enterprise-grade full-stack platform designed to bridge the gap between farmers, retailers, and transporters. 
-    It features <b>AI-Driven Continuous Authentication</b> and a <b>Zero-Trust Security Infrastructure</b> to ensure secure and transparent transactions in the agricultural ecosystem.
-  </p>
-
-  <h2>🚀 Key Capabilities</h2>
-  <ul>
-    <li><b>Continuous Behavior Analytics:</b> Real-time risk assessment based on user interaction patterns.</li>
-    <li><b>Smart Marketplace:</b> Dynamic bidding and secure crop auctioning for farmers and retailers.</li>
-    <li><b>Precision Logistics:</b> Real-time GPS tracking and fleet management for transporters.</li>
-    <li><b>Weather Intelligence:</b> AI-powered localized climate advice for optimal harvest planning.</li>
-  </ul>
-
-  <h2>🛠️ Tech Stack</h2>
-  <div class="tech-grid">
-    <div class="tech-item">
-      <b>Frontend</b>
-      React 19, Vite, Lucide, Recharts
-    </div>
-    <div class="tech-item">
-      <b>Main Backend</b>
-      Spring Boot 3.x, Java 17, JPA
-    </div>
-    <div class="tech-item">
-      <b>Security/ML</b>
-      Flask, Python, Scikit-Learn
-    </div>
-    <div class="tech-item">
-      <b>Database</b>
-      MySQL, Hibernate
-    </div>
-  </div>
-
-  <div class="cta" onclick="goToApp()" style="cursor: pointer;">
-    👉 Click the title or here to open the live app 🚀
-  </div>
-</div>
-
-<script>
-function goToApp() {
-  window.location.href = "./app/";
-}
-</script>
-
+  <div id="root"></div>
 </body>
+
 </html>
