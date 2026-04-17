@@ -95,28 +95,31 @@ public class ContinuousAuthController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Session terminated due to high risk behavior."));
                     
                 case "MEDIUM":
-                    String safeUserId = (userId != null) ? userId : "anonymous";
-                    try { auditLogRepository.save(new AuditLog(safeUserId, "MEDIUM", "OTP_REQUIRED")); } catch(Exception e) {}
+                    String finalUserId = (userId != null) ? userId : "anonymous";
+                    try { auditLogRepository.save(new AuditLog(finalUserId, "MEDIUM", "OTP_REQUIRED")); } catch(Exception e) {}
                     
                     String otp = generateOtp();
                     long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000);
                     
-                    otpStorage.put(safeUserId, new OtpData(otp, expiryTime));
-                    lastTelemetryCache.put(safeUserId, requestDTO);
+                    otpStorage.put(finalUserId, new OtpData(otp, expiryTime));
+                    lastTelemetryCache.put(finalUserId, requestDTO);
                     
-                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                    // Prioritize the real user email from the userId if it's an email format
+                    String targetEmail = (finalUserId.contains("@")) ? finalUserId : "chetnareddy2520@gmail.com";
+                    
                     try { 
+                        System.out.println("📧 Attempting to send OTP to: " + targetEmail);
                         emailService.sendOtpEmail(targetEmail, otp); 
                     } catch (Exception e) {
-                        System.err.println("Email failed, but OTP will still show on screen: " + e.getMessage());
+                        System.err.println("CRITICAL: EMAIL SENDING FAILED -> " + e.getMessage());
                     }
                     
-                    System.out.println("🚨 SECURITY CHALLENGE: " + targetEmail + " -> " + otp);
+                    System.out.println("🚨 SECURITY LOCK: Code " + otp + " generated for " + targetEmail);
                     
                     Map<String, String> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
-                    mediumRiskBody.put("otp", otp); 
-                    mediumRiskBody.put("message", "Suspicious behavior detected. Safety code required.");
+                    mediumRiskBody.put("otp", otp); // Keeping this here so the demo works if email fails!
+                    mediumRiskBody.put("message", "Suspicious activity. Security code sent to " + targetEmail);
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
                     
                 case "LOW":
