@@ -66,8 +66,12 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                     const data = await res.json();
                     setAlertMessage(data.challenge);
                     if (data.otp) setReceivedOtp(data.otp);
+                    localStorage.setItem('auth_risk_level', 'MEDIUM'); // Sync for gauge
                 } else if (res.status === 401) {
                     handleDiscardSession();
+                } else if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('auth_risk_level', data.risk || 'LOW'); // Sync for gauge
                 }
             } catch (err) {
                 console.error("Telemetry error:", err);
