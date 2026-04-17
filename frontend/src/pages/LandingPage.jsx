@@ -337,8 +337,29 @@ const LandingPage = () => {
               </ul>
             </div>
           </div>
+          <div style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
+            <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: '#4ade80' }}>Tech Stack</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Frontend</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>React 19, Vite, Lucide, Recharts</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Backend</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Spring Boot 3.x, Java 17, JPA</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Security/ML</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>Flask, Python, Scikit-Learn</div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ade80', fontWeight: 'bold', marginBottom: '4px' }}>Database</div>
+                <div style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>MySQL, Hibernate</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div style={{ maxWidth: '1200px', margin: '3rem auto 0', paddingTop: '2rem', borderTop: '1px solid var(--text-secondary)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+        <div style={{ maxWidth: '1200px', margin: '3rem auto 0', paddingTop: '2rem', borderTop: '1px solid var(--border-color)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
           &copy; 2025 Farm2Trade India Pvt Ltd. All rights reserved.
         </div>
       </footer>
