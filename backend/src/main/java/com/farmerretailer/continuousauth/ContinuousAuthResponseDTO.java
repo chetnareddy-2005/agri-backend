@@ -3,6 +3,7 @@ package com.farmerretailer.continuousauth;
 public class ContinuousAuthResponseDTO {
     private String userId;
     private String riskLevel;
+    private Double score;
     private int anomalyCount;
 
     public ContinuousAuthResponseDTO() {}
