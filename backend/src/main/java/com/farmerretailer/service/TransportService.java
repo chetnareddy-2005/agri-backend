@@ -47,6 +47,9 @@ public class TransportService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private PaymentService paymentService;
+
     public Transport createPlatformTransport(Long orderId, Double distanceKm, Long driverId, String scheduledDate, String timeSlot) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -157,6 +160,9 @@ public class TransportService {
             order.setStatus("DELIVERED");
             order.setDeliveredAt(java.time.LocalDateTime.now());
             orderRepository.save(order);
+            
+            // Release funds from escrow
+            paymentService.settleEscrowFunds(order.getId());
         }
         
         return transportRepository.save(transport);

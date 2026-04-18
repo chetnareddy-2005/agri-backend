@@ -64,10 +64,19 @@ public class TransportController {
     }
 
     @PostMapping("/{id}/delivery-proof")
-    public ResponseEntity<?> submitProof(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> submitProof(
+            @PathVariable Long id, 
+            @RequestParam("photo") org.springframework.web.multipart.MultipartFile photo,
+            @RequestParam("signature") String signature) {
         try {
-            String photoUrl = payload.get("photoUrl");
-            String signature = payload.get("signature");
+            // Save Photo locally
+            String fileName = "proof_" + id + "_" + System.currentTimeMillis() + ".jpg";
+            java.nio.file.Path path = java.nio.file.Paths.get("uploads/proofs/" + fileName);
+            java.nio.file.Files.createDirectories(path.getParent());
+            java.nio.file.Files.copy(photo.getInputStream(), path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            
+            String photoUrl = "/uploads/proofs/" + fileName;
+            
             return ResponseEntity.ok(transportService.submitDeliveryProof(id, photoUrl, signature));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

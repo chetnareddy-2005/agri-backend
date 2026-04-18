@@ -204,4 +204,54 @@ public class PaymentService {
             return false;
         }
     }
+
+    public synchronized void settleEscrowFunds(Long dbOrderId) {
+        try {
+            java.util.Optional<com.farmerretailer.entity.Order> orderOpt = orderRepository.findById(dbOrderId);
+            if (orderOpt.isPresent()) {
+                com.farmerretailer.entity.Order order = orderOpt.get();
+                if (order.isPaid() && "DELIVERED".equalsIgnoreCase(order.getStatus())) {
+                    // Release Farmer Funds
+                    User farmer = order.getProduct().getFarmer();
+                    double productPrice = order.getTotalPrice();
+                    if (farmer.getEscrowBalance() >= productPrice) {
+                        farmer.setEscrowBalance(farmer.getEscrowBalance() - productPrice);
+                        farmer.setAvailableBalance(farmer.getAvailableBalance() + productPrice);
+                        userRepository.save(farmer);
+                        
+                        notificationService.createNotification(
+                            farmer,
+                            "Funds Released",
+                            "₹" + productPrice + " has been released from escrow to your available balance for Order #" + dbOrderId,
+                            "success"
+                        );
+                    }
+                }
+            }
+
+            // Release Transporter Funds
+            java.util.Optional<com.farmerretailer.entity.Transport> transportOpt = transportRepository.findByOrderId(dbOrderId);
+            if (transportOpt.isPresent()) {
+                com.farmerretailer.entity.Transport transport = transportOpt.get();
+                if (transport.isPaid() && "DELIVERED".equalsIgnoreCase(transport.getStatus()) && transport.getDriver() != null) {
+                    User driverUser = transport.getDriver().getUser();
+                    double logisticsPrice = transport.getUpdatedPrice();
+                    if (driverUser.getEscrowBalance() >= logisticsPrice) {
+                        driverUser.setEscrowBalance(driverUser.getEscrowBalance() - logisticsPrice);
+                        driverUser.setAvailableBalance(driverUser.getAvailableBalance() + logisticsPrice);
+                        userRepository.save(driverUser);
+                        
+                        notificationService.createNotification(
+                            driverUser,
+                            "Logistics Funds Released",
+                            "₹" + logisticsPrice + " for delivery of Order #" + dbOrderId + " is now in your available balance.",
+                            "success"
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Escrow settlement failed for Order #" + dbOrderId + ": " + e.getMessage());
+        }
+    }
 }

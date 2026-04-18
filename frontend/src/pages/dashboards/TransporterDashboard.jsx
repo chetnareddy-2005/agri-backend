@@ -33,6 +33,13 @@ const TransporterDashboard = () => {
     const [deliveredDeliveries, setDeliveredDeliveries] = useState([]);
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
     const [wallet, setWallet] = useState({ availableBalance: 0, escrowBalance: 0 });
+    
+    // Proof Submission State
+    const [deliveryPhoto, setDeliveryPhoto] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [isSubmittingProof, setIsSubmittingProof] = useState(false);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const canvasRef = React.useRef(null);
 
     const handleUnauthorized = () => {
         console.warn("[Auth] Security breach or session expiry. Redirecting to landing.");
@@ -185,15 +192,98 @@ const TransporterDashboard = () => {
     };
 
     const submitProof = async () => {
+        if (!deliveryPhoto) {
+            alert("Please take or upload a parcel photo.");
+            return;
+        }
+        
+        const canvas = canvasRef.current;
+        const signature = canvas ? canvas.toDataURL() : "NO_SIGNATURE";
+        
+        if (signature === "NO_SIGNATURE") {
+            alert("Digital signature is required.");
+            return;
+        }
+
+        setIsSubmittingProof(true);
+        const formData = new FormData();
+        formData.append('photo', deliveryPhoto);
+        formData.append('signature', signature);
+        formData.append('timestamp', new Date().toISOString());
+        formData.append('lat', location.lat);
+        formData.append('lng', location.lng);
+
         try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${currentProofOrder.id}/delivery-proof`, {
+            const authToken = localStorage.getItem('auth_token');
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${currentProofOrder.id}/delivery-proof`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ photoUrl: "https://via.placeholder.com/150", signature: "SIGNED_OK" })
+                headers: {
+                    'X-Auth-Token': authToken || ''
+                },
+                body: formData,
+                credentials: 'include'
             });
-            if (res.ok) { setShowProofModal(false); fetchDashboardData(); }
-        } catch (e) { console.error(e); }
+
+            if (res.ok) {
+                setShowProofModal(false);
+                setDeliveryPhoto(null);
+                setPhotoPreview(null);
+                fetchDashboardData();
+                alert("Delivery confirmed successfully ✅");
+            } else {
+                const err = await res.text();
+                alert("Proof submission failed: " + err);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Network error while submitting proof.");
+        } finally {
+            setIsSubmittingProof(false);
+        }
+    };
+
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setDeliveryPhoto(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setPhotoPreview(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const startDrawing = (e) => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        setIsDrawing(true);
+    };
+
+    const draw = (e) => {
+        if (!isDrawing) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+        
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+    };
+
+    const clearSignature = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
     const handleLogout = () => {
@@ -475,16 +565,70 @@ const TransporterDashboard = () => {
             {/* Proof Modal */}
             {showProofModal && (
               <div style={modalOverlayStyle}>
-                <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '24px', width: '400px', border: '1px solid var(--border-color)' }}>
-                  <h3 style={{ margin: '0 0 1rem', fontWeight: 'bold' }}>Confirm Delivery 📦</h3>
+                <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '24px', width: '450px', border: '1px solid var(--border-color)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+                  <h3 style={{ margin: '0 0 1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Confirm Delivery 📦</h3>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '1.5rem' }}>Upload proof to complete Order #{currentProofOrder.order?.id}.</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div style={uploadPlaceholderStyle}><Camera size={24} /> Snap Parcel</div>
-                    <div style={uploadPlaceholderStyle}><PenTool size={24} /> e-Signature</div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    
+                    {/* Snap Parcel Section */}
+                    <div style={{ position: 'relative' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-secondary)' }}>1. Parcel Image</label>
+                        {!photoPreview ? (
+                            <label style={{ ...uploadPlaceholderStyle, cursor: 'pointer' }}>
+                                <Camera size={24} />
+                                <span>Snap or Upload Photo</span>
+                                <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: 'none' }} />
+                            </label>
+                        ) : (
+                            <div style={{ position: 'relative' }}>
+                                <img src={photoPreview} alt="Proof" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '16px' }} />
+                                <button onClick={() => { setPhotoPreview(null); setDeliveryPhoto(null); }} style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}>&times;</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Signature Section */}
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>2. e-Signature</label>
+                            <button onClick={clearSignature} style={{ fontSize: '0.7rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>Clear</button>
+                        </div>
+                        <canvas 
+                            ref={canvasRef}
+                            width={380}
+                            height={120}
+                            onMouseDown={startDrawing}
+                            onMouseMove={draw}
+                            onMouseUp={stopDrawing}
+                            onMouseLeave={stopDrawing}
+                            onTouchStart={startDrawing}
+                            onTouchMove={draw}
+                            onTouchEnd={stopDrawing}
+                            style={{ backgroundColor: '#f9fafb', border: '1px solid var(--border-color)', borderRadius: '12px', width: '100%', touchAction: 'none' }}
+                        />
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => setShowProofModal(false)} style={{ flex: 1, padding: '12px', background: 'var(--bg-tertiary)', border: 'none', borderRadius: '12px', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={submitProof} style={{ flex: 1.5, ...successButtonStyle }}>Finish Trip</button>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                        disabled={isSubmittingProof}
+                        onClick={() => { setShowProofModal(false); setPhotoPreview(null); setDeliveryPhoto(null); }} 
+                        style={{ flex: 1, padding: '14px', background: 'var(--bg-tertiary)', border: 'none', borderRadius: '14px', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600' }}
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        disabled={isSubmittingProof}
+                        onClick={submitProof} 
+                        style={{ 
+                            flex: 1.5, ...successButtonStyle, padding: '14px', borderRadius: '14px', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                            opacity: isSubmittingProof ? 0.7 : 1 
+                        }}
+                    >
+                        {isSubmittingProof ? 'Processing...' : 'Finish Trip'}
+                    </button>
                   </div>
                 </div>
               </div>
