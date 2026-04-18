@@ -14,7 +14,7 @@ public class WeatherService {
     @Autowired
     private WeatherRepository weatherRepository;
 
-    @org.springframework.beans.factory.annotation.Value("${weather.api.key}")
+    @org.springframework.beans.factory.annotation.Value("${WEATHER_API_KEY}")
     private String apiKey;
 
     private final String WEATHER_URL_BASE = "http://api.weatherapi.com/v1/current.json";
