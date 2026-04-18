@@ -140,11 +140,11 @@ public class TransportService {
         return transportRepository.save(transport);
     }
 
-    public Transport submitDeliveryProof(Long transportId, String photoUrl, String signature) {
+    public Transport submitDeliveryProof(Long transportId, String photoUrl, String signatureUrl) {
         Transport transport = transportRepository.findById(transportId)
                 .orElseThrow(() -> new RuntimeException("Transport not found"));
         transport.setDeliveryPhotoUrl(photoUrl);
-        transport.setSignatureData(signature);
+        transport.setSignatureUrl(signatureUrl);
         transport.setStatus("DELIVERED");
         
         Driver d = transport.getDriver();

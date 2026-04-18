@@ -67,19 +67,24 @@ public class TransportController {
     public ResponseEntity<?> submitProof(
             @PathVariable Long id, 
             @RequestParam("photo") org.springframework.web.multipart.MultipartFile photo,
-            @RequestParam("signature") String signature) {
+            @RequestParam("signature") org.springframework.web.multipart.MultipartFile signature) {
         try {
-            // Save Photo locally
-            String fileName = "proof_" + id + "_" + System.currentTimeMillis() + ".jpg";
-            java.nio.file.Path path = java.nio.file.Paths.get("uploads/proofs/" + fileName);
-            java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.copy(photo.getInputStream(), path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            // Save Photo
+            String photoFileName = "proof_" + id + "_" + System.currentTimeMillis() + ".jpg";
+            java.nio.file.Path photoPath = java.nio.file.Paths.get("uploads/proofs/" + photoFileName);
+            java.nio.file.Files.createDirectories(photoPath.getParent());
+            java.nio.file.Files.copy(photo.getInputStream(), photoPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            String photoUrl = "/uploads/proofs/" + photoFileName;
             
-            String photoUrl = "/uploads/proofs/" + fileName;
+            // Save Signature
+            String signFileName = "sign_" + id + "_" + System.currentTimeMillis() + ".png";
+            java.nio.file.Path signPath = java.nio.file.Paths.get("uploads/proofs/" + signFileName);
+            java.nio.file.Files.copy(signature.getInputStream(), signPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            String signatureUrl = "/uploads/proofs/" + signFileName;
             
-            return ResponseEntity.ok(transportService.submitDeliveryProof(id, photoUrl, signature));
+            return ResponseEntity.ok(transportService.submitDeliveryProof(id, photoUrl, signatureUrl));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error saving proof: " + e.getMessage());
         }
     }
 

@@ -49,7 +49,7 @@ public class Transport {
 
     // Delivery Proof
     private String deliveryPhotoUrl;
-    private String signatureData;
+    private String signatureUrl;
     private boolean isPaid = false; // LOGISTICS PAYMENT
 
     // Post-delivery Ratings

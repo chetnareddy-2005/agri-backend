@@ -198,22 +198,32 @@ const TransporterDashboard = () => {
         }
         
         const canvas = canvasRef.current;
-        const signature = canvas ? canvas.toDataURL() : "NO_SIGNATURE";
-        
-        if (signature === "NO_SIGNATURE") {
-            alert("Digital signature is required.");
-            return;
-        }
+        if (!canvas) return;
 
+        // Check if canvas is empty (simple check: if anything was drawn)
+        // We'll rely on the user having drawn something, but a better check would be pixel data
+        
         setIsSubmittingProof(true);
-        const formData = new FormData();
-        formData.append('photo', deliveryPhoto);
-        formData.append('signature', signature);
-        formData.append('timestamp', new Date().toISOString());
-        formData.append('lat', location.lat);
-        formData.append('lng', location.lng);
 
         try {
+            // Convert Canvas to Blob (File)
+            const signatureBlob = await new Promise((resolve) => {
+                canvas.toBlob((blob) => resolve(blob), 'image/png');
+            });
+
+            if (!signatureBlob || signatureBlob.size < 100) { // Very small blobs are likely empty
+                alert("Please provide a digital signature.");
+                setIsSubmittingProof(false);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo', deliveryPhoto);
+            formData.append('signature', signatureBlob, 'signature.png');
+            formData.append('timestamp', new Date().toISOString());
+            formData.append('lat', location.lat);
+            formData.append('lng', location.lng);
+
             const authToken = localStorage.getItem('auth_token');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/transport/${currentProofOrder.id}/delivery-proof`, {
                 method: 'POST',
