@@ -2,12 +2,12 @@
 
 ![Platform Banner](https://via.placeholder.com/1200x400/16a34a/ffffff?text=Farm2Trade+Supply+Chain+Intelligence)
 
-### 🚀 Key Highlights:
-- **Zero-Trust Security Infrastructure**: Continuous AI-driven authentication.
-- **B2B Double-Handshake Transaction**: Secure receipt confirmation for verified arrivals.
-- **Automated Escrow & Wallet System**: Real-time financial settlement and transparency.
-- **Weather Intelligence Hub**: Hyper-local climate tracking + AI-powered crop advisory.
-- **Integrated Precision Logistics**: Real-time fleet tracking and multi-party negotiation.
+🚀 **Key Highlights:**
+- **Zero-Trust Security Infrastructure:** Continuous AI-driven authentication.
+- **B2B Double-Handshake Transaction:** Secure receipt confirmation for verified arrivals.
+- **Automated Escrow & Wallet System:** Real-time financial settlement and transparency.
+- **Weather Intelligence Hub:** Hyper-local climate tracking + AI-powered crop advisory.
+- **Integrated Precision Logistics:** Real-time fleet tracking and multi-party negotiation.
 
 ---
 
@@ -28,41 +28,41 @@
 ## 🛡️ Zero-Trust & Continuous Authentication
 Our security posture is built on the principle of **Never Trust, Always Verify**.
 
-*   **Behavioral Biometrics**: We track micro-interactions (mouse velocity, typing cadence) to detect session hijacking.
-*   **Dynamic Risk Scoring**: Real-time risk assessment (LOW/MEDIUM/HIGH) determines adaptive security challenges.
-*   **Instant Termination**: Automatic session termination and identity isolation upon high-risk detection.
-*   **Compact Risk Gauges**: Persistent visual indicators across all dashboards provide real-time security observability.
+- **Behavioral Biometrics**: We track micro-interactions (mouse velocity, typing cadence) to detect session hijacking.
+- **Dynamic Risk Scoring**: Real-time risk assessment (LOW/MEDIUM/HIGH) determines adaptive security challenges.
+- **Instant Termination**: Automatic session termination and identity isolation upon high-risk detection.
+- **Compact Risk Gauges**: Persistent visual indicators across all dashboards provide real-time security observability.
 
 ---
 
 ## 💳 Financial Integrity & Settlement
 We've implemented a robust "Double-Handshake" mechanism to eliminate transaction friction.
 
-1.  **Escrow Management**: When a Retailer pays, funds are locked in a secure **Escrow Balance**.
-2.  **Verified Handshake**: The Retailer confirms receipt via the "Confirm Receipt" protocol upon successful delivery.
-3.  **Automated Release**: Confirmation triggers an immediate transfer of funds from Escrow to the Farmer's and Transporter's **Available Balance**.
-4.  **Full Transparency**: Participants track their earnings through a dedicated **Financial Wallet Hub**.
+1. **Escrow Management**: When a Retailer pays, funds are locked in a secure **Escrow Balance**.
+2. **Verified Handshake**: The Retailer confirms receipt via the "Confirm Receipt" protocol upon successful delivery.
+3. **Automated Release**: Confirmation triggers an immediate transfer of funds from Escrow to the Farmer's and Transporter's **Available Balance**.
+4. **Full Transparency**: Participants track their earnings through a dedicated **Financial Wallet Hub**.
 
 ---
 
 ## 🚀 Dashboard Breakdown
 
 ### 👨‍🌾 1. Farmer Hub (Operational Intelligence)
-*   **Marketplace Control**: List products for auction or fixed-price sales.
-*   **Weather Node Monitor**: Real-time localized weather data integrated with Gemini AI for cultivation advice.
-*   **Financial Hub**: Dedicated wallet showing locked vs. available funds.
-*   **Automated Invoicing**: Instant PDF generation for every verified transaction.
+- **Marketplace Control**: List products for auction or fixed-price sales.
+- **Weather Node Monitor**: Real-time localized weather data integrated with Gemini AI for cultivation advice.
+- **Financial Hub**: Dedicated wallet showing locked vs. available funds.
+- **Automated Invoicing**: Instant PDF generation for every verified transaction.
 
 ### 🏪 2. Retailer Hub (Procurement Foresight)
-*   **Smart Procurement**: Multi-criteria filtering, bidding engine, and dynamic negotiation.
-*   **Verification Protocol**: Formal receipt verification to finalize logistics and financial cycles.
-*   **Fleet Tracking**: Real-time Leaflet-powered map tracking of inbound shipments.
+- **Smart Procurement**: Multi-criteria filtering, bidding engine, and dynamic negotiation.
+- **Verification Protocol**: Formal receipt verification to finalize logistics and financial cycles.
+- **Fleet Tracking**: Real-time Leaflet-powered map tracking of inbound shipments.
 
 ### 🚛 3. Transporter Hub (Precision Logistics)
-*   **Fleet Orchestration**: Interactive GPS map tracking and route optimization.
-*   **Bidding Hub**: Dynamic price negotiation with retailers for delivery contracts.
-*   **Proof of Delivery**: Digital signature and photo evidence submission.
-*   **Earnings Tracker**: Real-time payout tracking for every kilometer traveled.
+- **Fleet Orchestration**: Interactive GPS map tracking and route optimization.
+- **Bidding Hub**: Dynamic price negotiation with retailers for delivery contracts.
+- **Proof of Delivery**: Digital signature and photo evidence submission.
+- **Earnings Tracker**: Real-time payout tracking for every kilometer traveled.
 
 ---
 
@@ -70,51 +70,39 @@ We've implemented a robust "Double-Handshake" mechanism to eliminate transaction
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, TailwindCSS, Lucide Icons, Leaflet.js |
+| **Frontend** | React 19, Vite, TailwindCSS (for base), Lucide Icons, Leaflet.js |
 | **Backend** | Spring Boot 3.x, Java 17, JPA/Hibernate, MySQL 8.x |
 | **Security Service** | Flask, Python 3.9, Scikit-Learn (Isolation Forest ML) |
 | **Intelligence** | Gemini AI (Crop Advisory), OpenWeather API |
 | **Financials** | Cashfree PG Integration, Custom Escrow Ledger |
-| **Security**| Continuous Behavior Auth + Secure Proxying |
-
----
-
-## 🔐 Security & Configuration
-
-The platform is designed with **Production Security** in mind. All sensitive keys (Weather, AI, Payments) are proxied through the Spring Boot backend and never exposed to the client.
-
-### 🛠️ Local Setup (Keys)
-1.  **Environment Variables**: Create a `.env` file in the root directory (refer to `.env.example`).
-2.  **Spring Boot**: The backend automatically picks up environment variables and injects them into `application.properties`.
-3.  **Frontend**: The React app uses `import.meta.env.VITE_API_URL` to communicate with the proxy.
 
 ---
 
 ## 🛠️ Setup & Installation
 
 ### 📋 Prerequisites
-*   **Java**: 17+ | **Node.js**: 20+ | **Python**: 3.9+ | **MySQL**: 8.x
+- **Java**: 17+ | **Node.js**: 20+ | **Python**: 3.9+ | **MySQL**: 8.x
 
 ### 💻 Execution Commands
 
 #### 1. Backend (Spring Boot)
 ```bash
-cd backend
+cd Farmer-Retailer/backend
 mvn clean install
 mvn spring-boot:run
 ```
 
 #### 2. ML Security Node (Flask)
 ```bash
-cd continuous_auth_service
+cd Farmer-Retailer/continuous-auth
 pip install -r requirements.txt
 python app.py
 ```
 
 #### 3. Frontend (React)
 ```bash
-cd frontend
-npm install
+cd Farmer-Retailer/frontend
+npm install --legacy-peer-deps
 npm run dev
 ```
 
@@ -122,9 +110,9 @@ npm run dev
 
 ## 🏛️ Governance & KYC
 The platform includes a dedicated **Admin Oversight Center**:
-*   **KYC Verification**: Document-based verification system for new Farmers and Transporters.
-*   **Audit Logs**: Infinite audit trail of all security events and authentication challenges.
-*   **Crisis Management**: Ability to broadcast emergency alerts (roadblocks, extreme weather) to specific regions.
+- **KYC Verification**: Document-based verification system for new Farmers and Transporters.
+- **Audit Logs**: Infinite audit trail of all security events and authentication challenges.
+- **Crisis Management**: Ability to broadcast emergency alerts (roadblocks, extreme weather) to specific regions.
 
 ---
 
