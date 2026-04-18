@@ -615,6 +615,11 @@ const AdminDashboard = () => {
                                     <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Pending Verifications</p>
                                     <p style={{ fontSize: '0.75rem', color: '#db2777', marginTop: '0.25rem' }}>Click to review</p>
                                 </div>
+                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', borderLeft: '5px solid #f43f5e', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }} onClick={() => setActiveTab('Security Logs')}>
+                                    <h3 style={{ color: '#f43f5e', fontSize: '2rem', fontWeight: 'bold' }}>{stats.anomalyCount || 0}</h3>
+                                    <p style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Anomalies Prevented</p>
+                                    <p style={{ fontSize: '0.75rem', color: '#f43f5e', marginTop: '0.25rem' }}>View risk analysis</p>
+                                </div>
                             </div>
 
                             {/* Weather Intelligence Hub */}

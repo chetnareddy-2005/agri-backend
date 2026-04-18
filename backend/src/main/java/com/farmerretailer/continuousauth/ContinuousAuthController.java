@@ -57,6 +57,9 @@ public class ContinuousAuthController {
     // Quick cache for user's last telemetry so Gemini has context
     private final Map<String, ContinuousAuthRequestDTO> lastTelemetryCache = new ConcurrentHashMap<>();
 
+    // Count suspicious events per session
+    private final Map<String, Integer> anomalyCounter = new ConcurrentHashMap<>();
+
     private String generateOtp() {
         return String.valueOf((int)(Math.random() * 900000) + 100000);
     }
@@ -70,11 +73,20 @@ public class ContinuousAuthController {
             // Very Important Debug Logging
             System.out.println("[Telemetry Debug] Score: " + response.getScore() + ", Risk: " + response.getRiskLevel());
 
-            // Quick Fix (Demo Trigger) - Force OTP if mouse is frantically shaken!
+            // Quick Fix (Demo Trigger) - Count anomalies if mouse is frantic!
             Double mouseSpeed = (requestDTO.getTelemetry() != null) ? requestDTO.getTelemetry().getMouseMovementAvgSpeed() : null;
             if (mouseSpeed != null && mouseSpeed > 1000) {
-                response.setRiskLevel("MEDIUM");
-                System.out.println("[Telemetry Debug] Risk (Forced via Hackathon Logic): MEDIUM");
+                int currentCount = anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0) + 1;
+                anomalyCounter.put(userId != null ? userId : "anonymous", currentCount);
+                System.out.println("[Telemetry Debug] Anomaly detected! Count for " + userId + ": " + currentCount);
+                
+                if (currentCount >= 2) {
+                    response.setRiskLevel("MEDIUM");
+                    System.out.println("[Telemetry Debug] Triggering OTP (Count reached 2)");
+                } else {
+                    response.setRiskLevel("LOW");
+                    System.out.println("[Telemetry Debug] Anomaly noted but below threshold (2)");
+                }
             }
 
             switch(response.getRiskLevel()) {
@@ -99,6 +111,9 @@ public class ContinuousAuthController {
                         System.err.println("[Telemetry Debug] Email failed but continuing demo loop: " + e.getMessage());
                     }
 
+                    // Reset anomaly counter for this user after triggering challenge
+                    anomalyCounter.remove(userId != null ? userId : "anonymous");
+
                     // 🔥 HACKATHON DEMO: Print it directly to terminal
                     System.out.println("==================================================");
                     System.out.println("🚨 OTP REQUIRED FOR USER: " + targetEmail);
@@ -107,7 +122,6 @@ public class ContinuousAuthController {
 
                     Map<String, Object> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
-                    mediumRiskBody.put("otp", otp); 
                     mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
 

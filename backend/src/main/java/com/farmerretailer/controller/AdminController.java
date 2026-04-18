@@ -83,7 +83,15 @@ public class AdminController {
         stats.put("farmers", farmers);
         stats.put("retailers", retailers);
         stats.put("transportersCount", transporters);
-        System.out.println("DEBUG: Final stats map: " + stats);
+        
+        // --- ADDED: Anomaly Tracking Stats ---
+        long highRisk = auditLogRepository.countByRiskLevel("HIGH");
+        long mediumRisk = auditLogRepository.countByRiskLevel("MEDIUM");
+        stats.put("anomalyCount", highRisk + mediumRisk);
+        stats.put("highRiskCount", highRisk);
+        stats.put("mediumRiskCount", mediumRisk);
+
+        System.out.println("DEBUG: Final stats map with anomalies: " + stats);
         return ResponseEntity.ok(stats);
 
     }

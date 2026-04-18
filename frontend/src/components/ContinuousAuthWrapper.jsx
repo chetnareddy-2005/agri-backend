@@ -169,15 +169,6 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                         A Step-Up Authentication OTP has been sent to your registered email.
                     </p>
 
-                    {receivedOtp && (
-                        <div style={{ 
-                            backgroundColor: 'rgba(220, 38, 38, 0.2)', padding: '12px', 
-                            borderRadius: '12px', fontSize: '0.85rem', color: '#fca5a5',
-                            marginBottom: '2rem', border: '1px dashed rgba(255,255,255,0.3)'
-                        }}>
-                            🔒 DEMO MODE: Security Code is <strong>{receivedOtp}</strong>
-                        </div>
-                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <input
