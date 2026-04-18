@@ -66,14 +66,14 @@ public class TransportController {
     @PostMapping(value = "/{id}/delivery-proof", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> submitProof(
             @PathVariable Long id, 
-            @RequestParam("photo") org.springframework.web.multipart.MultipartFile photo,
+            @RequestParam("image") org.springframework.web.multipart.MultipartFile image,
             @RequestParam("signature") org.springframework.web.multipart.MultipartFile signature) {
         try {
             // Save Photo
             String photoFileName = "proof_" + id + "_" + System.currentTimeMillis() + ".jpg";
             java.nio.file.Path photoPath = java.nio.file.Paths.get("uploads/proofs/" + photoFileName);
             java.nio.file.Files.createDirectories(photoPath.getParent());
-            java.nio.file.Files.copy(photo.getInputStream(), photoPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            java.nio.file.Files.copy(image.getInputStream(), photoPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             String photoUrl = "/uploads/proofs/" + photoFileName;
             
             // Save Signature

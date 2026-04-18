@@ -218,7 +218,7 @@ const TransporterDashboard = () => {
             }
 
             const formData = new FormData();
-            formData.append('photo', deliveryPhoto);
+            formData.append('image', deliveryPhoto);
             formData.append('signature', signatureBlob, 'signature.png');
             formData.append('timestamp', new Date().toISOString());
             formData.append('lat', location.lat);
