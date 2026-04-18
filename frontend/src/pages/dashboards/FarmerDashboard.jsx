@@ -507,6 +507,10 @@ const FarmerDashboard = () => {
     const [newPrice, setNewPrice] = useState('');
     const [editingProduct, setEditingProduct] = useState(null);
 
+    // Listing Progress States
+    const [listingStatus, setListingStatus] = useState('IDLE'); // IDLE, LOADING, SUCCESS, ERROR
+    const [listingMessage, setListingMessage] = useState('');
+
     const [formData, setFormData] = useState({
         name: '', category: 'Vegetables', quantity: '', unit: 'kg', price: '', deliveryEstimate: '', location: '', description: '',
         biddingStartTime: null, biddingEndTime: null, imageUrls: [], listingType: 'AUCTION'
@@ -574,6 +578,13 @@ const FarmerDashboard = () => {
                 : `${import.meta.env.VITE_API_URL}/api/products/add`;
             const method = editingProductId ? 'PUT' : 'POST';
 
+            setListingStatus('LOADING');
+            setListingMessage('Your product is being listed. Please wait...');
+
+            // Visual feedback of steps
+            setTimeout(() => setListingMessage('Uploading images...'), 800);
+            setTimeout(() => setListingMessage('Saving product details...'), 1600);
+
             const response = await fetchWithAuth(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
@@ -582,27 +593,29 @@ const FarmerDashboard = () => {
             });
 
             if (response.ok) {
-                // alert(editingProductId ? "Product updated successfully" : "Product listed successfully");
-                setShowSuccessAnimation(true); // Trigger animation instead of alert
-
-                // Delay resetting form slightly so it happens behind the curtain
+                setListingStatus('SUCCESS');
+                setListingMessage('Product listed successfully ✅');
+                
                 setTimeout(() => {
+                    setListingStatus('IDLE');
                     setEditingProductId(null);
                     setFormData({
                         name: '', category: 'Vegetables', quantity: '', unit: 'kg', price: '',
                         deliveryEstimate: '', location: '', description: '',
                         biddingStartTime: null, biddingEndTime: null, imageUrls: [], listingType: 'AUCTION'
                     });
-                    fetchMyListings(); // Refresh listings
-                    // We don't switch tabs immediately - we wait for animation to end
-                }, 500);
+                    fetchMyListings();
+                    setActiveTab('My Listings');
+                }, 2000);
             } else {
                 const errorMsg = await response.text();
-                alert(`Failed to list product (Status: ${response.status}): ${errorMsg}`);
+                setListingStatus('ERROR');
+                setListingMessage(`Failed to list product: ${errorMsg}`);
             }
         } catch (err) {
             console.error(err);
-            alert(`Error connecting to server: ${err.name} - ${err.message}`);
+            setListingStatus('ERROR');
+            setListingMessage('Error connecting to server. Please try again.');
         }
     };
 
@@ -1533,14 +1546,22 @@ const FarmerDashboard = () => {
                                     </button>
                                     <button
                                         type="submit"
-                                        style={{ flex: 2, padding: '0.75rem', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                        {editingProductId ? 'Update Product' : 'List Product'}
+                                        style={{ flex: 2, padding: '0.75rem', backgroundColor: listingStatus === 'LOADING' ? '#9CA3AF' : '#16a34a', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: listingStatus === 'LOADING' ? 'not-allowed' : 'pointer' }}
+                                        disabled={listingStatus === 'LOADING'}>
+                                        {listingStatus === 'LOADING' ? 'Processing...' : (editingProductId ? 'Update Product' : 'List Product')}
                                     </button>
                                 </div>
                             </form>
                         </div>
                     )
                 }
+
+                {/* Progress Modal Overlay */}
+                <ListingProgressModal 
+                    status={listingStatus} 
+                    message={listingMessage} 
+                    onClose={() => setListingStatus('IDLE')} 
+                />
 
 
 
@@ -1992,6 +2013,60 @@ const SuccessOverlay = ({ show, onAnimationEnd }) => {
                 </div>
                 <h2 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>Success!</h2>
                 <p style={{ fontSize: '1.25rem', marginTop: '0.5rem' }}>Product Listed Successfully</p>
+            </div>
+        </div>
+    );
+};
+
+
+const ListingProgressModal = ({ status, message, onClose }) => {
+    if (status === 'IDLE') return null;
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999
+        }}>
+            <div style={{
+                backgroundColor: 'white', padding: '2.5rem', borderRadius: '20px',
+                textAlign: 'center', width: '90%', maxWidth: '400px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                    {status === 'LOADING' && <div className="spinner"></div>}
+                    {status === 'SUCCESS' && (
+                        <div style={{ width: '60px', height: '60px', backgroundColor: '#DCFCE7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                            <span style={{ fontSize: '2rem' }}>✅</span>
+                        </div>
+                    )}
+                    {status === 'ERROR' && (
+                        <div style={{ width: '60px', height: '60px', backgroundColor: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                            <span style={{ fontSize: '2rem' }}>❌</span>
+                        </div>
+                    )}
+                </div>
+
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1F2937', marginBottom: '0.5rem' }}>
+                    {status === 'LOADING' ? 'Listing in Progress' : status === 'SUCCESS' ? 'Success!' : 'Listing Failed'}
+                </h3>
+                
+                <p style={{ color: '#4B5563', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: status === 'ERROR' ? '1.5rem' : '0' }}>
+                    <span className={status === 'LOADING' ? 'loading-dots' : ''}>{message}</span>
+                </p>
+
+                {status === 'ERROR' && (
+                    <button
+                        onClick={onClose}
+                        style={{
+                            width: '100%', padding: '0.75rem', backgroundColor: '#EF4444',
+                            color: 'white', border: 'none', borderRadius: '10px',
+                            fontWeight: '600', cursor: 'pointer'
+                        }}
+                    >
+                        Try Again
+                    </button>
+                )}
             </div>
         </div>
     );
