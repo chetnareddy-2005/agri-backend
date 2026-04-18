@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
-import { LayoutDashboard, ShoppingBag, User, LogOut, Package, HelpCircle, ChevronRight, Plus, Bell } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, User, LogOut, Package, HelpCircle, ChevronRight, Plus, Bell, Truck } from 'lucide-react';
+import LogisticsTracker from './LogisticsTracker';
 import ProductImage from '../../components/ProductImage';
 import ImageCarouselModal from '../../components/ImageCarouselModal';
 import InvoiceTemplate from '../../components/InvoiceTemplate';
@@ -693,20 +694,8 @@ const RetailerDashboard = () => {
         }
     };
 
-    const handleTrackOrder = async (orderId) => {
-        try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/order/${orderId}`, { credentials: 'include' });
-            if (res.ok) {
-                const data = await res.json();
-                setTrackingData(data);
-                setShowTracking(true);
-            } else {
-                alert("No platform transport found for this order.");
-            }
-        } catch (error) {
-            console.error("Tracking Error:", error);
-            alert("Error fetching tracking details.");
-        }
+    const handleTrackOrder = (orderId) => {
+        setSearchParams({ tab: 'Logistics', orderId: orderId });
     };
 
     // Mock Data
@@ -751,6 +740,7 @@ const RetailerDashboard = () => {
                     <div onClick={() => { setActiveTab('Dashboard'); setFilteredOrderStatus(null); }}><NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === 'Dashboard'} /></div>
                     <div onClick={() => { setActiveTab('Orders'); setFilteredOrderStatus(null); }}><NavItem icon={<ShoppingBag size={20} />} label="Orders" active={activeTab === 'Orders'} /></div>
                     <div onClick={() => setActiveTab('Marketplace')}><NavItem icon={<Package size={20} />} label="Marketplace" active={activeTab === 'Marketplace'} /></div>
+                    <div onClick={() => setActiveTab('Logistics')}><NavItem icon={<Truck size={20} />} label="Logistics" active={activeTab === 'Logistics'} /></div>
                     <div onClick={() => setActiveTab('Notifications')}>
                         <div style={{ position: 'relative' }}>
                             <NavItem icon={<Bell size={20} />} label="Notifications" active={activeTab === 'Notifications'} />
@@ -1471,6 +1461,10 @@ const RetailerDashboard = () => {
                                     </button>
                                 </form>
                             </div>
+                        )}
+
+                        {activeTab === 'Logistics' && (
+                            <LogisticsTracker fetchWithAuth={fetchWithAuth} />
                         )}
                     </main>
 

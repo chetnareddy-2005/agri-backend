@@ -63,8 +63,8 @@ const TransportSelection = () => {
             });
 
             if (res.ok) {
-                const transport = await res.json();
-                navigate(`/order-tracking/${orderId}`, { state: { transport } });
+                // Redirect to Dashboard's new Logistics section instead of a separate page
+                navigate(`/retailer-dashboard?tab=Logistics&orderId=${orderId}`);
             }
         } catch (err) {
             console.error(err);
