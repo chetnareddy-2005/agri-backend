@@ -193,7 +193,6 @@ const RetailerDashboard = () => {
 
         fetchProducts();
         fetchMyOrders();
-        fetchHighestBids();
         fetchNotifications();
         fetchMyComplaints();
 
