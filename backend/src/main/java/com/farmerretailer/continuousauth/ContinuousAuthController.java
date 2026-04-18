@@ -125,8 +125,6 @@ public class ContinuousAuthController {
         }
     }
 
-    }
-
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> req) {
         String userId = req.get("userId");
