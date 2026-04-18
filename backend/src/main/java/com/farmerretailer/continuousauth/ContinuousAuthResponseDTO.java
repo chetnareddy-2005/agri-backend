@@ -5,6 +5,14 @@ public class ContinuousAuthResponseDTO {
     private String riskLevel;
     private Double score;
 
+    public ContinuousAuthResponseDTO() {}
+
+    public ContinuousAuthResponseDTO(String userId, String riskLevel, Double score) {
+        this.userId = userId;
+        this.riskLevel = riskLevel;
+        this.score = score;
+    }
+
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
