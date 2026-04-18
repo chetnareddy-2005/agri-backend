@@ -70,11 +70,23 @@ We've implemented a robust "Double-Handshake" mechanism to eliminate transaction
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, TailwindCSS (for base), Lucide Icons, Leaflet.js |
+| **Frontend** | React 19, Vite, TailwindCSS, Lucide Icons, Leaflet.js |
 | **Backend** | Spring Boot 3.x, Java 17, JPA/Hibernate, MySQL 8.x |
 | **Security Service** | Flask, Python 3.9, Scikit-Learn (Isolation Forest ML) |
 | **Intelligence** | Gemini AI (Crop Advisory), OpenWeather API |
 | **Financials** | Cashfree PG Integration, Custom Escrow Ledger |
+| **Security**| Continuous Behavior Auth + Secure Proxying |
+
+---
+
+## 🔐 Security & Configuration
+
+The platform is designed with **Production Security** in mind. All sensitive keys (Weather, AI, Payments) are proxied through the Spring Boot backend and never exposed to the client.
+
+### 🛠️ Local Setup (Keys)
+1.  **Environment Variables**: Create a `.env` file in the root directory (refer to `.env.example`).
+2.  **Spring Boot**: The backend automatically picks up environment variables and injects them into `application.properties`.
+3.  **Frontend**: The React app uses `import.meta.env.VITE_API_URL` to communicate with the proxy.
 
 ---
 
@@ -87,22 +99,22 @@ We've implemented a robust "Double-Handshake" mechanism to eliminate transaction
 
 #### 1. Backend (Spring Boot)
 ```bash
-cd Farmer-Retailer/backend
+cd backend
 mvn clean install
 mvn spring-boot:run
 ```
 
 #### 2. ML Security Node (Flask)
 ```bash
-cd Farmer-Retailer/continuous-auth
+cd continuous_auth_service
 pip install -r requirements.txt
 python app.py
 ```
 
 #### 3. Frontend (React)
 ```bash
-cd Farmer-Retailer/frontend
-npm install --legacy-peer-deps
+cd frontend
+npm install
 npm run dev
 ```
 

@@ -295,28 +295,20 @@ public class SmtpEmailService implements EmailService {
         }
     }
 
+    @Async
     @Override
-    public void sendOtpEmail(String toEmail, String otp) {
-        if (emailSender == null) {
-            System.err.println("JavaMailSender not configured. Skipping OTP to " + toEmail);
-            return;
-        }
+    public void sendOtp(String to, String otp) {
+        if (emailSender == null) return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@farm2trade.com");
-            message.setTo(toEmail);
-            message.setSubject("Farm2Trade Security: Your OTP");
-            message.setText("Hello,\n\n" +
-                    "We detected some unusual activity on your account.\n" +
-                    "Please use the following OTP to verify your identity: " + otp + "\n\n" +
-                    "This code will expire in 5 minutes.\n\n" +
-                    "Best regards,\nFarmTrade Security Team");
-            
-            System.out.println("📬 [DEBUG] Sending OTP to " + toEmail + "...");
+            message.setFrom("noreply@agriconnect.com");
+            message.setTo(to);
+            message.setSubject("Farm2Trade OTP Verification");
+            message.setText("Your OTP is: " + otp + "\n\nThis code is required due to a security anomaly detection. If you did not perform this action, please change your password immediately.");
             emailSender.send(message);
-            System.out.println("✅ [DEBUG] OTP sent successfully!");
+            System.out.println("OTP sent successfully to " + to);
         } catch (Exception e) {
-            System.err.println("❌ [ERROR] Failed to send OTP to " + toEmail + ": " + e.getMessage());
+            System.err.println("Failed to send OTP to " + to + ": " + e.getMessage());
         }
     }
 }

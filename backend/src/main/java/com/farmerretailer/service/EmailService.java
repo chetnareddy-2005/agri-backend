@@ -22,5 +22,5 @@ public interface EmailService {
 
     void sendInvoiceNotification(String to, com.farmerretailer.entity.Order order, boolean isFarmer);
 
-    void sendOtpEmail(String toEmail, String otp);
+    void sendOtp(String to, String otp);
 }

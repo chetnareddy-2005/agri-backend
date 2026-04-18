@@ -141,23 +141,29 @@ public class AuthController {
                 user.setDocumentName(registrationDTO.getDocumentName());
             }
 
-            // Robust Role Assignment
-            String roleStr = (registrationDTO.getRole() != null) ? registrationDTO.getRole().toUpperCase().trim() : "FARMER";
-            try {
-                user.setRole(com.farmerretailer.model.Role.valueOf(roleStr));
-            } catch (IllegalArgumentException e) {
-                System.err.println("Invalid role received: " + roleStr + ". Defaulting to FARMER.");
-                user.setRole(com.farmerretailer.model.Role.FARMER);
-            }
+        // Robust Role Assignment
+        String roleStr = (registrationDTO.getRole() != null) ? registrationDTO.getRole().toUpperCase().trim() : "FARMER";
+        System.out.println("Processing registration for role: " + roleStr);
+        
+        try {
+            user.setRole(com.farmerretailer.model.Role.valueOf(roleStr));
+        } catch (IllegalArgumentException e) {
+            System.err.println("CRITICAL: Invalid role received '" + roleStr + "'. Check DTO/Frontend mapping.");
+            return ResponseEntity.badRequest().body("Error: Invalid role '" + roleStr + "'. Allowed: FARMER, RETAILER, TRANSPORTER");
+        }
 
-            user.setVerified(false); // New users are not verified by default
-            user.setActive(true);
+        user.setVerified(false);
+        user.setActive(true);
 
+        try {
             userService.registerUser(user);
+            System.out.println("User " + user.getEmail() + " successfully persisted to database.");
             return ResponseEntity.ok("User registered successfully. Please wait for admin approval.");
         } catch (Exception e) {
-            if (e.getMessage().contains("Duplicate entry")) {
-                return ResponseEntity.badRequest().body("Error: Email is already in use!");
+            System.err.println("DATABASE ERROR during registration: " + e.getMessage());
+            e.printStackTrace();
+            if (e.getMessage().contains("Data truncated")) {
+                return ResponseEntity.internalServerError().body("System Error: Database schema mismatch for column 'role'. Contact Admin.");
             }
             return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
         }

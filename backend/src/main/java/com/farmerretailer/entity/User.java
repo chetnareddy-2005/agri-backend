@@ -40,11 +40,13 @@ public class User {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('ADMIN', 'FARMER', 'RETAILER', 'TRANSPORTER')")
+    @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(nullable = false)
     private boolean isActive = true;
-    @Column(name = "is_verified", columnDefinition = "boolean default false")
+
+    @Column(name = "is_verified", nullable = false)
     private boolean verified = false;
 
     // For password reset/verification flow
@@ -55,7 +57,7 @@ public class User {
     private String documentName;
 
     @Lob
-    @Column(length = 10000000) // Increase size limit for BLOB
+    @Column(name = "document_content", columnDefinition = "LONGBLOB")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private byte[] documentContent;
 
