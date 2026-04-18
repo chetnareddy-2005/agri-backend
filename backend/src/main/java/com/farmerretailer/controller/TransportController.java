@@ -63,7 +63,7 @@ public class TransportController {
         }
     }
 
-    @PostMapping("/{id}/delivery-proof")
+    @PostMapping(value = "/{id}/delivery-proof", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> submitProof(
             @PathVariable Long id, 
             @RequestParam("photo") org.springframework.web.multipart.MultipartFile photo,
