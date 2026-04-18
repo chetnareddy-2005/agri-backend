@@ -95,7 +95,7 @@ public class ContinuousAuthController {
                 lastTelemetryCache.put(userId, requestDTO);
 
                 String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
-                emailService.sendOtpEmail(targetEmail, otp);
+                emailService.sendOtp(targetEmail, otp);
 
                 // 🔥 HACKATHON DEMO: Print it directly to terminal so you don't even need to open Gmail!
                 System.out.println("==================================================");

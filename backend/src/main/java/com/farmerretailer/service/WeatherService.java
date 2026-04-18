@@ -14,8 +14,10 @@ public class WeatherService {
     @Autowired
     private WeatherRepository weatherRepository;
 
-    private final String API_KEY = "fbae123ad5644e87952133011260204"; // Provided by user
-    private final String WEATHER_URL = "http://api.weatherapi.com/v1/current.json?key=" + API_KEY + "&q=";
+    @org.springframework.beans.factory.annotation.Value("${weather.api.key}")
+    private String apiKey;
+
+    private final String WEATHER_URL_BASE = "http://api.weatherapi.com/v1/current.json";
 
     public Weather getLatestWeather(String location) {
         Optional<Weather> existing = weatherRepository.findFirstByLocation(location);

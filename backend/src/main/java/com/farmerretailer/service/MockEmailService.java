@@ -106,7 +106,7 @@ public class MockEmailService implements EmailService {
     }
 
     @Override
-    public void sendOtpEmail(String toEmail, String otp) {
+    public void sendOtp(String toEmail, String otp) {
         System.out.println("==================================================");
         System.out.println("MOCK EMAIL SERVICE - OTP VERIFICATION TO: " + toEmail);
         System.out.println("Subject: Farm2Trade Security OTP");
