@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}, allowCredentials = "true")
 public class UserController {
 
     @Autowired
@@ -48,7 +47,9 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile(@org.springframework.security.core.annotation.AuthenticationPrincipal String email) {
+    public ResponseEntity<?> getUserProfile(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        String email = principal.getName();
         return userRepository.findByEmail(email)
                 .map(user -> {
                     java.util.Map<String, Object> profile = new java.util.HashMap<>();

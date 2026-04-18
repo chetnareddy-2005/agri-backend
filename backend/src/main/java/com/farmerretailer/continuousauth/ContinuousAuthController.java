@@ -17,7 +17,6 @@ import com.farmerretailer.entity.AuditLog;
 
 @RestController
 @RequestMapping("/api/v1/telemetry")
-@CrossOrigin(origins = "*")
 public class ContinuousAuthController {
 
     @Autowired
@@ -64,58 +63,68 @@ public class ContinuousAuthController {
 
     @PostMapping("/evaluate")
     public ResponseEntity<?> evaluateTelemetry(@RequestBody ContinuousAuthRequestDTO requestDTO) {
-        ContinuousAuthResponseDTO response = anomalyDetectionService.evaluateRisk(requestDTO);
-        String userId = requestDTO.getUserId();
+        try {
+            ContinuousAuthResponseDTO response = anomalyDetectionService.evaluateRisk(requestDTO);
+            String userId = requestDTO.getUserId();
 
-        // Very Important Debug Logging
-        System.out.println("Score: " + response.getScore());
-        System.out.println("Risk (from Python): " + response.getRiskLevel());
+            // Very Important Debug Logging
+            System.out.println("[Telemetry Debug] Score: " + response.getScore() + ", Risk: " + response.getRiskLevel());
 
-        // Quick Fix (Demo Trigger) - Force OTP if mouse is frantically shaken!
-        Double mouseSpeed = requestDTO.getTelemetry().getMouseMovementAvgSpeed();
-        if (mouseSpeed != null && mouseSpeed > 1000) {
-            response.setRiskLevel("MEDIUM");
-            System.out.println("Risk (Forced via Hackathon Logic): MEDIUM");
+            // Quick Fix (Demo Trigger) - Force OTP if mouse is frantically shaken!
+            Double mouseSpeed = (requestDTO.getTelemetry() != null) ? requestDTO.getTelemetry().getMouseMovementAvgSpeed() : null;
+            if (mouseSpeed != null && mouseSpeed > 1000) {
+                response.setRiskLevel("MEDIUM");
+                System.out.println("[Telemetry Debug] Risk (Forced via Hackathon Logic): MEDIUM");
+            }
+
+            switch(response.getRiskLevel()) {
+                case "HIGH":
+                    if (userId != null) auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED"));
+                    Map<String, String> highRiskBody = new HashMap<>();
+                    highRiskBody.put("error", "Session terminated due to high risk behavior.");
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(highRiskBody);
+
+                case "MEDIUM":
+                    if (userId != null) auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_REQUIRED"));
+                    String otp = generateOtp();
+                    long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins
+
+                    otpStorage.put(userId != null ? userId : "anonymous", new OtpData(otp, expiryTime));
+                    lastTelemetryCache.put(userId != null ? userId : "anonymous", requestDTO);
+
+                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
+                    try {
+                        emailService.sendOtp(targetEmail, otp);
+                    } catch (Exception e) {
+                        System.err.println("[Telemetry Debug] Email failed but continuing demo loop: " + e.getMessage());
+                    }
+
+                    // 🔥 HACKATHON DEMO: Print it directly to terminal
+                    System.out.println("==================================================");
+                    System.out.println("🚨 OTP REQUIRED FOR USER: " + targetEmail);
+                    System.out.println("🔑 THE SECRET OTP IS: >>> " + otp + " <<<");
+                    System.out.println("==================================================");
+
+                    Map<String, Object> mediumRiskBody = new HashMap<>();
+                    mediumRiskBody.put("challenge", "OTP_REQUIRED");
+                    mediumRiskBody.put("otp", otp); 
+                    mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
+
+                case "LOW":
+                default:
+                    if (userId != null && Math.random() < 0.1) { 
+                        auditLogRepository.save(new AuditLog(userId, "LOW", "ALLOWED"));
+                    }
+                    return ResponseEntity.ok(response);
+            }
+        } catch (Exception e) {
+            System.err.println("[Telemetry Error] CRITICAL CRASH IN EVALUATE: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.OK).body(new ContinuousAuthResponseDTO(requestDTO.getUserId(), "LOW", 0.0));
         }
+    }
 
-
-        switch(response.getRiskLevel()) {
-            case "HIGH":
-                auditLogRepository.save(new AuditLog(userId, "HIGH", "BLOCKED"));
-                Map<String, String> highRiskBody = new HashMap<>();
-                highRiskBody.put("error", "Session terminated due to high risk behavior.");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(highRiskBody);
-
-            case "MEDIUM":
-                auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_REQUIRED"));
-                String otp = generateOtp();
-                long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins
-
-                otpStorage.put(userId, new OtpData(otp, expiryTime));
-                lastTelemetryCache.put(userId, requestDTO);
-
-                String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
-                emailService.sendOtp(targetEmail, otp);
-
-                // 🔥 HACKATHON DEMO: Print it directly to terminal so you don't even need to open Gmail!
-                System.out.println("==================================================");
-                System.out.println("🚨 OTP REQUIRED FOR USER: " + targetEmail);
-                System.out.println("🔑 THE SECRET OTP IS: >>> " + otp + " <<<");
-                System.out.println("==================================================");
-
-                Map<String, Object> mediumRiskBody = new HashMap<>();
-                mediumRiskBody.put("challenge", "OTP_REQUIRED");
-                mediumRiskBody.put("otp", otp); // Added for on-screen display during demo/presentation
-                mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
-
-            case "LOW":
-            default:
-                if (Math.random() < 0.1) { // Sparsely log LOW to avoid huge DB size during tracking
-                    auditLogRepository.save(new AuditLog(userId, "LOW", "ALLOWED"));
-                }
-                return ResponseEntity.ok(response);
-        }
     }
 
     @PostMapping("/verify-otp")

@@ -20,7 +20,11 @@ public class WalletController {
     private UserRepository userRepository;
 
     @GetMapping("/balance")
-    public ResponseEntity<Map<String, Double>> getBalance(@AuthenticationPrincipal String email) {
+    public ResponseEntity<Map<String, Double>> getBalance(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String email = principal.getName();
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
             return ResponseEntity.status(401).build();

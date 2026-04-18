@@ -34,19 +34,32 @@ const TransporterDashboard = () => {
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
     const [wallet, setWallet] = useState({ availableBalance: 0, escrowBalance: 0 });
 
+    const handleUnauthorized = () => {
+        console.warn("[Auth] Security breach or session expiry. Redirecting to landing.");
+        localStorage.removeItem('user');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_risk_level');
+        navigate('/');
+    };
+
     const fetchWithAuth = async (url, options = {}) => {
         const authToken = localStorage.getItem('auth_token');
         const headers = {
             ...options.headers,
             'X-Auth-Token': authToken || ''
         };
-        const res = await fetch(url, { ...options, headers, credentials: 'include' });
-        if (res.status === 401) {
-            localStorage.removeItem('user');
-            localStorage.removeItem('auth_token');
-            navigate('/');
+        
+        try {
+            const res = await fetch(url, { ...options, headers, credentials: 'include' });
+            console.log(`[API Debug] ${url} - Status: ${res.status}`);
+            if (res.status === 401) {
+                handleUnauthorized();
+            }
+            return res;
+        } catch (err) {
+            console.error(`[API Debug] Fetch error for ${url}:`, err);
+            throw err;
         }
-        return res;
     };
 
     useEffect(() => {

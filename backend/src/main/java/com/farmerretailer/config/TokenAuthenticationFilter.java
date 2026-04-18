@@ -26,7 +26,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && !token.isEmpty()) {
             Authentication authentication = tokenRegistry.getAuthentication(token);
             if (authentication != null) {
+                System.out.println("[Auth Debug] Valid token found: " + token + " for user: " + authentication.getName());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                System.out.println("[Auth Debug] Token present but NOT found in registry: " + token);
             }
         }
 

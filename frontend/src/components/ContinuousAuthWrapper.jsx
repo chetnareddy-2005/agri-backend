@@ -27,8 +27,9 @@ const ContinuousAuthWrapper = ({ children, user }) => {
     }, [user, activeUser]);
 
     const handleDiscardSession = () => {
+        console.warn("[Security] Session discarded. Clearing storage and redirecting.");
         localStorage.clear();
-        window.location.href = '/';
+        navigate('/');
     };
 
     const fetchWithAuth = async (url, options = {}) => {
@@ -68,6 +69,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                     if (data.otp) setReceivedOtp(data.otp);
                     localStorage.setItem('auth_risk_level', 'MEDIUM'); // Sync for gauge
                 } else if (res.status === 401) {
+                    console.error("[Security] Telemetry evaluation returned 401 UNAUTHORIZED. Forcing logout.");
                     handleDiscardSession();
                 } else if (res.ok) {
                     const data = await res.json();

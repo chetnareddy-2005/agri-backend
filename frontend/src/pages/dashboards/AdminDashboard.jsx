@@ -24,19 +24,33 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+    const handleUnauthorized = () => {
+        console.warn("[Admin Auth] Session invalid. Clearing and redirecting.");
+        localStorage.removeItem('user');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_risk_level');
+        navigate('/');
+    };
+
     const fetchWithAuth = async (url, options = {}) => {
         const authToken = localStorage.getItem('auth_token');
         const headers = {
             ...options.headers,
             'X-Auth-Token': authToken || ''
         };
-        const res = await fetch(url, { ...options, headers, credentials: 'include' });
-        if (res.status === 401) {
-            localStorage.removeItem('user');
-            localStorage.removeItem('auth_token');
-            navigate('/');
+        
+        try {
+            const res = await fetch(url, { ...options, headers, credentials: 'include' });
+            console.log(`[Admin API Debug] ${url} - Status: ${res.status}`);
+            
+            if (res.status === 401) {
+                handleUnauthorized();
+            }
+            return res;
+        } catch (err) {
+            console.error(`[Admin API Debug] Fetch error for ${url}:`, err);
+            throw err;
         }
-        return res;
     };
 
     // Modal State
@@ -72,6 +86,15 @@ const AdminDashboard = () => {
     const [loadingWeather, setLoadingWeather] = useState(false);
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('auth_token');
+
+        if (!storedUser || !token) {
+            console.warn("[Admin Auth Guard] No credentials. Redirecting to login.");
+            navigate('/login');
+            return;
+        }
+
         fetchPendingUsers();
         fetchStats();
         fetchTransactions();

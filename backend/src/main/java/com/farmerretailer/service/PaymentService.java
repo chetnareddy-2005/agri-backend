@@ -16,14 +16,15 @@ import java.util.UUID;
 @Service
 public class PaymentService {
 
-    @Value("${cashfree.app.id}")
+    @Value("${CASHFREE_APP_ID}")
     private String appId;
 
-    @Value("${cashfree.secret.key}")
+    @Value("${CASHFREE_SECRET_KEY}")
     private String secretKey;
 
-    @Value("${cashfree.api.url}")
+    @Value("${CASHFREE_API_URL:https://sandbox.cashfree.com/pg}")
     private String apiUrl;
+
 
     private final HttpClient client = HttpClient.newHttpClient();
 

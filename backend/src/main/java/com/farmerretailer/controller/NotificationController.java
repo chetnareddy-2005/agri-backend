@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}, allowCredentials = "true")
 public class NotificationController {
 
     @Autowired
