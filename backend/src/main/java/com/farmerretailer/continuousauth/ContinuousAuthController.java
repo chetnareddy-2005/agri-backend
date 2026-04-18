@@ -88,6 +88,8 @@ public class ContinuousAuthController {
                     System.out.println("[Telemetry Debug] Anomaly noted but below threshold (2)");
                 }
             }
+            
+            response.setAnomalyCount(anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0));
 
             switch(response.getRiskLevel()) {
                 case "HIGH":
@@ -122,6 +124,7 @@ public class ContinuousAuthController {
 
                     Map<String, Object> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
+                    mediumRiskBody.put("anomalyCount", 2); 
                     mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
 
@@ -135,7 +138,7 @@ public class ContinuousAuthController {
         } catch (Exception e) {
             System.err.println("[Telemetry Error] CRITICAL CRASH IN EVALUATE: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.OK).body(new ContinuousAuthResponseDTO(requestDTO.getUserId(), "LOW", 0.0));
+            return ResponseEntity.status(HttpStatus.OK).body(new ContinuousAuthResponseDTO(requestDTO.getUserId(), "LOW", 0.0, 0));
         }
     }
 

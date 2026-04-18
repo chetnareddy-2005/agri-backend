@@ -41,18 +41,56 @@ const ContinuousAuthWrapper = ({ children, user }) => {
         return fetch(url, { ...options, headers, credentials: 'include' });
     };
 
-    // Telemetry polling
+    // Actual Telemetry Tracking State
+    const [mouseDistance, setMouseDistance] = useState(0);
+    const [keypressCount, setKeypressCount] = useState(0);
+    const [scrollCount, setScrollCount] = useState(0);
+    const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        if (!activeUser) return;
+
+        const handleMouseMove = (e) => {
+            const dist = Math.sqrt(Math.pow(e.clientX - lastPosition.x, 2) + Math.pow(e.clientY - lastPosition.y, 2));
+            setMouseDistance(prev => prev + dist);
+            setLastPosition({ x: e.clientX, y: e.clientY });
+        };
+
+        const handleKeyDown = () => setKeypressCount(prev => prev + 1);
+        const handleScroll = () => setScrollCount(prev => prev + 1);
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [activeUser, lastPosition]);
+
+    // Telemetry polling every 5 seconds
     useEffect(() => {
         if (!activeUser) return;
 
         const interval = setInterval(async () => {
             try {
-                // Mock telemetry for demo
+                // Calculate speeds for the 5s interval
                 const telemetry = {
-                    typingSpeedWpm: Math.random() * 50,
-                    mouseMovementAvgSpeed: localStorage.getItem('force_anomaly') ? 5000 : 50,
-                    scrollFrequency: 5
+                    typingSpeedWpm: (keypressCount / 5) * 60 / 5, // Approximate WPM
+                    mouseMovementAvgSpeed: mouseDistance / 5, // px per second
+                    scrollFrequency: scrollCount
                 };
+
+                // Reset counters for next interval
+                setMouseDistance(0);
+                setKeypressCount(0);
+                setScrollCount(0);
+
+                if (telemetry.mouseMovementAvgSpeed > 100) {
+                   console.log(`[Security] Mouse movement detected: ${telemetry.mouseMovementAvgSpeed.toFixed(2)} px/s`);
+                }
 
                 const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/evaluate`, {
                     method: 'POST',
@@ -66,19 +104,23 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 if (res.status === 403) {
                     const data = await res.json();
                     setAlertMessage(data.challenge);
-                    if (data.otp) setReceivedOtp(data.otp);
-                    localStorage.setItem('auth_risk_level', 'MEDIUM'); // Sync for gauge
+                    console.error("🚨 Anomaly detected! Step-up authentication required.");
+                    console.log(`[Security] Anomaly count: ${data.anomalyCount || 2}`);
+                    localStorage.setItem('auth_risk_level', 'MEDIUM');
                 } else if (res.status === 401) {
-                    console.error("[Security] Telemetry evaluation returned 401 UNAUTHORIZED. Forcing logout.");
                     handleDiscardSession();
                 } else if (res.ok) {
                     const data = await res.json();
-                    localStorage.setItem('auth_risk_level', data.risk || 'LOW'); // Sync for gauge
+                    if (data.anomalyCount > 0) {
+                        console.warn(`[Security] Anomaly detected (Strike ${data.anomalyCount}/2)`);
+                    }
+                    console.log(`[Security] Status: OK, Risk: ${data.riskLevel || 'LOW'}, Anomaly Count: ${data.anomalyCount || 0}`);
+                    localStorage.setItem('auth_risk_level', data.riskLevel || 'LOW');
                 }
             } catch (err) {
                 console.error("Telemetry error:", err);
             }
-        }, 5000);
+        }, 5000); // Triggered every 5 seconds
 
         return () => clearInterval(interval);
     }, [activeUser]);
