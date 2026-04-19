@@ -7,6 +7,9 @@ import '../../styles/global.css';
 import AlertBanner from '../../components/AlertBanner';
 import ThemeToggle from '../../components/ThemeToggle';
 import SmallRiskGauge from '../../components/SmallRiskGauge';
+import InvoiceTemplate from '../../components/InvoiceTemplate';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Fix for default Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -33,6 +36,8 @@ const TransporterDashboard = () => {
     const [deliveredDeliveries, setDeliveredDeliveries] = useState([]);
     const [riskLevel, setRiskLevel] = useState(localStorage.getItem('auth_risk_level') || 'LOW');
     const [wallet, setWallet] = useState({ availableBalance: 0, escrowBalance: 0 });
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
     
     // Proof Submission State
     const [deliveryPhoto, setDeliveryPhoto] = useState(null);
@@ -301,6 +306,23 @@ const TransporterDashboard = () => {
         navigate('/');
     };
 
+    const handleViewInvoice = (order) => {
+        setSelectedInvoiceOrder(order);
+        setShowInvoiceModal(true);
+    };
+
+    const downloadInvoicePDF = () => {
+        const input = document.getElementById('invoice-content');
+        html2canvas(input, { scale: 2 }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Transporter_Invoice_${selectedInvoiceOrder.id}.pdf`);
+        });
+    };
+
     const NavItem = ({ icon, label, active, onClick }) => (
         <div
             onClick={onClick}
@@ -523,6 +545,7 @@ const TransporterDashboard = () => {
                                             <th style={{ padding: '1rem' }}>Payout</th>
                                             <th style={{ padding: '1rem' }}>Payment Status</th>
                                             <th style={{ padding: '1rem' }}>Reward</th>
+                                            <th style={{ padding: '1rem' }}>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -546,6 +569,14 @@ const TransporterDashboard = () => {
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#7E22CE', fontWeight: '700' }}>
                                                             +{(delivery.distanceKm * 5).toFixed(0)} XP
                                                         </div>
+                                                    </td>
+                                                    <td style={{ padding: '1.2rem' }}>
+                                                        <button 
+                                                            onClick={() => handleViewInvoice(delivery.order)}
+                                                            style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
+                                                        >
+                                                            INVOICE
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -642,6 +673,37 @@ const TransporterDashboard = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Invoice Modal */}
+            {showInvoiceModal && selectedInvoiceOrder && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000,
+                    backdropFilter: 'blur(4px)'
+                }}>
+                    <div style={{
+                        backgroundColor: 'white', width: '850px', maxWidth: '95%', borderRadius: '24px',
+                        padding: '1.5rem', maxHeight: '95vh', overflowY: 'auto', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+                    }}>
+                        <button onClick={() => setShowInvoiceModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-tertiary)', zIndex: 10 }}>&times;</button>
+
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '1rem' }}>
+                            <InvoiceTemplate id="invoice-content" order={selectedInvoiceOrder} role="TRANSPORTER" />
+                        </div>
+
+                        <button
+                            onClick={downloadInvoicePDF}
+                            style={{
+                                width: '220px', padding: '1rem', backgroundColor: '#10b981', color: 'white',
+                                border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '1rem', marginBottom: '1rem',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            }}>
+                            Download PDF
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

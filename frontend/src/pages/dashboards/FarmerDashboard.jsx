@@ -348,7 +348,7 @@ const FarmerDashboard = () => {
         // 1. KPI Stats
         const listingsCount = myListings.length;
         const totalSalesVal = myOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-        const pendingCount = myOrders.filter(o => o.status === 'PENDING').length;
+        const pendingCount = myOrders.filter(o => ['PENDING', 'CONFIRMED', 'SHIPPED'].includes(o.status?.toUpperCase())).length;
 
         setStats({
             listings: listingsCount,
@@ -1733,7 +1733,7 @@ const FarmerDashboard = () => {
 
                                 {/* Invoice Content to Print */}
                                 <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                    <InvoiceTemplate id="invoice-content" order={selectedInvoiceOrder} />
+                                    <InvoiceTemplate id="invoice-content" order={selectedInvoiceOrder} role="FARMER" />
                                 </div>
 
                                 <button

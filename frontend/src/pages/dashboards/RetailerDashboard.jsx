@@ -196,6 +196,7 @@ const RetailerDashboard = () => {
         fetchMyOrders();
         fetchNotifications();
         fetchMyComplaints();
+        fetchStats();
 
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
@@ -207,8 +208,8 @@ const RetailerDashboard = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             fetchProducts();
-            // We could also poll notifications or stats if needed
             fetchNotifications();
+            fetchStats();
         }, 5000); // 5 seconds
 
         const riskInterval = setInterval(() => {
@@ -255,6 +256,7 @@ const RetailerDashboard = () => {
                 if (!isAuto) alert("Payment Successful!");
                 fetchMyOrders();
                 fetchNotifications();
+                fetchStats();
             } else {
                 console.warn("Payment verification failed");
                 if (!isAuto) alert("Payment Verification Failed. Please contact support if amount was deducted.");
@@ -591,6 +593,8 @@ const RetailerDashboard = () => {
             fetchMyOrders();
         } else if (activeTab === 'Help') {
             fetchMyComplaints();
+        } else if (activeTab === 'Dashboard') {
+            fetchStats();
         }
     }, [activeTab]);
 
@@ -849,8 +853,8 @@ const RetailerDashboard = () => {
                                 <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
                                     <div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Total Orders</div>
-                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stats.totalOrders}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>All orders placed to you</div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stats.totalOrders || 0}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>All your placed orders</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Pending</div>
@@ -1202,7 +1206,7 @@ const RetailerDashboard = () => {
                                                                 {/* PRODUCT PAYMENT SECTION */}
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
                                                                     <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>📦 Product</span>
-                                                                    {order.isPaid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' || order.status === 'RECEIVED' ? (
+                                                                    {order.isPaid || order.paid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' || order.status === 'RECEIVED' ? (
                                                                         <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
                                                                     ) : (
                                                                         <button onClick={() => handlePayment(order, 'PRODUCT')} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
@@ -1213,7 +1217,7 @@ const RetailerDashboard = () => {
                                                                 {order.transport ? (
                                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
                                                                         <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>🚚 Logistics</span>
-                                                                        {order.transport.isPaid ? (
+                                                                        {order.transport.isPaid || order.transport.paid ? (
                                                                             <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
                                                                         ) : (
                                                                              <button onClick={() => handlePayment(order, 'LOGISTICS')} style={{ backgroundColor: '#1D4ED8', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
@@ -1680,7 +1684,7 @@ const RetailerDashboard = () => {
 
                             {/* Invoice Content to Print */}
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                <InvoiceTemplate id="invoice-content" order={selectedInvoiceOrder} />
+                                <InvoiceTemplate id="invoice-content" order={selectedInvoiceOrder} role="RETAILER" />
                             </div>
 
                             <button
