@@ -162,7 +162,7 @@ const FarmerDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/farmer`, { credentials: 'include' });
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/farmer/stats`, { credentials: 'include' });
             if (res.status === 401) {
                 handleUnauthorized();
                 return;

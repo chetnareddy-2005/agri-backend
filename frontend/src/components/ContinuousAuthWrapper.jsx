@@ -38,7 +38,11 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             ...options.headers,
             'X-Auth-Token': token || ''
         };
-        return fetch(url, { ...options, headers, credentials: 'include' });
+        const res = await fetch(url, { ...options, headers, credentials: 'include' });
+        if (url.includes('telemetry')) {
+             console.log(`[API Debug] ${url} - Status: ${res.status}`);
+        }
+        return res;
     };
 
     // Actual Telemetry Tracking using Refs (Avoids re-renders on every pixel/keypress)
@@ -94,8 +98,8 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 keypressCountRef.current = 0;
                 scrollCountRef.current = 0;
 
-                if (telemetry.mouseMovementAvgSpeed > 50) {
-                   console.log(`[Security] Mouse movement speed: ${telemetry.mouseMovementAvgSpeed.toFixed(2)} px/s`);
+                if (telemetry.mouseMovementAvgSpeed > 10) { // Log more often for demo
+                   console.log(`[Security] Current mouse speed: ${telemetry.mouseMovementAvgSpeed.toFixed(0)} px/s`);
                 }
 
                 const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/evaluate`, {
