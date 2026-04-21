@@ -15,6 +15,9 @@ public class SmtpEmailService implements EmailService {
     @Autowired(required = false) // Optional so it doesn't crash if config is missing initially
     private JavaMailSender emailSender;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username:chetnareddy2520@gmail.com}")
+    private String fromEmail;
+
     @Async
     @Override
     public void sendApprovalEmail(String to, String tempPassword) {
@@ -54,7 +57,7 @@ public class SmtpEmailService implements EmailService {
         }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("New Product Listed: " + productName);
             message.setText("Hello Retailer,\n\n" +
@@ -75,7 +78,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("New Order Received: " + productName);
             message.setText("Hello Farmer,\n\n" +
@@ -97,7 +100,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Order Modified: " + productName);
             message.setText("Hello Farmer,\n\n" +
@@ -119,7 +122,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("New Highest Bid Alert! - " + productName);
             message.setText("Dear Farmer,\n\n" +
@@ -141,7 +144,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Auction Ended - Action Required: " + productName);
 
@@ -176,7 +179,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Congratulations! You Saved the Deal: " + productName);
 
@@ -206,7 +209,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(toEmail);
             message.setSubject("Update on your bid: " + productName);
             message.setText("Hello,\n\n" +
@@ -228,7 +231,7 @@ public class SmtpEmailService implements EmailService {
             return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Payment Received: Order #" + order.getId());
             message.setText("Hello Farmer,\n\n" +
@@ -286,7 +289,7 @@ public class SmtpEmailService implements EmailService {
             helper.setTo(to);
             helper.setSubject("Invoice Generated: Order #" + order.getId());
             helper.setText(htmlContent, true);
-            helper.setFrom("noreply@agriconnect.com");
+            helper.setFrom(fromEmail);
 
             emailSender.send(mimeMessage);
             System.out.println("HTML Invoice notification sent to " + to);
@@ -301,7 +304,7 @@ public class SmtpEmailService implements EmailService {
         if (emailSender == null) return;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@agriconnect.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Farm2Trade OTP Verification");
             message.setText("Your OTP is: " + otp + "\n\nThis code is required due to a security anomaly detection. If you did not perform this action, please change your password immediately.");
