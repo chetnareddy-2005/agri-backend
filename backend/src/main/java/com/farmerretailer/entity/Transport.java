@@ -50,6 +50,7 @@ public class Transport {
     // Delivery Proof
     private String deliveryPhotoUrl;
     private String signatureUrl;
+    @com.fasterxml.jackson.annotation.JsonProperty("isPaid")
     private boolean isPaid = false; // LOGISTICS PAYMENT
 
     // Post-delivery Ratings

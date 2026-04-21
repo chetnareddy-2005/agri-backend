@@ -158,6 +158,7 @@ public class TransportService {
         if (transport.getOrder() != null) {
             Order order = transport.getOrder();
             order.setStatus("DELIVERED");
+            order.setPaid(true); // Mark as paid upon delivery proof
             order.setDeliveredAt(java.time.LocalDateTime.now());
             orderRepository.save(order);
             
@@ -356,21 +357,26 @@ public class TransportService {
     public Transport updateStatus(Long transportId, String status) {
         Transport transport = transportRepository.findById(transportId)
             .orElseThrow(() -> new RuntimeException("Transport not found"));
-        transport.setStatus(status);
         
-        if ("DELIVERED".equalsIgnoreCase(status) && transport.getDriver() != null) {
+        String upperStatus = status.toUpperCase();
+        transport.setStatus(upperStatus);
+        
+        if ("DELIVERED".equals(upperStatus) && transport.getDriver() != null) {
             Driver d = transport.getDriver();
             d.setAvailable(true);
             d.setDeliveredRequests((d.getDeliveredRequests() != null ? d.getDeliveredRequests() : 0) + 1);
-            d.setPoints((d.getPoints() != null ? d.getPoints() : 0) + 20); // Bonus for delivery
+            d.setPoints((d.getPoints() != null ? d.getPoints() : 0) + 20); 
             driverRepository.save(d);
             
             // SYNC with Order Status
             if (transport.getOrder() != null) {
                 Order order = transport.getOrder();
                 order.setStatus("DELIVERED");
+                order.setPaid(true);
                 order.setDeliveredAt(java.time.LocalDateTime.now());
                 orderRepository.save(order);
+                
+                paymentService.settleEscrowFunds(order.getId());
             }
         }
         return transportRepository.save(transport);
@@ -394,8 +400,7 @@ public class TransportService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = driverRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Driver profile not found"));
-        return transportRepository.findByDriverId(driver.getId()).stream()
-                .filter(t -> !"DELIVERED".equals(t.getStatus())).toList();
+        return transportRepository.findByDriverId(driver.getId());
     }
 
     public Driver getDriverInfo(String driverEmail) {

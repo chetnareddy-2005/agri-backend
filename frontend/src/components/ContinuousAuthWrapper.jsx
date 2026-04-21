@@ -41,23 +41,29 @@ const ContinuousAuthWrapper = ({ children, user }) => {
         return fetch(url, { ...options, headers, credentials: 'include' });
     };
 
-    // Actual Telemetry Tracking State
-    const [mouseDistance, setMouseDistance] = useState(0);
-    const [keypressCount, setKeypressCount] = useState(0);
-    const [scrollCount, setScrollCount] = useState(0);
-    const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+    // Actual Telemetry Tracking using Refs (Avoids re-renders on every pixel/keypress)
+    const mouseDistanceRef = React.useRef(0);
+    const keypressCountRef = React.useRef(0);
+    const scrollCountRef = React.useRef(0);
+    const lastPositionRef = React.useRef({ x: 0, y: 0 });
 
     useEffect(() => {
         if (!activeUser) return;
 
         const handleMouseMove = (e) => {
-            const dist = Math.sqrt(Math.pow(e.clientX - lastPosition.x, 2) + Math.pow(e.clientY - lastPosition.y, 2));
-            setMouseDistance(prev => prev + dist);
-            setLastPosition({ x: e.clientX, y: e.clientY });
+            const dist = Math.sqrt(
+                Math.pow(e.clientX - lastPositionRef.current.x, 2) + 
+                Math.pow(e.clientY - lastPositionRef.current.y, 2)
+            );
+            // Ignore the first movement jumping from (0,0)
+            if (lastPositionRef.current.x !== 0 || lastPositionRef.current.y !== 0) {
+                mouseDistanceRef.current += dist;
+            }
+            lastPositionRef.current = { x: e.clientX, y: e.clientY };
         };
 
-        const handleKeyDown = () => setKeypressCount(prev => prev + 1);
-        const handleScroll = () => setScrollCount(prev => prev + 1);
+        const handleKeyDown = () => { keypressCountRef.current += 1; };
+        const handleScroll = () => { scrollCountRef.current += 1; };
 
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('keydown', handleKeyDown);
@@ -68,7 +74,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('scroll', handleScroll);
         };
-    }, [activeUser, lastPosition]);
+    }, [activeUser]);
 
     // Telemetry polling every 5 seconds
     useEffect(() => {
@@ -78,18 +84,18 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             try {
                 // Calculate speeds for the 5s interval
                 const telemetry = {
-                    typingSpeedWpm: (keypressCount / 5) * 60 / 5, // Approximate WPM
-                    mouseMovementAvgSpeed: mouseDistance / 5, // px per second
-                    scrollFrequency: scrollCount
+                    typingSpeedWpm: (keypressCountRef.current / 5) * 60 / 5, // Approximate WPM
+                    mouseMovementAvgSpeed: mouseDistanceRef.current / 5, // px per second
+                    scrollFrequency: scrollCountRef.current
                 };
 
                 // Reset counters for next interval
-                setMouseDistance(0);
-                setKeypressCount(0);
-                setScrollCount(0);
+                mouseDistanceRef.current = 0;
+                keypressCountRef.current = 0;
+                scrollCountRef.current = 0;
 
-                if (telemetry.mouseMovementAvgSpeed > 100) {
-                   console.log(`[Security] Mouse movement detected: ${telemetry.mouseMovementAvgSpeed.toFixed(2)} px/s`);
+                if (telemetry.mouseMovementAvgSpeed > 50) {
+                   console.log(`[Security] Mouse movement speed: ${telemetry.mouseMovementAvgSpeed.toFixed(2)} px/s`);
                 }
 
                 const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/v1/telemetry/evaluate`, {

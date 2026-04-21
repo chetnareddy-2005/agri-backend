@@ -36,6 +36,7 @@ public class Order {
     private Transport transport;
 
     private boolean paymentNotificationSent = false;
+    @com.fasterxml.jackson.annotation.JsonProperty("isPaid")
     private boolean isPaid = false;
 
     public boolean isPaymentNotificationSent() {

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @org.springframework.data.jpa.repository.Query("SELECT o FROM Order o WHERE o.retailer.id = :retailerId AND o.status = 'DELIVERED' AND o.id NOT IN (SELECT f.order.id FROM Feedback f)")
+    @org.springframework.data.jpa.repository.Query("SELECT o FROM Order o WHERE o.retailer.id = :retailerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received') AND o.id NOT IN (SELECT f.order.id FROM Feedback f)")
     List<Order> findOrdersPendingFeedback(@Param("retailerId") Long retailerId);
 
     List<Order> findByProductId(Long productId);
@@ -33,15 +33,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     long countByRetailerIdAndStatusIgnoreCase(Long retailerId, String status);
 
-    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId AND o.status IN ('PENDING', 'CONFIRMED', 'SHIPPED')")
-    long countPendingShipments(@Param("retailerId") Long retailerId);
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId AND o.status = 'PENDING'")
+    long countPendingByRetailerId(@Param("retailerId") Long retailerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId AND o.status IN ('SHIPPED', 'IN_TRANSIT')")
+    long countActiveByRetailerId(@Param("retailerId") Long retailerId);
 
     long countByProductFarmerId(Long farmerId);
 
     long countByProductFarmerIdAndStatus(Long farmerId, String status);
 
-    @org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND LOWER(o.status) = LOWER(:status)")
-    Double sumTotalPriceByProductFarmerIdAndStatus(@Param("farmerId") Long farmerId, @Param("status") String status);
+    @org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received')")
+    Double sumTotalSalesByFarmerId(@Param("farmerId") Long farmerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received')")
+    long countDeliveredByRetailerId(@Param("retailerId") Long retailerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.product.farmer.id = :farmerId AND o.status = 'PENDING'")
+    long countPendingByFarmerId(@Param("farmerId") Long farmerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.product.farmer.id = :farmerId AND o.status IN ('SHIPPED', 'IN_TRANSIT')")
+    long countActiveByFarmerId(@Param("farmerId") Long farmerId);
 
     // Dynamic Graphs Queries
 
@@ -55,7 +67,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> findOrdersGroupedByStatus(@Param("retailerId") Long retailerId);
 
     // Farmer Monthly Sales - Returns Object[]: [Month(int), TotalSales(double)]
-    @org.springframework.data.jpa.repository.Query("SELECT MONTH(o.orderDate), SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND o.status = 'Delivered' GROUP BY MONTH(o.orderDate) ORDER BY MONTH(o.orderDate)")
+    @org.springframework.data.jpa.repository.Query("SELECT MONTH(o.orderDate), SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received') GROUP BY MONTH(o.orderDate) ORDER BY MONTH(o.orderDate)")
     List<Object[]> findMonthlySalesByFarmerId(@Param("farmerId") Long farmerId);
 
     boolean existsByProductId(Long productId);

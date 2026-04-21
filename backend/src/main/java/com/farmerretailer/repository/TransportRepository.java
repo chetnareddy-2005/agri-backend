@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface TransportRepository extends JpaRepository<Transport, Long> {
     Optional<Transport> findByOrderId(Long orderId);
     List<Transport> findByStatus(String status);
-    List<Transport> findByDriverId(Long driverId);
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM Transport t JOIN FETCH t.order o JOIN FETCH o.retailer r WHERE t.driver.id = :driverId")
+    List<Transport> findByDriverId(@org.springframework.data.repository.query.Param("driverId") Long driverId);
 }

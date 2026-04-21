@@ -118,7 +118,7 @@ const TransporterDashboard = () => {
                 console.log("Transporter Deliveries loaded:", data.length);
                 setAvailableRequests(data.filter(d => d.status === 'PENDING' || d.status === 'PRICE_UPDATED' || d.status === 'SCHEDULED'));
                 setActiveDeliveries(data.filter(d => d.status === 'ACCEPTED' || d.status === 'ON_THE_WAY'));
-                const delivered = data.filter(d => d.status === 'DELIVERED' || d.status === 'Delivered');
+                const delivered = data.filter(d => d.status?.toUpperCase() === 'DELIVERED' || d.status?.toUpperCase() === 'RECEIVED');
                 console.log("Delivered items found:", delivered.length);
                 setDeliveredDeliveries(delivered);
             }
@@ -377,6 +377,7 @@ const TransporterDashboard = () => {
                     <NavItem icon={<Navigation size={20} />} label="Live Tracking" active={activeTab === 'Tracking'} onClick={() => setActiveTab('Tracking')} />
                     <NavItem icon={<DollarSign size={20} />} label="Bidding Hub" active={activeTab === 'Bidding'} onClick={() => setActiveTab('Bidding')} />
                     <NavItem icon={<ShieldCheck size={20} />} label="My Rewards" active={activeTab === 'Rewards'} onClick={() => setActiveTab('Rewards')} />
+                    <NavItem icon={<PenTool size={20} />} label="Invoices" active={activeTab === 'Invoices'} onClick={() => setActiveTab('Invoices')} />
                     <NavItem icon={<Wallet size={20} />} label="Wallet" active={activeTab === 'Wallet'} onClick={() => setActiveTab('Wallet')} />
                 </nav>
 
@@ -545,7 +546,6 @@ const TransporterDashboard = () => {
                                             <th style={{ padding: '1rem' }}>Payout</th>
                                             <th style={{ padding: '1rem' }}>Payment Status</th>
                                             <th style={{ padding: '1rem' }}>Reward</th>
-                                            <th style={{ padding: '1rem' }}>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -559,7 +559,7 @@ const TransporterDashboard = () => {
                                                     <td style={{ padding: '1.2rem' }}>{delivery.distanceKm.toFixed(1)} km</td>
                                                     <td style={{ padding: '1.2rem', fontWeight: 'bold', color: '#10B981' }}>₹{delivery.updatedPrice.toFixed(0)}</td>
                                                     <td style={{ padding: '1.2rem' }}>
-                                                        {delivery.isPaid ? (
+                                                        {(delivery.isPaid || delivery.status === 'RECEIVED') ? (
                                                             <span style={{ color: '#059669', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Received</span>
                                                         ) : (
                                                             <span style={{ color: '#D97706', fontWeight: 'bold' }}>Processing...</span>
@@ -570,19 +570,49 @@ const TransporterDashboard = () => {
                                                             +{(delivery.distanceKm * 5).toFixed(0)} XP
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '1.2rem' }}>
-                                                        <button 
-                                                            onClick={() => handleViewInvoice(delivery.order)}
-                                                            style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
-                                                        >
-                                                            INVOICE
-                                                        </button>
-                                                    </td>
                                                 </tr>
                                             ))
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'Invoices' && (
+                        <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>Digital Invoices</h3>
+                                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginTop: '4px' }}>Download official transport invoices for your records.</p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                                {deliveredDeliveries.map(delivery => (
+                                    <div key={delivery.id} style={{ border: '1px solid var(--border-color)', borderRadius: '20px', padding: '1.5rem', position: 'relative' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 'bold' }}>INVOICE ID</div>
+                                                <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>#{delivery.order?.id}</div>
+                                            </div>
+                                            <div style={{ backgroundColor: '#DCFCE7', color: '#166534', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>PAID</div>
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><span>Date:</span> <span>{new Date(delivery.order?.orderDate || Date.now()).toLocaleDateString()}</span></div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Total:</span> <span style={{ fontWeight: 'bold' }}>₹{delivery.updatedPrice.toFixed(0)}</span></div>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleViewInvoice(delivery.order)}
+                                            style={{ width: '100%', padding: '12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                        >
+                                            <PenTool size={16} /> View Invoice
+                                        </button>
+                                    </div>
+                                ))}
+                                {deliveredDeliveries.length === 0 && (
+                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)' }}>No invoices available yet.</div>
+                                )}
                             </div>
                         </div>
                     )}

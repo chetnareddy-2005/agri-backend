@@ -102,10 +102,21 @@ const AdminDashboard = () => {
         if (activeTab === 'Logistics') fetchAllWeatherData();
         if (activeTab === 'Security Logs') fetchAuditLogs();
 
+        const dataInterval = setInterval(() => {
+            fetchStats();
+            fetchTransactions();
+            fetchPendingUsers();
+            fetchComplaints();
+        }, 10000); // Poll every 10 seconds
+
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
         }, 2000);
-        return () => clearInterval(riskInterval);
+
+        return () => {
+            clearInterval(dataInterval);
+            clearInterval(riskInterval);
+        };
     }, [activeTab]);
 
     const fetchStats = async () => {

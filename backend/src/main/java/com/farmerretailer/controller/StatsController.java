@@ -47,19 +47,18 @@ public class StatsController {
             return ResponseEntity.badRequest().build();
 
         long listings = productRepository.countByFarmerId(user.getId());
-        // Use "DELIVERED" or "Delivered" - checking both or ignoring case
-        // Better: count sum for delivered orders.
-        // Assuming 'Delivered' is the status string used in the app.
-        Double totalSales = orderRepository.sumTotalPriceByProductFarmerIdAndStatus(user.getId(), "Delivered");
+        Double totalSales = orderRepository.sumTotalSalesByFarmerId(user.getId());
         if (totalSales == null)
             totalSales = 0.0;
 
-        long pendingOrders = orderRepository.countByProductFarmerIdAndStatus(user.getId(), "PENDING"); // Check casing
+        long pendingOrders = orderRepository.countPendingByFarmerId(user.getId());
+        long activeOrders = orderRepository.countActiveByFarmerId(user.getId());
 
         Map<String, Object> response = new HashMap<>();
         response.put("listings", listings);
         response.put("totalSales", totalSales);
         response.put("pendingOrders", pendingOrders);
+        response.put("activeOrders", activeOrders);
         return ResponseEntity.ok(response);
     }
 

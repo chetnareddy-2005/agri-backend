@@ -75,10 +75,10 @@ public class ContinuousAuthController {
 
             // Quick Fix (Demo Trigger) - Count anomalies if mouse is frantic!
             Double mouseSpeed = (requestDTO.getTelemetry() != null) ? requestDTO.getTelemetry().getMouseMovementAvgSpeed() : null;
-            if (mouseSpeed != null && mouseSpeed > 1000) {
+            if (mouseSpeed != null && mouseSpeed > 400) {
                 int currentCount = anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0) + 1;
                 anomalyCounter.put(userId != null ? userId : "anonymous", currentCount);
-                System.out.println("[Telemetry Debug] Anomaly detected! Count for " + userId + ": " + currentCount);
+                System.out.println("[Telemetry Debug] Anomaly detected! Speed: " + mouseSpeed + ", Count for " + userId + ": " + currentCount);
                 
                 if (currentCount >= 2) {
                     response.setRiskLevel("MEDIUM");
@@ -125,6 +125,7 @@ public class ContinuousAuthController {
                     Map<String, Object> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
                     mediumRiskBody.put("anomalyCount", 2); 
+                    mediumRiskBody.put("riskLevel", "MEDIUM");
                     mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
 

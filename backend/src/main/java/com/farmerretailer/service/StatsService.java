@@ -51,9 +51,9 @@ public class StatsService {
                 });
 
                 stats.put("listings", productRepository.countByFarmerId(userId));
-                stats.put("pendingOrders", orderRepository.countByProductFarmerIdAndStatus(userId, "PENDING"));
+                stats.put("pendingOrders", orderRepository.countPendingByFarmerId(userId));
 
-                Double totalSales = orderRepository.sumTotalPriceByProductFarmerIdAndStatus(userId, "DELIVERED");
+                Double totalSales = orderRepository.sumTotalSalesByFarmerId(userId);
                 stats.put("totalSales", totalSales != null ? totalSales : 0.0);
 
                 // --- Dynamic Graphs for Farmer ---
@@ -107,24 +107,22 @@ public class StatsService {
                     }
                 });
 
-                // Fix: Fetch actual list size for total orders to ensure consistency with "My
-                // Orders" table
-                List<com.farmerretailer.entity.Order> allRetailerOrders = orderRepository.findByRetailerId(userId);
-                stats.put("totalOrders", (long) allRetailerOrders.size());
-
-                // Use case-insensitive counts
-                stats.put("pendingOrders", orderRepository.countPendingShipments(userId));
-                stats.put("deliveredOrders", orderRepository.countByRetailerIdAndStatusIgnoreCase(userId, "DELIVERED"));
+                // Optimized: Use direct counts for speed and reliability
+                stats.put("totalOrders", orderRepository.countByRetailerId(userId));
+                stats.put("pendingOrders", orderRepository.countPendingByRetailerId(userId));
+                stats.put("activeOrders", orderRepository.countActiveByRetailerId(userId));
+                stats.put("deliveredOrders", orderRepository.countDeliveredByRetailerId(userId));
 
                 // New Quick Stats
                 stats.put("activeBids", bidRepository.countActiveBids(userId));
-                stats.put("pendingShipments", orderRepository.countPendingShipments(userId));
+                stats.put("pendingShipments", orderRepository.countPendingByRetailerId(userId));
 
-                // Avg Delivery Days
+                // Avg Delivery Days Calculation
+                List<com.farmerretailer.entity.Order> allRetailerOrders = orderRepository.findByRetailerId(userId);
                 double totalDays = 0;
                 int count = 0;
 
-                for (com.farmerretailer.entity.Order order : allRetailerOrders) { // Use the list we already fetched
+                for (com.farmerretailer.entity.Order order : allRetailerOrders) {
                     if (order.getStatus() != null &&
                             (order.getStatus().equalsIgnoreCase("DELIVERED")) &&
                             order.getOrderDate() != null &&
@@ -132,12 +130,12 @@ public class StatsService {
 
                         long days = java.time.temporal.ChronoUnit.DAYS.between(order.getOrderDate(),
                                 order.getDeliveredAt());
-                        totalDays += days;
+                        totalDays += Math.max(0, days);
                         count++;
                     }
                 }
 
-                stats.put("avgDeliveryDays", count > 0 ? String.format("%.1f", totalDays / count) : 0.0);
+                stats.put("avgDeliveryDays", count > 0 ? String.format("%.1f", totalDays / count) : "0.0");
 
                 // --- Dynamic Graphs Data ---
 
@@ -177,6 +175,7 @@ public class StatsService {
                 statusColors.put("CONFIRMED", "#3B82F6"); // Blue
                 statusColors.put("SHIPPED", "#8B5CF6"); // Purple
                 statusColors.put("DELIVERED", "#10B981"); // Green
+                statusColors.put("RECEIVED", "#047857"); // Darker Green
                 statusColors.put("CANCELLED", "#EF4444"); // Red
 
                 for (Object[] row : statusData) {

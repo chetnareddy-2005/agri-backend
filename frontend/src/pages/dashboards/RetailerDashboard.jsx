@@ -210,6 +210,7 @@ const RetailerDashboard = () => {
             fetchProducts();
             fetchNotifications();
             fetchStats();
+            fetchMyOrders();
         }, 5000); // 5 seconds
 
         const riskInterval = setInterval(() => {
@@ -854,17 +855,22 @@ const RetailerDashboard = () => {
                                     <div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Total Orders</div>
                                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stats.totalOrders || 0}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>All your placed orders</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>All status</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Pending</div>
                                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stats.pendingOrders}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Awaiting delivery</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Awaiting action</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>In Transit</div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>{stats.activeOrders}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>On the way</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Delivered</div>
                                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stats.deliveredOrders}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Successfully delivered</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Successfully received</div>
                                     </div>
                                 </div>
 

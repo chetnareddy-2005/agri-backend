@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { LayoutDashboard, ShoppingBag, List, User, LogOut, Plus, ChevronRight, Bell, HelpCircle, Star, Wallet } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, List, User, LogOut, Plus, ChevronRight, Bell, HelpCircle, Star, Wallet, Truck } from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ProductImage from '../../components/ProductImage';
@@ -117,24 +117,8 @@ const FarmerDashboard = () => {
         return () => clearInterval(riskInterval);
     }, []);
 
-    // Polling for real-time updates
-    useEffect(() => {
-        fetchMyListings(); // Initial fetch
-        fetchUserProfile();
-        fetchReceivedOrders();
-        fetchWallet();
-        
-        const intervalId = setInterval(() => {
-            fetchMyListings();
-            fetchUserProfile();
-            fetchReceivedOrders();
-            fetchWallet();
-        }, 5000); 
 
-        return () => clearInterval(intervalId); // Cleanup on unmount
-    }, []);
-
-    const fetchReceivedOrders = async () => {
+    const fetchMyOrders = async () => {
         try {
             const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/orders/received-orders`, { credentials: 'include' });
             if (res.status === 401) {
@@ -173,6 +157,30 @@ const FarmerDashboard = () => {
             }
         } catch (error) {
             console.error("Error fetching my listings:", error);
+        }
+    };
+
+    const fetchStats = async () => {
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/farmer`, { credentials: 'include' });
+            if (res.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+            if (res.ok) {
+                const data = await res.json();
+                setStats({
+                    listings: data.listings || 0,
+                    totalSales: (data.totalSales || 0).toLocaleString('en-IN'),
+                    pendingOrders: data.pendingOrders || 0,
+                    activeOrders: data.activeOrders || 0
+                });
+                if (data.mixData) setMixData(data.mixData);
+                if (data.salesData) setSalesData(data.salesData);
+                if (data.userProfile) setUser(data.userProfile);
+            }
+        } catch (e) {
+            console.error("Error fetching farmer stats:", e);
         }
     };
 
@@ -335,11 +343,24 @@ const FarmerDashboard = () => {
     };
 
     useEffect(() => {
-        if (activeTab === 'Notifications') {
+        // Initial fetches
+        fetchNotifications();
+        fetchMyOrders();
+        fetchMyListings();
+        fetchMyFeedbacks();
+        fetchStats();
+        fetchWallet();
+        fetchUserProfile();
+
+        // Polling for real-time updates
+        const interval = setInterval(() => {
             fetchNotifications();
-        }
-        // Poll for notifications regardless of tab to update counter
-        const interval = setInterval(fetchNotifications, 10000);
+            fetchMyOrders();
+            fetchMyListings();
+            fetchStats();
+            fetchWallet();
+        }, 5000); // 5 seconds
+        
         return () => clearInterval(interval);
     }, [activeTab]);
 
@@ -347,13 +368,17 @@ const FarmerDashboard = () => {
     useEffect(() => {
         // 1. KPI Stats
         const listingsCount = myListings.length;
-        const totalSalesVal = myOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-        const pendingCount = myOrders.filter(o => ['PENDING', 'CONFIRMED', 'SHIPPED'].includes(o.status?.toUpperCase())).length;
+        const totalSalesVal = myOrders
+            .filter(o => ['DELIVERED', 'RECEIVED'].includes(o.status?.toUpperCase()))
+            .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+        const pendingCount = myOrders.filter(o => o.status?.toUpperCase() === 'PENDING').length;
+        const activeCount = myOrders.filter(o => ['SHIPPED', 'IN_TRANSIT'].includes(o.status?.toUpperCase())).length;
 
         setStats({
             listings: listingsCount,
             totalSales: totalSalesVal.toLocaleString('en-IN'),
-            pendingOrders: pendingCount
+            pendingOrders: pendingCount,
+            activeOrders: activeCount
         });
 
         // 2. Mix Data (Listings by Category)
@@ -372,30 +397,8 @@ const FarmerDashboard = () => {
         setMixData(newMixData.length > 0 ? newMixData : [{ name: 'No Data', value: 1, color: '#E5E7EB' }]);
     }, [myListings, myOrders]); // Re-run when data changes
 
-    useEffect(() => {
-        fetchMonthlySales();
-    }, []);
-
-    const fetchMonthlySales = async () => {
-        try {
-            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/farmer/monthly-sales`, { credentials: 'include' });
-            if (res.status === 401) {
-                handleUnauthorized();
-                return;
-            }
-            if (res.ok) {
-                const data = await res.json();
-                setSalesData(data);
-            }
-        } catch (error) {
-            console.error("Error fetching monthly sales:", error);
-        }
-    };
-
     const [mixData, setMixData] = useState([]);
     const [salesData, setSalesData] = useState([]);
-
-    // Removed manual fetchStats as it is now a reactive effect
 
     const handleDeleteListing = async (productId) => {
         if (!confirm("Are you sure you want to delete this listing?")) return;
@@ -840,10 +843,11 @@ const FarmerDashboard = () => {
 
                 {activeTab === 'Dashboard' && (
                     <>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
                             <KPICard title="Listings" value={stats.listings} subtext="Active items to sell" icon={<List size={24} color="#16a34a" />} />
-                            <KPICard title="Total Sales" value={`₹${stats.totalSales}`} subtext="Units / aggregated value" icon={<ShoppingBag size={24} color="#2563eb" />} />
-                            <KPICard title="Pending Orders" value={stats.pendingOrders} subtext="Awaiting your action" icon={<Bell size={24} color="#db2777" />} />
+                            <KPICard title="Total Sales" value={`₹${stats.totalSales}`} subtext="Closed deals value" icon={<ShoppingBag size={24} color="#2563eb" />} />
+                            <KPICard title="Pending" value={stats.pendingOrders} subtext="Awaiting shipment" icon={<Bell size={24} color="#db2777" />} />
+                            <KPICard title="In Transit" value={stats.activeOrders} subtext="Orders on the way" icon={<Truck size={24} color="#8b5cf6" />} />
                         </div>
 
                         <div style={{ marginBottom: '2.5rem' }}>
@@ -1277,7 +1281,7 @@ const FarmerDashboard = () => {
                                                 )}
                                             </td>
                                             <td style={{ padding: '1rem 0' }}>
-                                                {(order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'SHIPPED') ? (
+                                                {(order.isPaid || order.paid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'SHIPPED' || order.status === 'RECEIVED') ? (
                                                     <span style={{ backgroundColor: '#ECFDF5', color: '#047857', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', display: 'inline-block' }}>
                                                         Payment Done
                                                     </span>
