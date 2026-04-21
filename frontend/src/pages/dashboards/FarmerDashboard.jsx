@@ -107,7 +107,7 @@ const FarmerDashboard = () => {
         }
 
         // fetchStats(); // Removed as stats are now calculated dynamically
-        fetchReceivedOrders();
+        fetchMyOrders();
         fetchUserProfile();
         fetchWallet();
 
@@ -470,7 +470,7 @@ const FarmerDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'Orders') {
-            fetchReceivedOrders();
+            fetchMyOrders();
         } else if (activeTab === 'My Listings') {
             fetchMyListings();
         } else if (activeTab === 'Feedbacks') {
