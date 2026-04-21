@@ -56,6 +56,7 @@ public class ContinuousAuthController {
 
     // Quick cache for user's last telemetry so Gemini has context
     private final Map<String, ContinuousAuthRequestDTO> lastTelemetryCache = new ConcurrentHashMap<>();
+    private final Map<String, Double> lastAnomalyScore = new ConcurrentHashMap<>();
 
     // Count suspicious events per session
     private final Map<String, Integer> anomalyCounter = new ConcurrentHashMap<>();
@@ -105,6 +106,7 @@ public class ContinuousAuthController {
 
                     otpStorage.put(userId != null ? userId : "anonymous", new OtpData(otp, expiryTime));
                     lastTelemetryCache.put(userId != null ? userId : "anonymous", requestDTO);
+                    lastAnomalyScore.put(userId != null ? userId : "anonymous", response.getScore());
 
                     String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
                     try {
@@ -179,6 +181,8 @@ public class ContinuousAuthController {
 
         ContinuousAuthRequestDTO lastReq = lastTelemetryCache.remove(userId);
 
+        Double score = lastAnomalyScore.remove(userId != null ? userId : "anonymous");
+
         String explanation = "Verified successfully.";
         if (lastReq != null) {
             SecurityAnalysisRequest sr = new SecurityAnalysisRequest();
@@ -186,7 +190,7 @@ public class ContinuousAuthController {
             sr.setMouseMovementAvgSpeed(lastReq.getTelemetry().getMouseMovementAvgSpeed());
             sr.setScrollFrequency(lastReq.getTelemetry().getScrollFrequency());
             sr.setIpAddress("127.0.0.1 (Frontend)");
-            sr.setRiskScore(-0.05); // It triggered MEDIUM
+            sr.setRiskScore(score != null ? score : -0.05); // Use real score or fallback
 
             explanation = geminiAIService.analyzeSecurity(sr);
         }
