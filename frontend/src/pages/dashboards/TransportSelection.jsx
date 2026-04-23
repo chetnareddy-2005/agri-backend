@@ -64,10 +64,14 @@ const TransportSelection = () => {
 
             if (res.ok) {
                 // Redirect to Dashboard's new Logistics section instead of a separate page
-                navigate(`/retailer-dashboard?tab=Logistics&orderId=${orderId}`);
+                navigate(`/retailer/dashboard?tab=Logistics&orderId=${orderId}`);
+            } else {
+                const errorText = await res.text();
+                alert("Selection failed: " + errorText);
             }
         } catch (err) {
             console.error(err);
+            alert("Network error occurred.");
         }
     };
 

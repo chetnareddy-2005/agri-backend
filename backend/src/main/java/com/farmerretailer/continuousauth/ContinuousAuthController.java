@@ -76,17 +76,17 @@ public class ContinuousAuthController {
 
             // Quick Fix (Demo Trigger) - Count anomalies if mouse is frantic!
             Double mouseSpeed = (requestDTO.getTelemetry() != null) ? requestDTO.getTelemetry().getMouseMovementAvgSpeed() : null;
-            if (mouseSpeed != null && mouseSpeed > 400) {
+            if (mouseSpeed != null && mouseSpeed > 1200) {
                 int currentCount = anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0) + 1;
                 anomalyCounter.put(userId != null ? userId : "anonymous", currentCount);
                 System.out.println("[Telemetry Debug] Anomaly detected! Speed: " + mouseSpeed + ", Count for " + userId + ": " + currentCount);
                 
-                if (currentCount >= 2) {
+                if (currentCount >= 3) {
                     response.setRiskLevel("MEDIUM");
-                    System.out.println("[Telemetry Debug] Triggering OTP (Count reached 2)");
+                    System.out.println("[Telemetry Debug] Triggering OTP (Count reached 3)");
                 } else {
                     response.setRiskLevel("LOW");
-                    System.out.println("[Telemetry Debug] Anomaly noted but below threshold (2)");
+                    System.out.println("[Telemetry Debug] Anomaly noted but below threshold (3)");
                 }
             }
             
@@ -101,34 +101,56 @@ public class ContinuousAuthController {
 
                 case "MEDIUM":
                     if (userId != null) auditLogRepository.save(new AuditLog(userId, "MEDIUM", "OTP_REQUIRED"));
-                    String otp = generateOtp();
-                    long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins
+                    
+                    String key = userId != null ? userId : "anonymous";
+                    OtpData existingData = otpStorage.get(key);
+                    String otp;
+                    long expiryTime;
 
-                    otpStorage.put(userId != null ? userId : "anonymous", new OtpData(otp, expiryTime));
-                    lastTelemetryCache.put(userId != null ? userId : "anonymous", requestDTO);
-                    lastAnomalyScore.put(userId != null ? userId : "anonymous", response.getScore());
-
-                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "farmer_bob@farm2trade.com";
-                    try {
-                        emailService.sendOtp(targetEmail, otp);
-                    } catch (Exception e) {
-                        System.err.println("[Telemetry Debug] Email failed but continuing demo loop: " + e.getMessage());
+                    if (existingData != null && System.currentTimeMillis() < existingData.getExpiryTime()) {
+                        otp = existingData.getOtp();
+                        expiryTime = existingData.getExpiryTime();
+                        System.out.println("[Telemetry Debug] Reusing existing active OTP for " + key);
+                    } else {
+                        otp = generateOtp();
+                        expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins
+                        otpStorage.put(key, new OtpData(otp, expiryTime));
+                        
+                        // Only send email if it's a NEW OTP or the previous one expired
+                        String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                        try {
+                            emailService.sendOtp(targetEmail, otp);
+                        } catch (Exception e) {
+                            System.err.println("[Telemetry Debug] Email failed for " + targetEmail + ": " + e.getMessage());
+                        }
                     }
+
+                    lastTelemetryCache.put(key, requestDTO);
+                    lastAnomalyScore.put(key, response.getScore());
+
+                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                    boolean emailSent = true; // Assume true if reused or success
+                    String emailErrorMessage = null;
 
                     // Reset anomaly counter for this user after triggering challenge
                     anomalyCounter.remove(userId != null ? userId : "anonymous");
 
-                    // 🔥 HACKATHON DEMO: Print it directly to terminal
+                    // 🔥 HACKATHON DEMO: Print it directly to terminal and response
                     System.out.println("==================================================");
                     System.out.println("🚨 OTP REQUIRED FOR USER: " + targetEmail);
                     System.out.println("🔑 THE SECRET OTP IS: >>> " + otp + " <<<");
+                    System.out.println("📬 EMAIL STATUS: " + (emailSent ? "SUCCESS" : "FAILED (" + emailErrorMessage + ")"));
                     System.out.println("==================================================");
 
                     Map<String, Object> mediumRiskBody = new HashMap<>();
                     mediumRiskBody.put("challenge", "OTP_REQUIRED");
                     mediumRiskBody.put("anomalyCount", 2); 
                     mediumRiskBody.put("riskLevel", "MEDIUM");
-                    mediumRiskBody.put("message", "Suspicious activity detected. OTP sent to your email.");
+                    mediumRiskBody.put("otp", otp); 
+                    mediumRiskBody.put("targetEmail", targetEmail);
+                    mediumRiskBody.put("emailSent", emailSent);
+                    mediumRiskBody.put("emailError", emailErrorMessage);
+                    mediumRiskBody.put("message", emailSent ? "OTP sent to " + targetEmail : "System sent OTP to console (Email failed: " + emailErrorMessage + ")");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mediumRiskBody);
 
                 case "LOW":
@@ -147,10 +169,14 @@ public class ContinuousAuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> req) {
-        String userId = req.get("userId");
-        String enteredOtp = req.get("otp");
+        String userId = req.get("userId") != null ? req.get("userId").trim() : null;
+        String enteredOtp = req.get("otp") != null ? req.get("otp").trim() : null;
 
         OtpData data = otpStorage.get(userId);
+
+        System.out.println("🔍 [OTP Verification] User: " + userId);
+        System.out.println("🔍 [OTP Verification] Received: [" + enteredOtp + "]");
+        System.out.println("🔍 [OTP Verification] Expected: [" + (data != null ? data.getOtp() : "null") + "]");
 
         if (data == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No OTP found"));

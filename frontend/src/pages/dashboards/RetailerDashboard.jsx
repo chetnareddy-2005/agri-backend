@@ -1212,10 +1212,13 @@ const RetailerDashboard = () => {
                                                                 {/* PRODUCT PAYMENT SECTION */}
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', minWidth: '160px' }}>
                                                                     <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-tertiary)' }}>📦 Product</span>
-                                                                    {order.isPaid || order.paid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'Delivered' || order.status === 'RECEIVED' ? (
+                                                                    {order.isPaid || order.paid ? (
                                                                         <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
                                                                     ) : (
-                                                                        <button onClick={() => handlePayment(order, 'PRODUCT')} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                                                            <button onClick={() => handlePayment(order, 'PRODUCT')} style={{ backgroundColor: '#166534', color: 'white', border: 'none', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                            <span style={{ fontSize: '0.55rem', color: '#92400E', fontWeight: 'bold' }}>⏰ Pay within 7 days</span>
+                                                                        </div>
                                                                     )}
                                                                 </div>
 
@@ -1226,7 +1229,10 @@ const RetailerDashboard = () => {
                                                                         {order.transport.isPaid || order.transport.paid ? (
                                                                             <span style={{ color: '#047857', fontSize: '0.7rem', fontWeight: 'bold' }}>✓ Paid</span>
                                                                         ) : (
-                                                                             <button onClick={() => handlePayment(order, 'LOGISTICS')} style={{ backgroundColor: '#1D4ED8', color: 'white', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                                                                <button onClick={() => handlePayment(order, 'LOGISTICS')} style={{ backgroundColor: '#1D4ED8', color: 'white', border: 'none', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: '600' }}>Pay Now</button>
+                                                                                <span style={{ fontSize: '0.55rem', color: '#1D4ED8', fontWeight: 'bold' }}>⚡ Immediate Action Required</span>
+                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 ) : (

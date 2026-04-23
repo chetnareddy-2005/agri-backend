@@ -1266,7 +1266,7 @@ const FarmerDashboard = () => {
                                             <td style={{ padding: '1rem 0' }}>₹{order.totalPrice}</td>
                                             <td style={{ padding: '1rem 0' }}>
                                                 {order.status === 'RECEIVED' ? (
-                                                    <span style={{ backgroundColor: '#DCFCE7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Received</span>
+                                                    <span style={{ backgroundColor: '#DCFCE7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Delivered</span>
                                                 ) : order.status === 'DELIVERED' ? (
                                                     <span style={{ backgroundColor: '#FEF9C3', color: '#854D0E', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>🚚 Delivered</span>
                                                 ) : (
@@ -1281,7 +1281,7 @@ const FarmerDashboard = () => {
                                                 )}
                                             </td>
                                             <td style={{ padding: '1rem 0' }}>
-                                                {(order.isPaid || order.paid || order.status === 'CONFIRMED' || order.status === 'DELIVERED' || order.status === 'SHIPPED' || order.status === 'RECEIVED') ? (
+                                                {(order.isPaid || order.paid) ? (
                                                     <span style={{ backgroundColor: '#ECFDF5', color: '#047857', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', display: 'inline-block' }}>
                                                         Payment Done
                                                     </span>

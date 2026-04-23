@@ -57,6 +57,11 @@ public class UserController {
                     profile.put("fullName", user.getFullName());
                     profile.put("email", user.getEmail());
                     profile.put("role", user.getRole());
+                    profile.put("mobileNumber", user.getMobileNumber());
+                    profile.put("address", user.getAddress());
+                    profile.put("city", user.getCity());
+                    profile.put("state", user.getState());
+                    profile.put("documentName", user.getDocumentName());
                     profile.put("availableBalance", user.getAvailableBalance());
                     return ResponseEntity.ok(profile);
                 })

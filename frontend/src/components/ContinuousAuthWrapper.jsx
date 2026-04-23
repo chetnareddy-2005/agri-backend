@@ -80,16 +80,19 @@ const ContinuousAuthWrapper = ({ children, user }) => {
         };
     }, [activeUser]);
 
-    // Telemetry polling every 5 seconds
+    // Telemetry polling every 10 seconds
     useEffect(() => {
-        if (!activeUser) return;
+        if (!activeUser || activeUser.role === 'ADMIN') return;
 
-        const interval = setInterval(async () => {
+        const intervalId = setInterval(async () => {
+            // Stop polling if a challenge is already active
+            if (alertMessage) return;
+
             try {
-                // Calculate speeds for the 5s interval
+                // Calculate speeds for the 10s interval
                 const telemetry = {
-                    typingSpeedWpm: (keypressCountRef.current / 5) * 60 / 5, // Approximate WPM
-                    mouseMovementAvgSpeed: mouseDistanceRef.current / 5, // px per second
+                    typingSpeedWpm: (keypressCountRef.current / 5) * 60 / 10, // Approximate WPM for 10s
+                    mouseMovementAvgSpeed: mouseDistanceRef.current / 10, // px per second
                     scrollFrequency: scrollCountRef.current
                 };
 
@@ -114,7 +117,16 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 if (res.status === 403) {
                     const data = await res.json();
                     setAlertMessage(data.challenge);
-                    console.error("🚨 Anomaly detected! Step-up authentication required.");
+                    setStatus(data.message);
+                    console.error("🚨 ANOMALY DETECTED! Step-up authentication required.");
+                    if (data.otp) {
+                        console.log("======================================");
+                        console.log(`🔑 DEMO MODE OTP: ${data.otp}`);
+                        console.log(`📧 TARGET EMAIL: ${data.targetEmail}`);
+                        console.log(`📬 EMAIL STATUS: ${data.emailSent ? 'SUCCESS' : 'FAILED'}`);
+                        if (!data.emailSent) console.error(`❌ EMAIL ERROR: ${data.emailError}`);
+                        console.log("======================================");
+                    }
                     console.log(`[Security] Anomaly count: ${data.anomalyCount || 2}`);
                     localStorage.setItem('auth_risk_level', 'MEDIUM');
                 } else if (res.status === 401) {
@@ -130,7 +142,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             } catch (err) {
                 console.error("Telemetry error:", err);
             }
-        }, 5000); // Triggered every 5 seconds
+        }, 10000); // Triggered every 10 seconds
 
         return () => clearInterval(interval);
     }, [activeUser]);
@@ -218,7 +230,11 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                         Suspicious Behavior Detected
                     </h2>
                     <p style={{ fontSize: '0.95rem', opacity: 0.8, marginBottom: '2.5rem', lineHeight: '1.6', color: 'rgba(255,255,255,0.7)' }}>
-                        A Step-Up Authentication OTP has been sent to your registered email.
+                        {status.includes('failed') ? 
+                            <span style={{color: '#ffb703'}}>⚠️ Email failed to send. Check console or terminal for OTP.</span> : 
+                            `A Step-Up Authentication OTP has been sent to `
+                        }
+                        <b>{(activeUser && activeUser.email) ? activeUser.email : 'your registered email'}</b>.
                     </p>
 
 

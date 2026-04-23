@@ -16,10 +16,10 @@ import java.util.UUID;
 @Service
 public class PaymentService {
 
-    @Value("${CASHFREE_APP_ID}")
+    @Value("${cashfree.app.id}")
     private String appId;
 
-    @Value("${CASHFREE_SECRET_KEY}")
+    @Value("${cashfree.secret.key}")
     private String secretKey;
 
     @Value("${CASHFREE_API_URL:https://sandbox.cashfree.com/pg}")

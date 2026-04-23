@@ -13,4 +13,5 @@ public interface TransportRepository extends JpaRepository<Transport, Long> {
     List<Transport> findByStatus(String status);
     @org.springframework.data.jpa.repository.Query("SELECT t FROM Transport t JOIN FETCH t.order o JOIN FETCH o.retailer r WHERE t.driver.id = :driverId")
     List<Transport> findByDriverId(@org.springframework.data.repository.query.Param("driverId") Long driverId);
+    void deleteByDriverId(Long driverId);
 }

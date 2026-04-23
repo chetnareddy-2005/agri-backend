@@ -120,6 +120,13 @@ public class UserService {
 
             // 5. Delete Retailer's Bids
             bidRepository.deleteByRetailerId(userId);
+        } else if (user.getRole() == com.farmerretailer.model.Role.TRANSPORTER) {
+            // 7. Delete Transporter's Driver & Transport record
+            com.farmerretailer.entity.Driver driver = driverRepository.findByUserId(userId).orElse(null);
+            if (driver != null) {
+                transportRepository.deleteByDriverId(driver.getId());
+                driverRepository.delete(driver);
+            }
         }
 
         // 6. Delete User
@@ -140,6 +147,8 @@ public class UserService {
 
     @Autowired
     private com.farmerretailer.repository.DriverRepository driverRepository;
+    @Autowired
+    private com.farmerretailer.repository.TransportRepository transportRepository;
 
     // Helper to create initial user (normally done by RegisterController)
     public User registerUser(User user) {

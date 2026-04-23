@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
     Optional<Driver> findByUserId(Long userId);
     List<Driver> findByIsAvailableTrue();
+    void deleteByUserId(Long userId);
 }

@@ -298,20 +298,39 @@ public class SmtpEmailService implements EmailService {
         }
     }
 
-    @Async
     @Override
     public void sendOtp(String to, String otp) {
-        if (emailSender == null) return;
+        if (emailSender == null) {
+            System.err.println("❌ ERROR: JavaMailSender is NULL.");
+            return;
+        }
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject("Farm2Trade OTP Verification");
-            message.setText("Your OTP is: " + otp + "\n\nThis code is required due to a security anomaly detection. If you did not perform this action, please change your password immediately.");
-            emailSender.send(message);
-            System.out.println("OTP sent successfully to " + to);
+            System.out.println("📧 [SMTP] Preparing high-priority OTP for: " + to);
+            
+            jakarta.mail.internet.MimeMessage mimeMessage = emailSender.createMimeMessage();
+            org.springframework.mail.javamail.MimeMessageHelper helper = 
+                new org.springframework.mail.javamail.MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail, "Farm2Trade Security");
+            helper.setTo(to);
+            helper.setSubject("CRITICAL: Your Verification Code - " + otp);
+            
+            String htmlContent = 
+                "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>" +
+                "<h2>Security Verification</h2>" +
+                "<p>We detected unusual activity. Use the code below to verify your identity:</p>" +
+                "<h1 style='color: #16a34a; font-size: 32px; letter-spacing: 5px;'>" + otp + "</h1>" +
+                "<p style='color: #666; font-size: 12px;'>This code will expire in 10 minutes.</p>" +
+                "</div>";
+            
+            helper.setText(htmlContent, true); // true = HTML
+            
+            emailSender.send(mimeMessage);
+            System.out.println("✅ [SMTP] Message accepted by Gmail for: " + to);
+            
         } catch (Exception e) {
-            System.err.println("Failed to send OTP to " + to + ": " + e.getMessage());
+            System.err.println("❌ [SMTP] FAILED: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
