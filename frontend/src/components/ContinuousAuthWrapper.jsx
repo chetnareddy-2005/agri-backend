@@ -50,6 +50,13 @@ const ContinuousAuthWrapper = ({ children, user }) => {
     const keypressCountRef = React.useRef(0);
     const scrollCountRef = React.useRef(0);
     const lastPositionRef = React.useRef({ x: 0, y: 0 });
+    const startTimeRef = React.useRef(Date.now());
+
+    useEffect(() => {
+        if (!activeUser) return;
+        // Reset start time when user changes
+        startTimeRef.current = Date.now();
+    }, [activeUser]);
 
     useEffect(() => {
         if (!activeUser) return;
@@ -88,6 +95,16 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             // Stop polling if a challenge is already active
             if (alertMessage) return;
 
+            // GRACE PERIOD: 30 seconds after login
+            if (Date.now() - startTimeRef.current < 30000) {
+                console.log("[Security] Grace period active. Monitoring...");
+                // Still reset counters so we don't accumulate
+                mouseDistanceRef.current = 0;
+                keypressCountRef.current = 0;
+                scrollCountRef.current = 0;
+                return;
+            }
+
             try {
                 // Calculate speeds for the 10s interval
                 const telemetry = {
@@ -101,7 +118,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 keypressCountRef.current = 0;
                 scrollCountRef.current = 0;
 
-                if (telemetry.mouseMovementAvgSpeed > 10) { // Log more often for demo
+                if (telemetry.mouseMovementAvgSpeed > 100) { // Log less often
                    console.log(`[Security] Current mouse speed: ${telemetry.mouseMovementAvgSpeed.toFixed(0)} px/s`);
                 }
 

@@ -21,7 +21,7 @@ public class AnomalyDetectionService {
 
         // 🚨 HACKATHON DEMO LOGIC
         // Fast mouse movements are a classic sign of automated scripts or bot behavior
-        if (mouseSpeed > 400) {
+        if (mouseSpeed > 2000) {
             return "MEDIUM";
         }
 
