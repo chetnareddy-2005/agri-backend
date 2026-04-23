@@ -60,6 +60,8 @@ public class ContinuousAuthController {
 
     // Count suspicious events per session
     private final Map<String, Integer> anomalyCounter = new ConcurrentHashMap<>();
+    private final Map<String, Integer> sessionKeystrokes = new ConcurrentHashMap<>();
+    private final Map<String, Integer> sessionMouseEvents = new ConcurrentHashMap<>();
 
     private String generateOtp() {
         return String.valueOf((int)(Math.random() * 900000) + 100000);
@@ -74,20 +76,51 @@ public class ContinuousAuthController {
             // Very Important Debug Logging
             System.out.println("[Telemetry Debug] Score: " + response.getScore() + ", Risk: " + response.getRiskLevel());
 
-            // Quick Fix (Demo Trigger) - Count anomalies if mouse is frantic!
+            // 🚨 HACKATHON DEMO: Session-based Anomaly Tracking
+            String userIdKey = userId != null ? userId : "anonymous";
+            
+            // Accumulate counts
+            int newKeystrokes = (requestDTO.getTelemetry() != null && requestDTO.getTelemetry().getKeypressCount() != null) ? requestDTO.getTelemetry().getKeypressCount() : 0;
+            int newMouseEvents = (requestDTO.getTelemetry() != null && requestDTO.getTelemetry().getMouseEventCount() != null) ? requestDTO.getTelemetry().getMouseEventCount() : 0;
+            
+            int totalKeys = sessionKeystrokes.getOrDefault(userIdKey, 0) + newKeystrokes;
+            int totalMouse = sessionMouseEvents.getOrDefault(userIdKey, 0) + newMouseEvents;
+            
+            sessionKeystrokes.put(userIdKey, totalKeys);
+            sessionMouseEvents.put(userIdKey, totalMouse);
+
             Double mouseSpeed = (requestDTO.getTelemetry() != null) ? requestDTO.getTelemetry().getMouseMovementAvgSpeed() : null;
-            if (mouseSpeed != null && mouseSpeed > 1200) {
-                int currentCount = anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0) + 1;
-                anomalyCounter.put(userId != null ? userId : "anonymous", currentCount);
-                System.out.println("[Telemetry Debug] Anomaly detected! Speed: " + mouseSpeed + ", Count for " + userId + ": " + currentCount);
+            
+            boolean isAnomaly = false;
+            String reason = "";
+
+            if (mouseSpeed != null && mouseSpeed > 2000) {
+                isAnomaly = true;
+                reason = "Frantic mouse speed (" + mouseSpeed.toFixed(0) + " px/s)";
+            } else if (totalKeys > 300) {
+                isAnomaly = true;
+                reason = "Keystroke threshold exceeded (" + totalKeys + ")";
+                sessionKeystrokes.put(userIdKey, 0); // Reset for next strike
+            } else if (totalMouse > 500) {
+                isAnomaly = true;
+                reason = "Mouse event threshold exceeded (" + totalMouse + ")";
+                sessionMouseEvents.put(userIdKey, 0); // Reset for next strike
+            }
+
+            if (isAnomaly) {
+                int currentCount = anomalyCounter.getOrDefault(userIdKey, 0) + 1;
+                anomalyCounter.put(userIdKey, currentCount);
+                System.out.println("[Telemetry Debug] ANOMALY DETECTED! Reason: " + reason + " | Count: " + currentCount);
                 
                 if (currentCount >= 3) {
                     response.setRiskLevel("MEDIUM");
-                    System.out.println("[Telemetry Debug] Triggering OTP (Count reached 3)");
+                    System.out.println("[Telemetry Debug] Triggering OTP (Anomaly Count reached 3)");
                 } else {
                     response.setRiskLevel("LOW");
-                    System.out.println("[Telemetry Debug] Anomaly noted but below threshold (3)");
+                    System.out.println("[Telemetry Debug] Strike " + currentCount + "/3 logged.");
                 }
+            } else {
+                response.setRiskLevel("LOW");
             }
             
             response.setAnomalyCount(anomalyCounter.getOrDefault(userId != null ? userId : "anonymous", 0));
@@ -134,6 +167,8 @@ public class ContinuousAuthController {
 
                     // Reset anomaly counter for this user after triggering challenge
                     anomalyCounter.remove(userId != null ? userId : "anonymous");
+                    sessionKeystrokes.remove(userId != null ? userId : "anonymous");
+                    sessionMouseEvents.remove(userId != null ? userId : "anonymous");
 
                     // 🔥 HACKATHON DEMO: Print it directly to terminal and response
                     System.out.println("==================================================");

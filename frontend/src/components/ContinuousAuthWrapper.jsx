@@ -48,6 +48,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
     // Actual Telemetry Tracking using Refs (Avoids re-renders on every pixel/keypress)
     const mouseDistanceRef = React.useRef(0);
     const keypressCountRef = React.useRef(0);
+    const mouseEventCountRef = React.useRef(0);
     const scrollCountRef = React.useRef(0);
     const lastPositionRef = React.useRef({ x: 0, y: 0 });
     const startTimeRef = React.useRef(Date.now());
@@ -62,6 +63,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
         if (!activeUser) return;
 
         const handleMouseMove = (e) => {
+            mouseEventCountRef.current += 1;
             const dist = Math.sqrt(
                 Math.pow(e.clientX - lastPositionRef.current.x, 2) + 
                 Math.pow(e.clientY - lastPositionRef.current.y, 2)
@@ -101,6 +103,7 @@ const ContinuousAuthWrapper = ({ children, user }) => {
                 // Still reset counters so we don't accumulate
                 mouseDistanceRef.current = 0;
                 keypressCountRef.current = 0;
+                mouseEventCountRef.current = 0;
                 scrollCountRef.current = 0;
                 return;
             }
@@ -108,17 +111,20 @@ const ContinuousAuthWrapper = ({ children, user }) => {
             try {
                 // Calculate speeds for the 10s interval
                 const telemetry = {
-                    typingSpeedWpm: (keypressCountRef.current / 5) * 60 / 10, // Approximate WPM for 10s
-                    mouseMovementAvgSpeed: mouseDistanceRef.current / 10, // px per second
-                    scrollFrequency: scrollCountRef.current
+                    typingSpeedWpm: (keypressCountRef.current / 5) * 60 / 10, 
+                    mouseMovementAvgSpeed: mouseDistanceRef.current / 10, 
+                    scrollFrequency: scrollCountRef.current,
+                    keypressCount: keypressCountRef.current,
+                    mouseEventCount: mouseEventCountRef.current
                 };
 
                 // Reset counters for next interval
                 mouseDistanceRef.current = 0;
                 keypressCountRef.current = 0;
+                mouseEventCountRef.current = 0;
                 scrollCountRef.current = 0;
 
-                if (telemetry.mouseMovementAvgSpeed > 100) { // Log less often
+                if (telemetry.mouseMovementAvgSpeed > 100) { 
                    console.log(`[Security] Current mouse speed: ${telemetry.mouseMovementAvgSpeed.toFixed(0)} px/s`);
                 }
 
