@@ -57,7 +57,7 @@ public class User {
     private String documentName;
 
     @Lob
-    @Column(name = "document_content", columnDefinition = "LONGBLOB")
+    @Column(name = "document_content")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private byte[] documentContent;
 

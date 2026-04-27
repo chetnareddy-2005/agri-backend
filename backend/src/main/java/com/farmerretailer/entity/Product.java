@@ -42,7 +42,7 @@ public class Product {
     }
 
     @ElementCollection
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private java.util.List<String> imageUrls; // Stores Base64 strings or URLs
 
     private String deliveryEstimate; // e.g., "2-3 days"
