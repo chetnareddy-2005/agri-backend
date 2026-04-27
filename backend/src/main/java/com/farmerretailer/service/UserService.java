@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class UserService {
 
     @Autowired
