@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "transports", indexes = {
-    @Index(name = "idx_transport_order_id", columnList = "order_id"),
-    @Index(name = "idx_transport_status", columnList = "status")
-})
+@Table(name = "transports")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
