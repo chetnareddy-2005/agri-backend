@@ -46,6 +46,7 @@ public class UserController {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();

@@ -58,7 +58,7 @@ public class TransportService {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
 
-        Transport transport = new Transport();
+        Transport transport = transportRepository.findByOrderId(orderId).orElse(new Transport());
         transport.setOrder(order);
         transport.setDriver(driver);
         transport.setTransportMethod("PLATFORM");
@@ -269,7 +269,7 @@ public class TransportService {
         if ("RETAILER".equals(acceptedBy)) transport.setPriceAcceptedByRetailer(true);
         else transport.setPriceAcceptedByTransporter(true);
 
-        if ((transport.isPriceAcceptedByRetailer() || transport.isConfirmedByRetailer()) && transport.isPriceAcceptedByTransporter()) {
+        if (transport.isPriceAcceptedByTransporter() && (transport.isPriceAcceptedByRetailer() || transport.isConfirmedByRetailer() || transport.getDriver() != null)) {
             transport.setStatus("ACCEPTED");
             if (transport.getDriver() != null) {
                 Driver d = transport.getDriver();
@@ -331,7 +331,7 @@ public class TransportService {
     }
 
     public List<Transport> getAvailableRequests() {
-        return transportRepository.findByStatus("PENDING").stream()
+        return transportRepository.findByStatusWithDetails("PENDING").stream()
                 .filter(Transport::isConfirmedByRetailer)
                 .filter(t -> t.getOrder() != null && "SHIPPED".equalsIgnoreCase(t.getOrder().getStatus()))
                 .toList();
@@ -344,13 +344,19 @@ public class TransportService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = driverRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Driver profile not found"));
+        
         transport.setDriver(driver);
         transport.setStatus("ACCEPTED");
         driver.setAvailable(false);
+        driver.setAcceptedRequests((driver.getAcceptedRequests() != null ? driver.getAcceptedRequests() : 0) + 1);
         driverRepository.save(driver);
         
-        // Optionally update order status to PICKED_UP or similar if needed
-        // but user only mentioned PENDING, SHIPPED, and then DELIVERED.
+        // Sync order status to show it is now in progress
+        if (transport.getOrder() != null) {
+            Order order = transport.getOrder();
+            order.setStatus("SHIPPED"); // Ensure it remains SHIPPED or move to IN_TRANSIT
+            orderRepository.save(order);
+        }
         
         return transportRepository.save(transport);
     }

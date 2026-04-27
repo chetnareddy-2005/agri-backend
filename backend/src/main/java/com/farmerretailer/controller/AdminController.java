@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin")
+@org.springframework.transaction.annotation.Transactional
 public class AdminController {
 
     @Autowired

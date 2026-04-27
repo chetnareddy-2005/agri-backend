@@ -45,8 +45,8 @@ const RetailerDashboard = () => {
     const activeTab = searchParams.get('tab') || 'Dashboard';
 
     // Helper to update URL when tab changes
-    const setActiveTab = (tabName) => {
-        setSearchParams({ tab: tabName });
+    const setActiveTab = (tabName, extraParams = {}) => {
+        setSearchParams({ tab: tabName, ...extraParams });
     };
 
     const handleUnauthorized = () => {
@@ -207,11 +207,12 @@ const RetailerDashboard = () => {
     // Polling for real-time market updates (Inventory, Bids)
     useEffect(() => {
         const interval = setInterval(() => {
-            fetchProducts();
             fetchNotifications();
-            fetchStats();
             fetchMyOrders();
-        }, 5000); // 5 seconds
+            fetchMyListings();
+            fetchStats();
+            fetchWallet();
+        }, 15000); // 15 seconds - balanced for performance and responsiveness
 
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
@@ -471,13 +472,8 @@ const RetailerDashboard = () => {
             if (res.ok) {
                 const orderData = await res.json();
                 
-                // Redirect to intelligent transport selection page
-                navigate('/select-transport', { 
-                    state: { 
-                        orderId: orderData.id, 
-                        product: product 
-                    } 
-                });
+                // Redirect to the Logistics tab and auto-select the new order
+                setActiveTab('Logistics', { orderId: orderData.id });
 
                 fetchProducts();
                 fetchMyOrders();
@@ -1480,7 +1476,11 @@ const RetailerDashboard = () => {
                         )}
 
                         {activeTab === 'Logistics' && (
-                            <LogisticsTracker fetchWithAuth={fetchWithAuth} />
+                            <LogisticsTracker 
+                                fetchWithAuth={fetchWithAuth} 
+                                orders={myOrders} 
+                                refreshOrders={fetchMyOrders} 
+                            />
                         )}
                     </main>
 

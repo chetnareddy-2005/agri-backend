@@ -49,6 +49,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received')")
     long countDeliveredByRetailerId(@Param("retailerId") Long retailerId);
 
+    @org.springframework.data.jpa.repository.Query(value = "SELECT AVG(EXTRACT(EPOCH FROM (delivered_at - order_date)) / 86400) FROM orders WHERE retailer_id = :retailerId AND delivered_at IS NOT NULL", nativeQuery = true)
+    Double calculateAvgDeliveryDaysByRetailerId(@Param("retailerId") Long retailerId);
+
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) FROM Order o WHERE o.product.farmer.id = :farmerId AND o.status = 'PENDING'")
     long countPendingByFarmerId(@Param("farmerId") Long farmerId);
 

@@ -117,25 +117,9 @@ public class StatsService {
                 stats.put("activeBids", bidRepository.countActiveBids(userId));
                 stats.put("pendingShipments", orderRepository.countPendingByRetailerId(userId));
 
-                // Avg Delivery Days Calculation
-                List<com.farmerretailer.entity.Order> allRetailerOrders = orderRepository.findByRetailerId(userId);
-                double totalDays = 0;
-                int count = 0;
-
-                for (com.farmerretailer.entity.Order order : allRetailerOrders) {
-                    if (order.getStatus() != null &&
-                            (order.getStatus().equalsIgnoreCase("DELIVERED")) &&
-                            order.getOrderDate() != null &&
-                            order.getDeliveredAt() != null) {
-
-                        long days = java.time.temporal.ChronoUnit.DAYS.between(order.getOrderDate(),
-                                order.getDeliveredAt());
-                        totalDays += Math.max(0, days);
-                        count++;
-                    }
-                }
-
-                stats.put("avgDeliveryDays", count > 0 ? String.format("%.1f", totalDays / count) : "0.0");
+                // Optimized Avg Delivery Days Calculation
+                Double avgDays = orderRepository.calculateAvgDeliveryDaysByRetailerId(userId);
+                stats.put("avgDeliveryDays", avgDays != null ? String.format("%.1f", avgDays) : "0.0");
 
                 // --- Dynamic Graphs Data ---
 

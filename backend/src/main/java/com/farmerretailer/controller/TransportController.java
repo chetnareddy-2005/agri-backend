@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transport")
+@org.springframework.transaction.annotation.Transactional
 public class TransportController {
 
     @Autowired

@@ -359,7 +359,7 @@ const FarmerDashboard = () => {
             fetchMyListings();
             fetchStats();
             fetchWallet();
-        }, 5000); // 5 seconds
+        }, 15000); // 15 seconds
         
         return () => clearInterval(interval);
     }, [activeTab]);

@@ -93,7 +93,7 @@ const TransporterDashboard = () => {
         const fetchInterval = setInterval(() => {
             fetchDashboardData();
             fetchWallet();
-        }, 10000); // 10s
+        }, 15000); // 15s
 
         const riskInterval = setInterval(() => {
             setRiskLevel(localStorage.getItem('auth_risk_level') || 'LOW');
@@ -192,7 +192,29 @@ const TransporterDashboard = () => {
                 credentials: 'include',
                 body: JSON.stringify({ acceptedBy: 'TRANSPORTER' })
             });
-            if (res.ok) fetchDashboardData();
+            if (res.ok) {
+                alert("Negotiation Accepted! Order is now assigned to you.");
+                fetchDashboardData();
+            } else {
+                const errorMsg = await res.text();
+                alert("Failed to accept: " + errorMsg);
+            }
+        } catch (err) { console.error(err); }
+    };
+
+    const handleAcceptOrder = async (id) => {
+        try {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/transport/${id}/accept`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                alert("Order Assigned Successfully! You can now start the trip.");
+                fetchDashboardData();
+            } else {
+                const errorMsg = await res.text();
+                alert("Failed to accept: " + errorMsg);
+            }
         } catch (err) { console.error(err); }
     };
 
@@ -506,12 +528,21 @@ const TransporterDashboard = () => {
                                         <span style={{ fontWeight: 'bold' }}>Order #{req.order?.id}</span>
                                         <span style={{ color: '#3b82f6' }}>{req.distanceKm.toFixed(1)} km</span>
                                     </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <MapPin size={14} /> 
+                                        <span>To: {req.order?.retailer?.city || 'Retailer'}</span>
+                                    </div>
                                     <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '1rem', borderRadius: '15px', marginBottom: '1rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}><span>AI Estimate:</span><span>₹{req.initialPrice.toFixed(0)}</span></div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontWeight: 'bold', fontSize: '1.2rem', color: '#10B981' }}><span>Current Offer:</span><span>₹{req.updatedPrice.toFixed(0)}</span></div>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <button onClick={() => handleAcceptPrice(req.id)} style={successButtonStyle}>Accept Order</button>
+                                        <button 
+                                            onClick={() => req.status === 'PRICE_UPDATED' ? handleAcceptPrice(req.id) : handleAcceptOrder(req.id)} 
+                                            style={successButtonStyle}
+                                        >
+                                            {req.status === 'PRICE_UPDATED' ? 'Confirm Price' : 'Accept Order'}
+                                        </button>
                                         {editingPriceId === req.id ? (
                                             <div style={{ display: 'flex', gap: '5px' }}>
                                                 <input type="number" value={negotiatedPrice} onChange={(e) => setNegotiatedPrice(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} />

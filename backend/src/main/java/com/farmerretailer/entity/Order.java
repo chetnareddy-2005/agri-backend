@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_retailer_id", columnList = "retailer_id"),
+    @Index(name = "idx_status", columnList = "status")
+})
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +35,7 @@ public class Order {
     private LocalDateTime deliveredAt;
     
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("order")
     private Transport transport;
 
     private boolean paymentNotificationSent = false;

@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "transports")
+@Table(name = "transports", indexes = {
+    @Index(name = "idx_transport_order_id", columnList = "order_id"),
+    @Index(name = "idx_transport_status", columnList = "status")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +22,7 @@ public class Transport {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("transport")
     private Order order;
 
     @ManyToOne

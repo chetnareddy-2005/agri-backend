@@ -28,11 +28,13 @@ public class User {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "mobile_number", nullable = false)
     private String mobileNumber;
 
     // Additional fields for Farmer/Retailer profile
+    @Column(name = "business_name")
     private String businessName; // Farm Name or Store Name
+    @Column(name = "address")
     private String address;
     private String city;
     private String state;
