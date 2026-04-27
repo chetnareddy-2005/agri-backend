@@ -150,7 +150,7 @@ public class ContinuousAuthController {
                         otpStorage.put(key, new OtpData(otp, expiryTime));
                         
                         // Only send email if it's a NEW OTP or the previous one expired
-                        String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                        String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy0620@gmail.com";
                         try {
                             emailService.sendOtp(targetEmail, otp);
                         } catch (Exception e) {
@@ -161,7 +161,7 @@ public class ContinuousAuthController {
                     lastTelemetryCache.put(key, requestDTO);
                     lastAnomalyScore.put(key, response.getScore());
 
-                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy2520@gmail.com";
+                    String targetEmail = (userId != null && userId.contains("@")) ? userId : "chetnareddy0620@gmail.com";
                     boolean emailSent = true; // Assume true if reused or success
                     String emailErrorMessage = null;
 
