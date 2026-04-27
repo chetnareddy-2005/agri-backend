@@ -38,6 +38,7 @@ public class AuthController {
     @Autowired
     private com.farmerretailer.repository.UserRepository userRepository;
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginData,
             jakarta.servlet.http.HttpServletRequest request,
@@ -84,6 +85,7 @@ public class AuthController {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping(value = "/register", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registerUser(@RequestParam("user") String userJson,
             @RequestParam(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
