@@ -93,7 +93,7 @@ public class StatsService {
                     salesData.add(point);
                 }
                 stats.put("salesData", salesData);
-            } else if (user.getRole() == Role.RETAILER) {
+            } else if (user.getRole() == Role.RETAILER || String.valueOf(user.getRole()).equals("RETAILER")) {
                 // Add Profile Details for Retailer as well
                 stats.put("userProfile", new java.util.HashMap<String, Object>() {
                     {
@@ -124,52 +124,63 @@ public class StatsService {
                 // --- Dynamic Graphs Data ---
 
                 // 1. Orders Over Time (Monthly) - Last 6 Months
-                List<Object[]> monthlyData = orderRepository.findOrdersGroupedByMonth(userId);
                 List<Map<String, Object>> ordersOverTime = new java.util.ArrayList<>();
                 String[] monthNames = { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
                         "Dec" };
 
-                // Create a map for easy lookup of DB results: MonthIndex -> Count
-                Map<Integer, Long> dbDataMap = new HashMap<>();
-                for (Object[] row : monthlyData) {
-                    dbDataMap.put(((Number) row[0]).intValue(), ((Number) row[1]).longValue());
-                }
+                try {
+                    List<Object[]> monthlyData = orderRepository.findOrdersGroupedByMonth(userId);
+                    // Create a map for easy lookup of DB results: MonthIndex -> Count
+                    Map<Integer, Long> dbDataMap = new HashMap<>();
+                    for (Object[] row : monthlyData) {
+                        if (row != null && row.length >= 2 && row[0] != null) {
+                            dbDataMap.put(((Number) row[0]).intValue(), ((Number) row[1]).longValue());
+                        }
+                    }
 
-                // Generate last 6 months data
-                java.time.LocalDate now = java.time.LocalDate.now();
-                for (int i = 5; i >= 0; i--) {
-                    java.time.LocalDate date = now.minusMonths(i);
-                    int monthIndex = date.getMonthValue();
-                    String monthName = monthNames[monthIndex];
+                    // Generate last 6 months data
+                    java.time.LocalDate now = java.time.LocalDate.now();
+                    for (int i = 5; i >= 0; i--) {
+                        java.time.LocalDate date = now.minusMonths(i);
+                        int monthIndex = date.getMonthValue();
+                        String monthName = monthNames[monthIndex];
 
-                    Map<String, Object> point = new HashMap<>();
-                    point.put("name", monthName);
-                    point.put("value", dbDataMap.getOrDefault(monthIndex, 0L));
-                    ordersOverTime.add(point);
+                        Map<String, Object> point = new HashMap<>();
+                        point.put("name", monthName);
+                        point.put("value", dbDataMap.getOrDefault(monthIndex, 0L));
+                        ordersOverTime.add(point);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error calculating ordersOverTime: " + e.getMessage());
                 }
                 stats.put("ordersOverTime", ordersOverTime);
 
                 // 2. Order Status Distribution
-                List<Object[]> statusData = orderRepository.findOrdersGroupedByStatus(userId);
                 List<Map<String, Object>> orderStatusData = new java.util.ArrayList<>();
+                try {
+                    List<Object[]> statusData = orderRepository.findOrdersGroupedByStatus(userId);
+                    // Define colors for statuses
+                    Map<String, String> statusColors = new java.util.HashMap<>();
+                    statusColors.put("PENDING", "#FBBF24"); // Amber
+                    statusColors.put("CONFIRMED", "#3B82F6"); // Blue
+                    statusColors.put("SHIPPED", "#8B5CF6"); // Purple
+                    statusColors.put("DELIVERED", "#10B981"); // Green
+                    statusColors.put("RECEIVED", "#047857"); // Darker Green
+                    statusColors.put("CANCELLED", "#EF4444"); // Red
 
-                // Define colors for statuses
-                Map<String, String> statusColors = new java.util.HashMap<>();
-                statusColors.put("PENDING", "#FBBF24"); // Amber
-                statusColors.put("CONFIRMED", "#3B82F6"); // Blue
-                statusColors.put("SHIPPED", "#8B5CF6"); // Purple
-                statusColors.put("DELIVERED", "#10B981"); // Green
-                statusColors.put("RECEIVED", "#047857"); // Darker Green
-                statusColors.put("CANCELLED", "#EF4444"); // Red
-
-                for (Object[] row : statusData) {
-                    String status = (String) row[0];
-                    long statusCount = ((Number) row[1]).longValue();
-                    Map<String, Object> item = new java.util.HashMap<>();
-                    item.put("name", status);
-                    item.put("value", statusCount);
-                    item.put("color", statusColors.getOrDefault(status, "#9CA3AF")); // Gray default
-                    orderStatusData.add(item);
+                    for (Object[] row : statusData) {
+                        if (row != null && row.length >= 2 && row[0] != null) {
+                            String status = (String) row[0];
+                            long statusCount = ((Number) row[1]).longValue();
+                            Map<String, Object> item = new java.util.HashMap<>();
+                            item.put("name", status);
+                            item.put("value", statusCount);
+                            item.put("color", statusColors.getOrDefault(status, "#9CA3AF")); // Gray default
+                            orderStatusData.add(item);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error calculating orderStatusData: " + e.getMessage());
                 }
                 stats.put("orderStatusData", orderStatusData);
             }

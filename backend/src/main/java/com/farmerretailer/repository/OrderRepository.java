@@ -62,7 +62,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Group by Month (using function month) - Returns Object[]: [Month(int),
     // Count(long)]
-    @org.springframework.data.jpa.repository.Query("SELECT MONTH(o.orderDate), COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId GROUP BY MONTH(o.orderDate) ORDER BY MONTH(o.orderDate)")
+    @org.springframework.data.jpa.repository.Query("SELECT EXTRACT(MONTH FROM o.orderDate), COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId GROUP BY EXTRACT(MONTH FROM o.orderDate) ORDER BY EXTRACT(MONTH FROM o.orderDate)")
     List<Object[]> findOrdersGroupedByMonth(@Param("retailerId") Long retailerId);
 
     // Group by Status - Returns Object[]: [Status(String), Count(long)]
@@ -70,7 +70,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> findOrdersGroupedByStatus(@Param("retailerId") Long retailerId);
 
     // Farmer Monthly Sales - Returns Object[]: [Month(int), TotalSales(double)]
-    @org.springframework.data.jpa.repository.Query("SELECT MONTH(o.orderDate), SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received') GROUP BY MONTH(o.orderDate) ORDER BY MONTH(o.orderDate)")
+    @org.springframework.data.jpa.repository.Query("SELECT EXTRACT(MONTH FROM o.orderDate), SUM(o.totalPrice) FROM Order o WHERE o.product.farmer.id = :farmerId AND (LOWER(o.status) = 'delivered' OR LOWER(o.status) = 'received') GROUP BY EXTRACT(MONTH FROM o.orderDate) ORDER BY EXTRACT(MONTH FROM o.orderDate)")
     List<Object[]> findMonthlySalesByFarmerId(@Param("farmerId") Long farmerId);
 
     boolean existsByProductId(Long productId);

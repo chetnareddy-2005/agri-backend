@@ -189,10 +189,10 @@ const LogisticsTracker = ({ fetchWithAuth, orders: propOrders, refreshOrders }) 
                                 </div>
                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{new Date(order.orderDate).toLocaleDateString()}</span>
                             </div>
-                            <h4 style={{ margin: '0 0 0.5rem', color: 'var(--text-primary)' }}>{order.product?.name}</h4>
+                            <h4 style={{ margin: '0 0 0.5rem', color: 'var(--text-primary)' }}>{order.product?.name || 'Unknown Product'}</h4>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                                 <Truck size={14} /> 
-                                <span>{order.status}</span>
+                                <span>{order.status || 'PENDING'}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                                 <span style={{ fontWeight: 'bold', color: '#16a34a' }}>₹{order.totalPrice}</span>
@@ -300,11 +300,11 @@ const LogisticsTracker = ({ fetchWithAuth, orders: propOrders, refreshOrders }) 
                     
                     {/* Map Area */}
                     <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '1rem', border: '1px solid var(--border-color)', height: '400px', overflow: 'hidden' }}>
-                        {transport.driver?.currentLat ? (
+                        {transport?.driver?.currentLat ? (
                             <MapContainer center={[transport.driver.currentLat, transport.driver.currentLng]} zoom={14} style={{ height: '100%', width: '100%', borderRadius: '18px' }}>
                                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                 <Marker position={[transport.driver.currentLat, transport.driver.currentLng]} icon={L.divIcon({ className: 'custom-div-icon', html: '<div style="font-size: 30px">🚚</div>', iconSize: [30, 42], iconAnchor: [15, 42] })}>
-                                    <Popup>Driver: {transport.driver.user.fullName}</Popup>
+                                    <Popup>Driver: {transport.driver?.user?.fullName || 'Assigned Driver'}</Popup>
                                 </Marker>
                             </MapContainer>
                         ) : (
@@ -350,15 +350,15 @@ const LogisticsTracker = ({ fetchWithAuth, orders: propOrders, refreshOrders }) 
                         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                             <div style={{ width: '50px', height: '50px', borderRadius: '15px', backgroundColor: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>👤</div>
                             <div>
-                                <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{transport.driver.user.fullName}</h4>
+                                <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{transport?.driver?.user?.fullName || 'Awaiting Assignment'}</h4>
                                 <div style={{ fontSize: '0.8rem', color: '#F59E0B', display: 'flex', gap: '2px' }}>
                                     <Star size={12} fill="#F59E0B" /> <Star size={12} fill="#F59E0B" /> <Star size={12} fill="#F59E0B" /> <Star size={12} fill="#F59E0B" /> <Star size={12} />
                                 </div>
                             </div>
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Vehicle:</span><span style={{ fontWeight: 'bold' }}>{transport.driver.vehicleType}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Plate:</span><span style={{ fontWeight: 'bold' }}>{transport.driver.licensePlate || 'N/A'}</span></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Vehicle:</span><span style={{ fontWeight: 'bold' }}>{transport?.driver?.vehicleType || 'Any Vehicle'}</span></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Plate:</span><span style={{ fontWeight: 'bold' }}>{transport?.driver?.licensePlate || 'N/A'}</span></div>
                         </div>
                     </div>
 
