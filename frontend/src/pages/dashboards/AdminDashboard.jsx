@@ -214,6 +214,22 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchAllUsers = async () => {
+        try {
+            const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/admin/all-users`, {
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUserList(data);
+                setListModalTitle("All Registered Users");
+                setShowListModal(true);
+            }
+        } catch (error) {
+            console.error("Error fetching all users:", error);
+        }
+    };
+
     const handleViewDetails = (user) => {
         setListModalTitle(""); // Optional: Clean up title
         setShowListModal(false); // Close the list modal if open
@@ -605,7 +621,7 @@ const AdminDashboard = () => {
                         <>
                             {/* Stats Section with Chart */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                                <div className="card" style={{ padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }} onClick={fetchAllUsers}>
                                     <h3 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #16a34a, #2563eb)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{stats.totalUsers}</h3>
                                     <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Total Users</p>
                                 </div>

@@ -67,6 +67,11 @@ public class AdminController {
         return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.TRANSPORTER));
     }
 
+    @GetMapping("/all-users")
+    public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<java.util.Map<String, Object>> getDashboardStats() {
         System.out.println("Fetching dashboard stats...");
