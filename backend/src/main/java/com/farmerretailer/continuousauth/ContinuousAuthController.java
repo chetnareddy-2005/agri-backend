@@ -96,7 +96,7 @@ public class ContinuousAuthController {
 
             if (mouseSpeed != null && mouseSpeed > 2000) {
                 isAnomaly = true;
-                reason = "Frantic mouse speed (" + mouseSpeed.toFixed(0) + " px/s)";
+                reason = "Frantic mouse speed (" + String.format("%.0f", mouseSpeed) + " px/s)";
             } else if (totalKeys > 300) {
                 isAnomaly = true;
                 reason = "Keystroke threshold exceeded (" + totalKeys + ")";
