@@ -67,6 +67,7 @@ public class AdminController {
         return ResponseEntity.ok(userService.getApprovedUsersByRole(com.farmerretailer.model.Role.TRANSPORTER));
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping("/all-users")
     public ResponseEntity<java.util.List<com.farmerretailer.entity.User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll());

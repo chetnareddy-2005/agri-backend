@@ -19,6 +19,7 @@ public class WalletController {
     @Autowired
     private UserRepository userRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping("/balance")
     public ResponseEntity<Map<String, Double>> getBalance(java.security.Principal principal) {
         if (principal == null) {

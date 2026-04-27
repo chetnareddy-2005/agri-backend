@@ -21,6 +21,7 @@ public class NotificationController {
     @Autowired
     private UserRepository userRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping("/my-notifications")
     public ResponseEntity<List<Notification>> getMyNotifications(Principal principal) {
         if (principal == null)
