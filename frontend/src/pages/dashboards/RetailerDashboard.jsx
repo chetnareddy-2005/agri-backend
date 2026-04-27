@@ -559,7 +559,10 @@ const RetailerDashboard = () => {
             const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/stats/dashboard`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
+                console.log("RetailerDashboard: Stats fetched successfully", data);
                 setStats(data);
+            } else {
+                console.warn("RetailerDashboard: Stats fetch failed", res.status);
             }
         } catch (error) {
             console.error("Error fetching stats:", error);

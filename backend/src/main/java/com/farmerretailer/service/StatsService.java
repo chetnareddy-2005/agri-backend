@@ -93,7 +93,7 @@ public class StatsService {
                     salesData.add(point);
                 }
                 stats.put("salesData", salesData);
-            } else if (user.getRole() == Role.RETAILER || String.valueOf(user.getRole()).equals("RETAILER")) {
+            } else if (user.getRole() != null && (user.getRole() == Role.RETAILER || String.valueOf(user.getRole()).equalsIgnoreCase("RETAILER"))) {
                 // Add Profile Details for Retailer as well
                 stats.put("userProfile", new java.util.HashMap<String, Object>() {
                     {
@@ -183,9 +183,10 @@ public class StatsService {
                     System.err.println("Error calculating orderStatusData: " + e.getMessage());
                 }
                 stats.put("orderStatusData", orderStatusData);
+            } else {
+                System.err.println("StatsService: UNKNOWN ROLE for user " + userId + ": " + user.getRole());
             }
         }
         return stats;
     }
 }
-
