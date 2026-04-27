@@ -35,16 +35,20 @@ public class StatsController {
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboardStats(Principal principal) {
         if (principal == null) {
+            System.err.println("StatsController: Principal is NULL");
             return ResponseEntity.status(401).build();
         }
+        System.out.println("StatsController: Fetching dashboard stats for " + principal.getName());
         return ResponseEntity.ok(statsService.getUserStats(principal.getName()));
     }
 
     @GetMapping("/farmer/stats")
     public ResponseEntity<Map<String, Object>> getFarmerStats(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName()).orElse(null);
-        if (user == null)
+        if (user == null) {
+            System.err.println("StatsController: Farmer not found for " + authentication.getName());
             return ResponseEntity.badRequest().build();
+        }
 
         long listings = productRepository.countByFarmerId(user.getId());
         Double totalSales = orderRepository.sumTotalSalesByFarmerId(user.getId());
@@ -53,6 +57,8 @@ public class StatsController {
 
         long pendingOrders = orderRepository.countPendingByFarmerId(user.getId());
         long activeOrders = orderRepository.countActiveByFarmerId(user.getId());
+
+        System.out.println("StatsController: Fetching stats for farmer " + user.getId() + " - Listings: " + listings + ", Total Sales: " + totalSales);
 
         Map<String, Object> response = new HashMap<>();
         response.put("listings", listings);

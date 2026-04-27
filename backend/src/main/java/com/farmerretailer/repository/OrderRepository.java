@@ -25,7 +25,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByRetailerId(Long retailerId);
 
-    long countByRetailerId(Long retailerId);
+    @org.springframework.data.jpa.repository.Query(value = "SELECT COUNT(*) FROM orders WHERE retailer_id = :retailerId", nativeQuery = true)
+    long countByRetailerId(@Param("retailerId") Long retailerId);
 
     long countByRetailerIdAndStatus(Long retailerId, String status);
 
@@ -60,13 +61,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Dynamic Graphs Queries
 
-    // Group by Month (using function month) - Returns Object[]: [Month(int),
-    // Count(long)]
-    @org.springframework.data.jpa.repository.Query("SELECT EXTRACT(MONTH FROM o.orderDate), COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId GROUP BY EXTRACT(MONTH FROM o.orderDate) ORDER BY EXTRACT(MONTH FROM o.orderDate)")
+    // Group by Month (using function month) - Returns Object[]: [Month(int), Count(long)]
+    @org.springframework.data.jpa.repository.Query(value = "SELECT EXTRACT(MONTH FROM order_date), COUNT(*) FROM orders WHERE retailer_id = :retailerId GROUP BY EXTRACT(MONTH FROM order_date) ORDER BY EXTRACT(MONTH FROM order_date)", nativeQuery = true)
     List<Object[]> findOrdersGroupedByMonth(@Param("retailerId") Long retailerId);
 
     // Group by Status - Returns Object[]: [Status(String), Count(long)]
-    @org.springframework.data.jpa.repository.Query("SELECT o.status, COUNT(o) FROM Order o WHERE o.retailer.id = :retailerId GROUP BY o.status")
+    @org.springframework.data.jpa.repository.Query(value = "SELECT status, COUNT(*) FROM orders WHERE retailer_id = :retailerId GROUP BY status", nativeQuery = true)
     List<Object[]> findOrdersGroupedByStatus(@Param("retailerId") Long retailerId);
 
     // Farmer Monthly Sales - Returns Object[]: [Month(int), TotalSales(double)]
