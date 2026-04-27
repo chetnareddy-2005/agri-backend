@@ -14,6 +14,7 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
@@ -145,6 +146,7 @@ public class AuthController {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/change-initial-password")
     public ResponseEntity<?> changeInitialPassword(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
