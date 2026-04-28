@@ -27,6 +27,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/api/auth/register", "/api/auth/login", "/api/v1/telemetry/**");
+    }
+
+    @Bean
     public org.springframework.security.web.SecurityFilterChain securityFilterChain(
             org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
         
@@ -37,27 +42,18 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 .cors(cors -> cors.configurationSource(request -> {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(java.util.Arrays.asList(
-                            "http://localhost:5173", 
-                            "http://localhost:5174",
-                            "https://chetnareddy-2005.github.io",
-                            "https://agri-backend-xz72.onrender.com",
-                            "https://agri-frontend-xz72.onrender.com" // Added common Render frontend patterns
-                    ));
+                    config.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Permissive for production stabilization
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    config.setAllowedHeaders(java.util.Arrays.asList("*")); // Simplified for production handshake
+                    config.setAllowedHeaders(java.util.Arrays.asList("*"));
                     config.setAllowCredentials(true);
                     config.setMaxAge(3600L);
                     return config;
                 }))
                 .addFilterBefore(new TokenAuthenticationFilter(tokenRegistry), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .securityContext(context -> context.securityContextRepository(repo))
-                .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/api/v1/telemetry/**").permitAll()
                         .requestMatchers("/api/v1/gemini/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
