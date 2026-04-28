@@ -40,15 +40,12 @@ public class SecurityConfig {
                     config.setAllowedOrigins(java.util.Arrays.asList(
                             "http://localhost:5173", 
                             "http://localhost:5174",
-                            "http://localhost:5175",
-                            "http://localhost:5176",
-                            "http://127.0.0.1:5173",
-                            "http://127.0.0.1:5174",
                             "https://chetnareddy-2005.github.io",
-                            "https://matcher-sculpture-delay.ngrok-free.app"
-                    )); // Frontend URLs
+                            "https://agri-backend-xz72.onrender.com",
+                            "https://agri-frontend-xz72.onrender.com" // Added common Render frontend patterns
+                    ));
                     config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    config.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "X-Auth-Token", "Accept"));
+                    config.setAllowedHeaders(java.util.Arrays.asList("*")); // Simplified for production handshake
                     config.setAllowCredentials(true);
                     config.setMaxAge(3600L);
                     return config;
@@ -57,7 +54,9 @@ public class SecurityConfig {
                 .securityContext(context -> context.securityContextRepository(repo))
                 .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/v1/telemetry/**").permitAll()
                         .requestMatchers("/api/v1/gemini/**").permitAll()
                         .anyRequest().authenticated())
